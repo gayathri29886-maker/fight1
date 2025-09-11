@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f0f0;
@@ -18,7 +18,7 @@
             background-size: cover;
             background-position: center;
         }
-        
+
         /* Custom CSS for the HP bars and message box */
         .hp-bar-container {
             height: 12px;
@@ -50,7 +50,7 @@
         .pokemon-img {
             image-rendering: pixelated;
         }
-        
+
         .pokemon-card {
             cursor: pointer;
             border: 3px solid transparent;
@@ -66,11 +66,36 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        /* Sprite animations */
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes megaPulse {
+            0% { filter: brightness(1) saturate(1); transform: scale(1); }
+            50% { filter: brightness(1.5) saturate(1.5); transform: scale(1.1); }
+            100% { filter: brightness(1) saturate(1); transform: scale(1); }
+        }
+
+        .mega-glow {
+            animation: megaPulse 1s ease-in-out infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-800 text-white flex flex-col items-center justify-center min-h-screen p-4">
     <main class="w-full max-w-4xl flex flex-col items-center">
-        
+
         <!-- Start Screen -->
         <div id="start-screen" class="w-full text-center">
             <h1 id="selection-heading" class="text-4xl font-bold mb-8">Choose Your Pokémon</h1>
@@ -86,7 +111,7 @@
         <div id="battle-screen" class="w-full max-w-4xl flex-col items-center hidden">
             <!-- Game Container -->
             <div class="battle-bg w-full aspect-[4/3] max-w-[800px] bg-gray-900 rounded-2xl shadow-2xl p-6 flex flex-col justify-between">
-                
+
                 <!-- Opponent's UI -->
                 <div class="flex justify-end p-4">
                     <div class="bg-gray-700 bg-opacity-80 backdrop-blur-sm p-4 rounded-xl shadow-lg w-full max-w-xs transition-opacity duration-300 ease-in-out" id="opponent-ui">
@@ -131,11 +156,11 @@
                 <div id="message" class="text-lg text-center md:text-left flex-grow font-semibold text-gray-200">
                     What will your Pokémon do?
                 </div>
-                
+
                 <div id="actions-container" class="grid grid-cols-2 gap-4 w-full md:w-auto">
                     <!-- Buttons will be added here by JavaScript -->
                 </div>
-                
+
                 <div id="restart-container" class="hidden">
                     <button id="restart-button" class="w-full md:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200">Restart Battle</button>
                 </div>
@@ -145,81 +170,81 @@
 
     <script>
         const pokemonData = [
-            { id: 1, name: 'Bulbasaur', level: 48, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png', moves: [{ name: 'Razor Leaf', damage: 30 }, { name: 'Vine Whip', damage: 20 }, { name: 'Solar Beam', damage: 60 }] },
-            { id: 2, name: 'Ivysaur', level: 50, health: 175, maxHealth: 175, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png', moves: [{ name: 'Razor Leaf', damage: 35 }, { name: 'Vine Whip', damage: 25 }, { name: 'Solar Beam', damage: 65 }] },
-            { id: 3, name: 'Venusaur', level: 55, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png', moves: [{ name: 'Razor Leaf', damage: 40 }, { name: 'Vine Whip', damage: 30 }, { name: 'Solar Beam', damage: 70 }] },
-            { id: 4, name: 'Charmander', level: 52, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png', moves: [{ name: 'Flamethrower', damage: 45 }, { name: 'Dragon Claw', damage: 35 }, { name: 'Air Slash', damage: 50 }] },
-            { id: 5, name: 'Charmeleon', level: 55, health: 195, maxHealth: 195, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/5.png', moves: [{ name: 'Flamethrower', damage: 50 }, { name: 'Dragon Claw', damage: 40 }, { name: 'Air Slash', damage: 55 }] },
-            { id: 6, name: 'Charizard', level: 60, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png', moves: [{ name: 'Flamethrower', damage: 55 }, { name: 'Dragon Claw', damage: 45 }, { name: 'Air Slash', damage: 60 }] },
-            { id: 7, name: 'Squirtle', level: 45, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png', moves: [{ name: 'Water Gun', damage: 25 }, { name: 'Tackle', damage: 15 }, { name: 'Bubble Beam', damage: 40 }] },
-            { id: 8, name: 'Wartortle', level: 48, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/8.png', moves: [{ name: 'Water Gun', damage: 30 }, { name: 'Tackle', damage: 20 }, { name: 'Bubble Beam', damage: 45 }] },
-            { id: 9, name: 'Blastoise', level: 52, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png', moves: [{ name: 'Hydro Pump', damage: 50 }, { name: 'Aqua Jet', damage: 25 }, { name: 'Skull Bash', damage: 45 }] },
-            { id: 25, name: 'Pikachu', level: 50, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png', moves: [{ name: 'Thunderbolt', damage: 40 }, { name: 'Quick Attack', damage: 25 }, { name: 'Iron Tail', damage: 55 }] },
-            { id: 26, name: 'Raichu', level: 55, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/26.png', moves: [{ name: 'Thunder', damage: 65 }, { name: 'Volt Tackle', damage: 80 }, { name: 'Slam', damage: 45 }] },
-            { id: 143, name: 'Snorlax', level: 60, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/143.png', moves: [{ name: 'Body Slam', damage: 60 }, { name: 'Heavy Slam', damage: 55 }, { name: 'Rest', damage: -100 }] },
-            { id: 94, name: 'Gengar', level: 58, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png', moves: [{ name: 'Shadow Ball', damage: 45 }, { name: 'Lick', damage: 20 }, { name: 'Dream Eater', damage: 70 }] },
-            { id: 135, name: 'Jolteon', level: 50, health: 130, maxHealth: 130, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/135.png', moves: [{ name: 'Thunder', damage: 60 }, { name: 'Pin Missile', damage: 30 }, { name: 'Double Kick', damage: 25 }] },
-            { id: 134, name: 'Vaporeon', level: 50, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/134.png', moves: [{ name: 'Water Gun', damage: 30 }, { name: 'Hydro Pump', damage: 70 }, { name: 'Acid Armor', damage: -20 }] },
-            { id: 136, name: 'Flareon', level: 50, health: 145, maxHealth: 145, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/136.png', moves: [{ name: 'Fire Spin', damage: 35 }, { name: 'Flamethrower', damage: 50 }, { name: 'Overheat', damage: 80 }] },
-            { id: 68, name: 'Machamp', level: 55, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/68.png', moves: [{ name: 'Cross Chop', damage: 60 }, { name: 'Karate Chop', damage: 30 }, { name: 'Dynamic Punch', damage: 75 }] },
-            { id: 65, name: 'Alakazam', level: 62, health: 120, maxHealth: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/65.png', moves: [{ name: 'Psychic', damage: 70 }, { name: 'Psybeam', damage: 40 }, { name: 'Confusion', damage: 25 }] },
-            { id: 59, name: 'Arcanine', level: 58, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png', moves: [{ name: 'Flare Blitz', damage: 65 }, { name: 'Extreme Speed', damage: 50 }, { name: 'Crunch', damage: 40 }] },
-            { id: 130, name: 'Gyarados', level: 60, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', moves: [{ name: 'Hydro Pump', damage: 60 }, { name: 'Dragon Tail', damage: 45 }, { name: 'Bite', damage: 30 }] },
-            { id: 149, name: 'Dragonite', level: 65, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png', moves: [{ name: 'Dragon Claw', damage: 50 }, { name: 'Hurricane', damage: 65 }, { name: 'Hyper Beam', damage: 90 }] },
-            { id: 142, name: 'Aerodactyl', level: 55, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/142.png', moves: [{ name: 'Stone Edge', damage: 60 }, { name: 'Wing Attack', damage: 35 }, { name: 'Bite', damage: 30 }] },
-            { id: 131, name: 'Lapras', level: 57, health: 230, maxHealth: 230, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/131.png', moves: [{ name: 'Ice Beam', damage: 55 }, { name: 'Surf', damage: 50 }, { name: 'Body Slam', damage: 40 }] },
-            { id: 103, name: 'Exeggutor', level: 54, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/103.png', moves: [{ name: 'Psychic', damage: 60 }, { name: 'Stomp', damage: 35 }, { name: 'Solar Beam', damage: 70 }] },
-            { id: 45, name: 'Vileplume', level: 50, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/45.png', moves: [{ name: 'Petal Dance', damage: 55 }, { name: 'Sludge Bomb', damage: 45 }, { name: 'Absorb', damage: 20 }] },
-            { id: 38, name: 'Ninetales', level: 56, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/38.png', moves: [{ name: 'Fire Blast', damage: 65 }, { name: 'Will-O-Wisp', damage: 0 }, { name: 'Quick Attack', damage: 25 }] },
-            { id: 51, name: 'Dugtrio', level: 50, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/51.png', moves: [{ name: 'Earthquake', damage: 70 }, { name: 'Sucker Punch', damage: 40 }, { name: 'Fissure', damage: 999 }] },
-            { id: 82, name: 'Magneton', level: 53, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/82.png', moves: [{ name: 'Discharge', damage: 50 }, { name: 'Tri Attack', damage: 45 }, { name: 'Flash Cannon', damage: 60 }] },
-            { id: 76, name: 'Golem', level: 58, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/76.png', moves: [{ name: 'Rock Slide', damage: 50 }, { name: 'Earthquake', damage: 70 }, { name: 'Explosion', damage: 100 }] },
-            { id: 95, name: 'Onix', level: 45, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/95.png', moves: [{ name: 'Rock Throw', damage: 25 }, { name: 'Slam', damage: 40 }, { name: 'Rock Tomb', damage: 35 }] },
-            { id: 112, name: 'Rhydon', level: 60, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/112.png', moves: [{ name: 'Horn Drill', damage: 999 }, { name: 'Megahorn', damage: 65 }, { name: 'Stone Edge', damage: 60 }] },
-            { id: 113, name: 'Chansey', level: 45, health: 300, maxHealth: 300, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/113.png', moves: [{ name: 'Double-Edge', damage: 50 }, { name: 'Soft-Boiled', damage: -150 }, { name: 'Egg Bomb', damage: 45 }] },
-            { id: 114, name: 'Tangela', level: 40, health: 120, maxHealth: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/114.png', moves: [{ name: 'Vine Whip', damage: 25 }, { name: 'Slam', damage: 40 }, { name: 'Power Whip', damage: 60 }] },
-            { id: 121, name: 'Starmie', level: 50, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/121.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Psychic', damage: 60 }, { name: 'Swift', damage: 30 }] },
-            { id: 123, name: 'Scyther', level: 52, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/123.png', moves: [{ name: 'Wing Attack', damage: 35 }, { name: 'Slash', damage: 50 }, { name: 'Double Hit', damage: 40 }] },
-            { id: 126, name: 'Magmar', level: 54, health: 155, maxHealth: 155, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/126.png', moves: [{ name: 'Fire Punch', damage: 40 }, { name: 'Flamethrower', damage: 50 }, { name: 'Smog', damage: 15 }] },
-            { id: 125, name: 'Electabuzz', level: 54, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/125.png', moves: [{ name: 'Thunder Punch', damage: 40 }, { name: 'Thunderbolt', damage: 55 }, { name: 'Quick Attack', damage: 25 }] },
-            { id: 127, name: 'Pinsir', level: 58, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/127.png', moves: [{ name: 'Guillotine', damage: 999 }, { name: 'Vice Grip', damage: 25 }, { name: 'X-Scissor', damage: 50 }] },
-            { id: 128, name: 'Tauros', level: 59, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/128.png', moves: [{ name: 'Horn Attack', damage: 40 }, { name: 'Take Down', damage: 60 }, { name: 'Giga Impact', damage: 85 }] },
-            { id: 132, name: 'Ditto', level: 40, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png', moves: [{ name: 'Transform', damage: 0 }] },
-            { id: 133, name: 'Eevee', level: 30, health: 90, maxHealth: 90, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png', moves: [{ name: 'Tackle', damage: 15 }, { name: 'Quick Attack', damage: 20 }, { name: 'Swift', damage: 25 }] },
-            { id: 137, name: 'Porygon', level: 45, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/137.png', moves: [{ name: 'Tri Attack', damage: 50 }, { name: 'Psybeam', damage: 40 }, { name: 'Sharpen', damage: 0 }] },
-            { id: 141, name: 'Kabutops', level: 58, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/141.png', moves: [{ name: 'Slash', damage: 50 }, { name: 'Rock Slide', damage: 55 }, { name: 'Hydro Pump', damage: 60 }] },
-            { id: 139, name: 'Omastar', level: 58, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/139.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Ancient Power', damage: 45 }, { name: 'Rock Blast', damage: 30 }] },
-            { id: 144, name: 'Articuno', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/144.png', moves: [{ name: 'Ice Beam', damage: 60 }, { name: 'Blizzard', damage: 80 }, { name: 'Hurricane', damage: 75 }] },
-            { id: 145, name: 'Zapdos', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/other/official-artwork/145.png', moves: [{ name: 'Thunderbolt', damage: 60 }, { name: 'Drill Peck', damage: 50 }, { name: 'Zap Cannon', damage: 80 }] },
-            { id: 146, name: 'Moltres', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/146.png', moves: [{ name: 'Fire Spin', damage: 40 }, { name: 'Flamethrower', damage: 60 }, { name: 'Heat Wave', damage: 70 }] },
-            { id: 150, name: 'Mewtwo', level: 80, health: 300, maxHealth: 300, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png', moves: [{ name: 'Psychic', damage: 80 }, { name: 'Shadow Ball', damage: 65 }, { name: 'Psystrike', damage: 90 }] },
-            { id: 151, name: 'Mew', level: 75, health: 280, maxHealth: 280, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/151.png', moves: [{ name: 'Aura Sphere', damage: 70 }, { name: 'Metronome', damage: 0 }, { name: 'Psychic', damage: 75 }] },
-            { id: 248, name: 'Tyranitar', level: 65, health: 230, maxHealth: 230, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/248.png', moves: [{ name: 'Stone Edge', damage: 60 }, { name: 'Earthquake', damage: 70 }, { name: 'Crunch', damage: 50 }] },
-            { id: 376, name: 'Metagross', level: 62, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/376.png', moves: [{ name: 'Meteor Mash', damage: 65 }, { name: 'Zen Headbutt', damage: 55 }, { name: 'Hammer Arm', damage: 60 }] },
-            { id: 373, name: 'Salamence', level: 64, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/373.png', moves: [{ name: 'Dragon Claw', damage: 50 }, { name: 'Fly', damage: 60 }, { name: 'Hydro Pump', damage: 70 }] },
-            { id: 445, name: 'Garchomp', level: 66, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/445.png', moves: [{ name: 'Dragon Rush', damage: 75 }, { name: 'Earthquake', damage: 70 }, { name: 'Dragon Claw', damage: 50 }] },
-            { id: 448, name: 'Lucario', level: 59, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/448.png', moves: [{ name: 'Aura Sphere', damage: 60 }, { name: 'Close Combat', damage: 70 }, { name: 'Metal Claw', damage: 30 }] },
-            { id: 212, name: 'Scizor', level: 60, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/212.png', moves: [{ name: 'Bullet Punch', damage: 40 }, { name: 'Iron Head', damage: 55 }, { name: 'X-Scissor', damage: 50 }] },
-            { id: 461, name: 'Weavile', level: 58, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/461.png', moves: [{ name: 'Night Slash', damage: 50 }, { name: 'Ice Punch', damage: 45 }, { name: 'Ice Shard', damage: 30 }] },
-            { id: 350, name: 'Milotic', level: 61, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/350.png', moves: [{ name: 'Hydro Pump', damage: 60 }, { name: 'Aqua Ring', damage: -20 }, { name: 'Dragon Tail', damage: 40 }] },
-            { id: 257, name: 'Blaziken', level: 63, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/257.png', moves: [{ name: 'Blaze Kick', damage: 60 }, { name: 'Flare Blitz', damage: 75 }, { name: 'Sky Uppercut', damage: 50 }] },
-            { id: 260, name: 'Swampert', level: 63, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/260.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Earthquake', damage: 70 }, { name: 'Muddy Water', damage: 55 }] },
-            { id: 254, name: 'Sceptile', level: 63, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/254.png', moves: [{ name: 'Leaf Blade', damage: 60 }, { name: 'Frenzy Plant', damage: 85 }, { name: 'Bullet Seed', damage: 25 }] },
-            { id: 306, name: 'Aggron', level: 65, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/306.png', moves: [{ name: 'Iron Tail', damage: 60 }, { name: 'Double-Edge', damage: 70 }, { name: 'Rock Slide', damage: 50 }] },
-            { id: 282, name: 'Gardevoir', level: 62, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/282.png', moves: [{ name: 'Psychic', damage: 60 }, { name: 'Moonblast', damage: 65 }, { name: 'Future Sight', damage: 80 }] },
-            { id: 473, name: 'Mamoswine', level: 60, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/473.png', moves: [{ name: 'Avalanche', damage: 50 }, { name: 'Ice Fang', damage: 40 }, { name: 'Earthquake', damage: 70 }] },
-            { id: 468, name: 'Togekiss', level: 61, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/468.png', moves: [{ name: 'Air Slash', damage: 50 }, { name: 'Dazzling Gleam', damage: 45 }, { name: 'Aura Sphere', damage: 60 }] },
-            { id: 16, name: 'Pidgey', level: 10, health: 50, maxHealth: 50, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/16.png', moves: [{ name: 'Tackle', damage: 10 }, { name: 'Gust', damage: 15 }] },
-            { id: 17, name: 'Pidgeotto', level: 20, health: 75, maxHealth: 75, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/17.png', moves: [{ name: 'Wing Attack', damage: 25 }, { name: 'Quick Attack', damage: 20 }] },
-            { id: 18, name: 'Pidgeot', level: 40, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/18.png', moves: [{ name: 'Hurricane', damage: 55 }, { name: 'Brave Bird', damage: 60 }] },
-            { id: 19, name: 'Rattata', level: 8, health: 45, maxHealth: 45, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/19.png', moves: [{ name: 'Tackle', damage: 10 }, { name: 'Quick Attack', damage: 15 }] },
-            { id: 20, name: 'Raticate', level: 20, health: 80, maxHealth: 80, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/20.png', moves: [{ name: 'Hyper Fang', damage: 35 }, { name: 'Super Fang', damage: 30 }] },
-            { id: 27, name: 'Sandshrew', level: 12, health: 60, maxHealth: 60, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/27.png', moves: [{ name: 'Scratch', damage: 10 }, { name: 'Mud-Slap', damage: 15 }] },
-            { id: 28, name: 'Sandslash', level: 28, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/28.png', moves: [{ name: 'Slash', damage: 30 }, { name: 'Earthquake', damage: 50 }] },
-            { id: 43, name: 'Oddish', level: 14, health: 55, maxHealth: 55, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/43.png', moves: [{ name: 'Absorb', damage: 10 }, { name: 'Acid', damage: 15 }] },
-            { id: 44, name: 'Gloom', level: 24, health: 80, maxHealth: 80, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/44.png', moves: [{ name: 'Mega Drain', damage: 25 }, { name: 'Petal Dance', damage: 45 }] },
-            { id: 63, name: 'Abra', level: 10, health: 40, maxHealth: 40, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/63.png', moves: [{ name: 'Teleport', damage: 0 }] },
-            { id: 64, name: 'Kadabra', level: 25, health: 80, maxHealth: 80, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/64.png', moves: [{ name: 'Confusion', damage: 20 }, { name: 'Psybeam', damage: 35 }] },
+            { id: 1, name: 'Bulbasaur', level: 48, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png', moves: [{ name: 'Razor Leaf', damage: 30 }, { name: 'Vine Whip', damage: 20 }, { name: 'Synthesis', damage: -25 }, { name: 'Tackle', damage: 15 }] },
+            { id: 2, name: 'Ivysaur', level: 50, health: 175, maxHealth: 175, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png', moves: [{ name: 'Razor Leaf', damage: 35 }, { name: 'Vine Whip', damage: 25 }, { name: 'Leech Seed', damage: -15 }, { name: 'Growth', damage: 0 }] },
+            { id: 3, name: 'Venusaur', level: 55, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png', moves: [{ name: 'Razor Leaf', damage: 40 }, { name: 'Vine Whip', damage: 30 }, { name: 'Solar Beam', damage: 70 }, { name: 'Earthquake', damage: 60 }] },
+            { id: 4, name: 'Charmander', level: 52, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png', moves: [{ name: 'Flamethrower', damage: 45 }, { name: 'Dragon Claw', damage: 35 }, { name: 'Ember', damage: 20 }, { name: 'Scratch', damage: 15 }] },
+            { id: 5, name: 'Charmeleon', level: 55, health: 195, maxHealth: 195, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/5.png', moves: [{ name: 'Flamethrower', damage: 50 }, { name: 'Dragon Claw', damage: 40 }, { name: 'Fire Spin', damage: 30 }, { name: 'Slash', damage: 25 }] },
+            { id: 6, name: 'Charizard', level: 60, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png', moves: [{ name: 'Flamethrower', damage: 55 }, { name: 'Dragon Claw', damage: 45 }, { name: 'Air Slash', damage: 60 }, { name: 'Heat Wave', damage: 50 }] },
+            { id: 7, name: 'Squirtle', level: 45, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png', moves: [{ name: 'Water Gun', damage: 25 }, { name: 'Tackle', damage: 15 }, { name: 'Withdraw', damage: -10 }, { name: 'Bubble', damage: 10 }] },
+            { id: 8, name: 'Wartortle', level: 48, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/8.png', moves: [{ name: 'Water Gun', damage: 30 }, { name: 'Tackle', damage: 20 }, { name: 'Aqua Jet', damage: 25 }, { name: 'Bubble Beam', damage: 45 }] },
+            { id: 9, name: 'Blastoise', level: 52, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png', moves: [{ name: 'Hydro Pump', damage: 50 }, { name: 'Aqua Jet', damage: 25 }, { name: 'Skull Bash', damage: 45 }, { name: 'Flash Cannon', damage: 55 }] },
+            { id: 25, name: 'Pikachu', level: 50, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png', moves: [{ name: 'Thunderbolt', damage: 40 }, { name: 'Quick Attack', damage: 25 }, { name: 'Iron Tail', damage: 55 }, { name: 'Volt Tackle', damage: 60 }] },
+            { id: 26, name: 'Raichu', level: 55, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/26.png', moves: [{ name: 'Thunder', damage: 65 }, { name: 'Volt Tackle', damage: 80 }, { name: 'Slam', damage: 45 }, { name: 'Discharge', damage: 50 }] },
+            { id: 143, name: 'Snorlax', level: 60, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/143.png', moves: [{ name: 'Body Slam', damage: 60 }, { name: 'Heavy Slam', damage: 55 }, { name: 'Rest', damage: -100 }, { name: 'Hyper Beam', damage: 80 }] },
+            { id: 94, name: 'Gengar', level: 58, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png', moves: [{ name: 'Shadow Ball', damage: 45 }, { name: 'Lick', damage: 20 }, { name: 'Dream Eater', damage: 70 }, { name: 'Sludge Bomb', damage: 55 }] },
+            { id: 135, name: 'Jolteon', level: 50, health: 130, maxHealth: 130, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/135.png', moves: [{ name: 'Thunder', damage: 60 }, { name: 'Pin Missile', damage: 30 }, { name: 'Double Kick', damage: 25 }, { name: 'Thunder Wave', damage: 0 }] },
+            { id: 134, name: 'Vaporeon', level: 50, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/134.png', moves: [{ name: 'Water Gun', damage: 30 }, { name: 'Hydro Pump', damage: 70 }, { name: 'Acid Armor', damage: -20 }, { name: 'Surf', damage: 50 }] },
+            { id: 136, name: 'Flareon', level: 50, health: 145, maxHealth: 145, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/136.png', moves: [{ name: 'Fire Spin', damage: 35 }, { name: 'Flamethrower', damage: 50 }, { name: 'Overheat', damage: 80 }, { name: 'Crunch', damage: 40 }] },
+            { id: 68, name: 'Machamp', level: 55, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/68.png', moves: [{ name: 'Cross Chop', damage: 60 }, { name: 'Karate Chop', damage: 30 }, { name: 'Dynamic Punch', damage: 75 }, { name: 'Bullet Punch', damage: 40 }] },
+            { id: 65, name: 'Alakazam', level: 62, health: 120, maxHealth: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/65.png', moves: [{ name: 'Psychic', damage: 70 }, { name: 'Psybeam', damage: 40 }, { name: 'Confusion', damage: 25 }, { name: 'Focus Blast', damage: 80 }] },
+            { id: 59, name: 'Arcanine', level: 58, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png', moves: [{ name: 'Flare Blitz', damage: 65 }, { name: 'Extreme Speed', damage: 50 }, { name: 'Crunch', damage: 40 }, { name: 'Flamethrower', damage: 55 }] },
+            { id: 130, name: 'Gyarados', level: 60, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', moves: [{ name: 'Hydro Pump', damage: 60 }, { name: 'Dragon Tail', damage: 45 }, { name: 'Bite', damage: 30 }, { name: 'Hyper Beam', damage: 85 }] },
+            { id: 149, name: 'Dragonite', level: 65, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png', moves: [{ name: 'Dragon Claw', damage: 50 }, { name: 'Hurricane', damage: 65 }, { name: 'Hyper Beam', damage: 90 }, { name: 'Outrage', damage: 75 }] },
+            { id: 142, name: 'Aerodactyl', level: 55, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/142.png', moves: [{ name: 'Stone Edge', damage: 60 }, { name: 'Wing Attack', damage: 35 }, { name: 'Bite', damage: 30 }, { name: 'Ancient Power', damage: 40 }] },
+            { id: 131, name: 'Lapras', level: 57, health: 230, maxHealth: 230, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/131.png', moves: [{ name: 'Ice Beam', damage: 55 }, { name: 'Surf', damage: 50 }, { name: 'Body Slam', damage: 40 }, { name: 'Hydro Pump', damage: 65 }] },
+            { id: 103, name: 'Exeggutor', level: 54, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/103.png', moves: [{ name: 'Psychic', damage: 60 }, { name: 'Stomp', damage: 35 }, { name: 'Solar Beam', damage: 70 }, { name: 'Seed Bomb', damage: 45 }] },
+            { id: 45, name: 'Vileplume', level: 50, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/45.png', moves: [{ name: 'Petal Dance', damage: 55 }, { name: 'Sludge Bomb', damage: 45 }, { name: 'Absorb', damage: 20 }, { name: 'Mega Drain', damage: 30 }] },
+            { id: 38, name: 'Ninetales', level: 56, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/38.png', moves: [{ name: 'Fire Blast', damage: 65 }, { name: 'Will-O-Wisp', damage: 0 }, { name: 'Quick Attack', damage: 25 }, { name: 'Hex', damage: 40 }] },
+            { id: 51, name: 'Dugtrio', level: 50, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/51.png', moves: [{ name: 'Earthquake', damage: 70 }, { name: 'Sucker Punch', damage: 40 }, { name: 'Fissure', damage: 999 }, { name: 'Dig', damage: 35 }] },
+            { id: 82, name: 'Magneton', level: 53, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/82.png', moves: [{ name: 'Discharge', damage: 50 }, { name: 'Tri Attack', damage: 45 }, { name: 'Flash Cannon', damage: 60 }, { name: 'Thunder Wave', damage: 0 }] },
+            { id: 76, name: 'Golem', level: 58, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/76.png', moves: [{ name: 'Rock Slide', damage: 50 }, { name: 'Earthquake', damage: 70 }, { name: 'Explosion', damage: 100 }, { name: 'Stone Edge', damage: 60 }] },
+            { id: 95, name: 'Onix', level: 45, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/95.png', moves: [{ name: 'Rock Throw', damage: 25 }, { name: 'Slam', damage: 40 }, { name: 'Rock Tomb', damage: 35 }, { name: 'Iron Tail', damage: 50 }] },
+            { id: 112, name: 'Rhydon', level: 60, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/112.png', moves: [{ name: 'Horn Drill', damage: 999 }, { name: 'Megahorn', damage: 65 }, { name: 'Stone Edge', damage: 60 }, { name: 'Rock Slide', damage: 50 }] },
+            { id: 113, name: 'Chansey', level: 45, health: 300, maxHealth: 300, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/113.png', moves: [{ name: 'Double-Edge', damage: 50 }, { name: 'Soft-Boiled', damage: -150 }, { name: 'Egg Bomb', damage: 45 }, { name: 'Hyper Beam', damage: 70 }] },
+            { id: 114, name: 'Tangela', level: 40, health: 120, maxHealth: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/114.png', moves: [{ name: 'Vine Whip', damage: 25 }, { name: 'Slam', damage: 40 }, { name: 'Power Whip', damage: 60 }, { name: 'Absorb', damage: 15 }] },
+            { id: 121, name: 'Starmie', level: 50, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/121.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Psychic', damage: 60 }, { name: 'Swift', damage: 30 }, { name: 'Ice Beam', damage: 55 }] },
+            { id: 123, name: 'Scyther', level: 52, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/123.png', moves: [{ name: 'Wing Attack', damage: 35 }, { name: 'Slash', damage: 50 }, { name: 'Double Hit', damage: 40 }, { name: 'X-Scissor', damage: 55 }] },
+            { id: 126, name: 'Magmar', level: 54, health: 155, maxHealth: 155, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/126.png', moves: [{ name: 'Fire Punch', damage: 40 }, { name: 'Flamethrower', damage: 50 }, { name: 'Smog', damage: 15 }, { name: 'Sunny Day', damage: 0 }] },
+            { id: 125, name: 'Electabuzz', level: 54, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/125.png', moves: [{ name: 'Thunder Punch', damage: 40 }, { name: 'Thunderbolt', damage: 55 }, { name: 'Quick Attack', damage: 25 }, { name: 'Thunder Wave', damage: 0 }] },
+            { id: 127, name: 'Pinsir', level: 58, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/127.png', moves: [{ name: 'Guillotine', damage: 999 }, { name: 'Vice Grip', damage: 25 }, { name: 'X-Scissor', damage: 50 }, { name: 'Double Hit', damage: 40 }] },
+            { id: 128, name: 'Tauros', level: 59, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/128.png', moves: [{ name: 'Horn Attack', damage: 40 }, { name: 'Take Down', damage: 60 }, { name: 'Giga Impact', damage: 85 }, { name: 'Rage', damage: 30 }] },
+            { id: 132, name: 'Ditto', level: 40, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png', moves: [{ name: 'Transform', damage: 0 }, { name: 'Splash', damage: 0 }, { name: 'Tackle', damage: 10 }, { name: 'Struggle', damage: 20 }] },
+            { id: 133, name: 'Eevee', level: 30, health: 90, maxHealth: 90, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png', moves: [{ name: 'Tackle', damage: 15 }, { name: 'Quick Attack', damage: 20 }, { name: 'Swift', damage: 25 }, { name: 'Bite', damage: 15 }] },
+            { id: 137, name: 'Porygon', level: 45, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/137.png', moves: [{ name: 'Tri Attack', damage: 50 }, { name: 'Psybeam', damage: 40 }, { name: 'Sharpen', damage: 0 }, { name: 'Conversion', damage: 0 }] },
+            { id: 141, name: 'Kabutops', level: 58, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/141.png', moves: [{ name: 'Slash', damage: 50 }, { name: 'Rock Slide', damage: 55 }, { name: 'Hydro Pump', damage: 60 }, { name: 'Ancient Power', damage: 40 }] },
+            { id: 139, name: 'Omastar', level: 58, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/139.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Ancient Power', damage: 45 }, { name: 'Rock Blast', damage: 30 }, { name: 'Spike Cannon', damage: 20 }] },
+            { id: 144, name: 'Articuno', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/144.png', moves: [{ name: 'Ice Beam', damage: 60 }, { name: 'Blizzard', damage: 80 }, { name: 'Hurricane', damage: 75 }, { name: 'Hyper Beam', damage: 90 }] },
+            { id: 145, name: 'Zapdos', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/other/official-artwork/145.png', moves: [{ name: 'Thunderbolt', damage: 60 }, { name: 'Drill Peck', damage: 50 }, { name: 'Zap Cannon', damage: 80 }, { name: 'Thunder Shock', damage: 30 }] },
+            { id: 146, name: 'Moltres', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/146.png', moves: [{ name: 'Fire Spin', damage: 40 }, { name: 'Flamethrower', damage: 60 }, { name: 'Heat Wave', damage: 70 }, { name: 'Sky Attack', damage: 85 }] },
+            { id: 150, name: 'Mewtwo', level: 80, health: 300, maxHealth: 300, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png', moves: [{ name: 'Psychic', damage: 80 }, { name: 'Shadow Ball', damage: 65 }, { name: 'Psystrike', damage: 90 }, { name: 'Aura Sphere', damage: 75 }] },
+            { id: 151, name: 'Mew', level: 75, health: 280, maxHealth: 280, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/151.png', moves: [{ name: 'Aura Sphere', damage: 70 }, { name: 'Metronome', damage: 0 }, { name: 'Psychic', damage: 75 }, { name: 'Transform', damage: 0 }] },
+            { id: 248, name: 'Tyranitar', level: 65, health: 230, maxHealth: 230, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/248.png', moves: [{ name: 'Stone Edge', damage: 60 }, { name: 'Earthquake', damage: 70 }, { name: 'Crunch', damage: 50 }, { name: 'Hyper Beam', damage: 80 }] },
+            { id: 376, name: 'Metagross', level: 62, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/376.png', moves: [{ name: 'Meteor Mash', damage: 65 }, { name: 'Zen Headbutt', damage: 55 }, { name: 'Hammer Arm', damage: 60 }, { name: 'Bullet Punch', damage: 40 }] },
+            { id: 373, name: 'Salamence', level: 64, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/373.png', moves: [{ name: 'Dragon Claw', damage: 50 }, { name: 'Fly', damage: 60 }, { name: 'Hydro Pump', damage: 70 }, { name: 'Outrage', damage: 75 }] },
+            { id: 445, name: 'Garchomp', level: 66, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/445.png', moves: [{ name: 'Dragon Rush', damage: 75 }, { name: 'Earthquake', damage: 70 }, { name: 'Dragon Claw', damage: 50 }, { name: 'Sandstorm', damage: 0 }] },
+            { id: 448, name: 'Lucario', level: 59, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/448.png', moves: [{ name: 'Aura Sphere', damage: 60 }, { name: 'Close Combat', damage: 70 }, { name: 'Metal Claw', damage: 30 }, { name: 'Extreme Speed', damage: 50 }] },
+            { id: 212, name: 'Scizor', level: 60, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/212.png', moves: [{ name: 'Bullet Punch', damage: 40 }, { name: 'Iron Head', damage: 55 }, { name: 'X-Scissor', damage: 50 }, { name: 'Swords Dance', damage: 0 }] },
+            { id: 461, name: 'Weavile', level: 58, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/461.png', moves: [{ name: 'Night Slash', damage: 50 }, { name: 'Ice Punch', damage: 45 }, { name: 'Ice Shard', damage: 30 }, { name: 'Blizzard', damage: 60 }] },
+            { id: 350, name: 'Milotic', level: 61, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/350.png', moves: [{ name: 'Hydro Pump', damage: 60 }, { name: 'Aqua Ring', damage: -20 }, { name: 'Dragon Tail', damage: 40 }, { name: 'Ice Beam', damage: 55 }] },
+            { id: 257, name: 'Blaziken', level: 63, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/257.png', moves: [{ name: 'Blaze Kick', damage: 60 }, { name: 'Flare Blitz', damage: 75 }, { name: 'Sky Uppercut', damage: 50 }, { name: 'High Jump Kick', damage: 65 }] },
+            { id: 260, name: 'Swampert', level: 63, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/260.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Earthquake', damage: 70 }, { name: 'Muddy Water', damage: 55 }, { name: 'Stone Edge', damage: 60 }] },
+            { id: 254, name: 'Sceptile', level: 63, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/254.png', moves: [{ name: 'Leaf Blade', damage: 60 }, { name: 'Frenzy Plant', damage: 85 }, { name: 'Bullet Seed', damage: 25 }, { name: 'Dragon Claw', damage: 50 }] },
+            { id: 306, name: 'Aggron', level: 65, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/306.png', moves: [{ name: 'Iron Tail', damage: 60 }, { name: 'Double-Edge', damage: 70 }, { name: 'Rock Slide', damage: 50 }, { name: 'Head Smash', damage: 75 }] },
+            { id: 282, name: 'Gardevoir', level: 62, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/282.png', moves: [{ name: 'Psychic', damage: 60 }, { name: 'Moonblast', damage: 65 }, { name: 'Future Sight', damage: 80 }, { name: 'Dazzling Gleam', damage: 50 }] },
+            { id: 473, name: 'Mamoswine', level: 60, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/473.png', moves: [{ name: 'Avalanche', damage: 50 }, { name: 'Ice Fang', damage: 40 }, { name: 'Earthquake', damage: 70 }, { name: 'Ice Shard', damage: 30 }] },
+            { id: 468, name: 'Togekiss', level: 61, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/468.png', moves: [{ name: 'Air Slash', damage: 50 }, { name: 'Dazzling Gleam', damage: 45 }, { name: 'Aura Sphere', damage: 60 }, { name: 'Wish', damage: -50 }] },
+            { id: 16, name: 'Pidgey', level: 10, health: 50, maxHealth: 50, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/16.png', moves: [{ name: 'Tackle', damage: 10 }, { name: 'Gust', damage: 15 }, { name: 'Sand Attack', damage: 0 }, { name: 'Quick Attack', damage: 15 }] },
+            { id: 17, name: 'Pidgeotto', level: 20, health: 75, maxHealth: 75, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/17.png', moves: [{ name: 'Wing Attack', damage: 25 }, { name: 'Quick Attack', damage: 20 }, { name: 'Feather Dance', damage: 0 }, { name: 'Twister', damage: 20 }] },
+            { id: 18, name: 'Pidgeot', level: 40, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/18.png', moves: [{ name: 'Hurricane', damage: 55 }, { name: 'Brave Bird', damage: 60 }, { name: 'Steel Wing', damage: 45 }, { name: 'Tornado', damage: 50 }] },
+            { id: 19, name: 'Rattata', level: 8, health: 45, maxHealth: 45, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/19.png', moves: [{ name: 'Tackle', damage: 10 }, { name: 'Quick Attack', damage: 15 }, { name: 'Hyper Fang', damage: 25 }, { name: 'Leer', damage: 0 }] },
+            { id: 20, name: 'Raticate', level: 20, health: 80, maxHealth: 80, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/20.png', moves: [{ name: 'Hyper Fang', damage: 35 }, { name: 'Super Fang', damage: 30 }, { name: 'Sucker Punch', damage: 35 }, { name: 'Crunch', damage: 40 }] },
+            { id: 27, name: 'Sandshrew', level: 12, health: 60, maxHealth: 60, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/27.png', moves: [{ name: 'Scratch', damage: 10 }, { name: 'Mud-Slap', damage: 15 }, { name: 'Sand Attack', damage: 0 }, { name: 'Poison Sting', damage: 10 }] },
+            { id: 28, name: 'Sandslash', level: 28, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/28.png', moves: [{ name: 'Slash', damage: 30 }, { name: 'Earthquake', damage: 50 }, { name: 'Poison Jab', damage: 45 }, { name: 'Sand Tomb', damage: 35 }] },
+            { id: 43, name: 'Oddish', level: 14, health: 55, maxHealth: 55, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/43.png', moves: [{ name: 'Absorb', damage: 10 }, { name: 'Acid', damage: 15 }, { name: 'Sweet Scent', damage: 0 }, { name: 'Razor Leaf', damage: 20 }] },
+            { id: 44, name: 'Gloom', level: 24, health: 80, maxHealth: 80, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/44.png', moves: [{ name: 'Mega Drain', damage: 25 }, { name: 'Petal Dance', damage: 45 }, { name: 'Giga Drain', damage: 35 }, { name: 'Poison Powder', damage: 0 }] },
+            { id: 63, name: 'Abra', level: 10, health: 40, maxHealth: 40, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/63.png', moves: [{ name: 'Teleport', damage: 0 }, { name: 'Psyshock', damage: 20 }, { name: 'Confusion', damage: 15 }, { name: 'Psybeam', damage: 25 }] },
+            { id: 64, name: 'Kadabra', level: 25, health: 80, maxHealth: 80, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/64.png', moves: [{ name: 'Confusion', damage: 20 }, { name: 'Psybeam', damage: 35 }, { name: 'Future Sight', damage: 50 }, { name: 'Kinesis', damage: 0 }] },
         ];
 
         const evolutionData = {
@@ -238,10 +263,119 @@
             'Abra': 'Kadabra',
             'Kadabra': 'Alakazam',
         };
-        
+
+        const megaEvolutionData = {
+            'Venusaur': {
+                name: 'Mega Venusaur',
+                health: 240,
+                maxHealth: 240,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10058.png',
+                moves: [{ name: 'Frenzy Plant', damage: 90 }, { name: 'Giga Drain', damage: 70 }, { name: 'Sludge Bomb', damage: 65 }, { name: 'Earth Power', damage: 80 }]
+            },
+            'Charizard': {
+                name: 'Mega Charizard X',
+                health: 260,
+                maxHealth: 260,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10034.png',
+                moves: [{ name: 'Flare Blitz', damage: 100 }, { name: 'Dragon Claw', damage: 85 }, { name: 'Outrage', damage: 95 }, { name: 'Fire Punch', damage: 70 }]
+            },
+            'Blastoise': {
+                name: 'Mega Blastoise',
+                health: 250,
+                maxHealth: 250,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10035.png',
+                moves: [{ name: 'Hydro Cannon', damage: 95 }, { name: 'Aqua Tail', damage: 75 }, { name: 'Water Pulse', damage: 60 }, { name: 'Flash Cannon', damage: 80 }]
+            },
+            'Pidgeot': {
+                name: 'Mega Pidgeot',
+                health: 120,
+                maxHealth: 120,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10076.png',
+                moves: [{ name: 'Hurricane', damage: 80 }, { name: 'Brave Bird', damage: 75 }, { name: 'Heat Wave', damage: 60 }, { name: 'Air Slash', damage: 70 }]
+            },
+            'Gengar': {
+                name: 'Mega Gengar',
+                health: 160,
+                maxHealth: 160,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10065.png',
+                moves: [{ name: 'Shadow Ball', damage: 85 }, { name: 'Sludge Wave', damage: 70 }, { name: 'Dark Pulse', damage: 80 }, { name: 'Psychic', damage: 75 }]
+            },
+            'Alakazam': {
+                name: 'Mega Alakazam',
+                health: 140,
+                maxHealth: 140,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10041.png',
+                moves: [{ name: 'Psychic', damage: 85 }, { name: 'Focus Blast', damage: 90 }, { name: 'Future Sight', damage: 95 }, { name: 'Shadow Ball', damage: 70 }]
+            },
+            'Gyarados': {
+                name: 'Mega Gyarados',
+                health: 250,
+                maxHealth: 250,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10046.png',
+                moves: [{ name: 'Hydro Pump', damage: 80 }, { name: 'Dragon Dance', damage: 0 }, { name: 'Crunch', damage: 75 }, { name: 'Earthquake', damage: 85 }]
+            },
+            'Tyranitar': {
+                name: 'Mega Tyranitar',
+                health: 260,
+                maxHealth: 260,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10071.png',
+                moves: [{ name: 'Stone Edge', damage: 85 }, { name: 'Crunch', damage: 75 }, { name: 'Earthquake', damage: 90 }, { name: 'Dragon Claw', damage: 80 }]
+            },
+            'Metagross': {
+                name: 'Mega Metagross',
+                health: 230,
+                maxHealth: 230,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10072.png',
+                moves: [{ name: 'Meteor Mash', damage: 90 }, { name: 'Zen Headbutt', damage: 80 }, { name: 'Hammer Arm', damage: 85 }, { name: 'Giga Impact', damage: 100 }]
+            },
+            'Salamence': {
+                name: 'Mega Salamence',
+                health: 240,
+                maxHealth: 240,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10066.png',
+                moves: [{ name: 'Dragon Claw', damage: 80 }, { name: 'Hydro Pump', damage: 90 }, { name: 'Outrage', damage: 95 }, { name: 'Fly', damage: 85 }]
+            },
+            'Garchomp': {
+                name: 'Mega Garchomp',
+                health: 270,
+                maxHealth: 270,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10069.png',
+                moves: [{ name: 'Dragon Rush', damage: 95 }, { name: 'Earthquake', damage: 90 }, { name: 'Dragon Claw', damage: 80 }, { name: 'Stone Edge', damage: 85 }]
+            },
+            'Lucario': {
+                name: 'Mega Lucario',
+                health: 200,
+                maxHealth: 200,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10068.png',
+                moves: [{ name: 'Aura Sphere', damage: 80 }, { name: 'Close Combat', damage: 90 }, { name: 'Extreme Speed', damage: 75 }, { name: 'Flash Cannon', damage: 70 }]
+            },
+            'Scizor': {
+                name: 'Mega Scizor',
+                health: 220,
+                maxHealth: 220,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10037.png',
+                moves: [{ name: 'Bullet Punch', damage: 60 }, { name: 'Iron Head', damage: 75 }, { name: 'X-Scissor', damage: 70 }, { name: 'Swords Dance', damage: 0 }]
+            },
+            'Aggron': {
+                name: 'Mega Aggron',
+                health: 280,
+                maxHealth: 280,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10048.png',
+                moves: [{ name: 'Iron Tail', damage: 80 }, { name: 'Double-Edge', damage: 90 }, { name: 'Rock Slide', damage: 75 }, { name: 'Heavy Slam', damage: 85 }]
+            },
+            'Gardevoir': {
+                name: 'Mega Gardevoir',
+                health: 190,
+                maxHealth: 190,
+                sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/10057.png',
+                moves: [{ name: 'Psychic', damage: 85 }, { name: 'Moonblast', damage: 90 }, { name: 'Future Sight', damage: 95 }, { name: 'Shadow Ball', damage: 75 }]
+            },
+        };
+
         let playerPokemon = null;
         let opponentPokemon = null;
         let isChoosingPlayer = true;
+        let isMegaEvolved = false;
 
         // DOM elements
         const startScreen = document.getElementById('start-screen');
@@ -249,7 +383,7 @@
         const pokemonSelection = document.getElementById('pokemon-selection');
         const selectionHeading = document.getElementById('selection-heading');
         const startBattleButton = document.getElementById('start-battle-button');
-        
+
         const playerSprite = document.getElementById('player-sprite');
         const opponentSprite = document.getElementById('opponent-sprite');
         const playerName = document.getElementById('player-name');
@@ -280,10 +414,9 @@
             const hpPercentage = (pokemon.health / pokemon.maxHealth) * 100;
 
             hpBar.style.width = `${Math.max(0, hpPercentage)}%`;
-            currentHpSpan.textContent = Math.max(0, pokemon.health);
+            currentHpSpan.textContent = Math.max(0, Math.round(pokemon.health));
             maxHpSpan.textContent = pokemon.maxHealth;
-            
-            // Change HP bar color to red when health is low
+
             if (hpPercentage < 25) {
                 hpBar.classList.add('low-health');
             } else {
@@ -306,10 +439,8 @@
             
             await displayMessage(`${attacker.name} used ${move.name}!`);
 
-            // Update UI for the defender
             updateHealthUI(defender, defender === playerPokemon ? 'player' : 'opponent');
-            
-            // Animate sprites to simulate a hit
+
             const attackingSprite = attacker === playerPokemon ? playerSprite : opponentSprite;
             const defendingSprite = defender === playerPokemon ? playerSprite : opponentSprite;
 
@@ -317,12 +448,47 @@
             await new Promise(r => setTimeout(r, 200));
             attackingSprite.style.transform = attacker === playerPokemon ? 'translateY(0)' : 'translateY(0)';
             defendingSprite.style.animation = 'shake 0.3s cubic-bezier(.36,.07,.19,.97) both';
-            
+
             setTimeout(() => {
                 defendingSprite.style.animation = 'none';
             }, 300);
 
-            await new Promise(r => setTimeout(r, 800)); // Wait for a moment after the attack
+            await new Promise(r => setTimeout(r, 800));
+        }
+
+        // Function to handle Mega Evolution
+        async function performMegaEvolution() {
+            if (!isMegaEvolved && megaEvolutionData[playerPokemon.name]) {
+                isMegaEvolved = true;
+                const megaPokemon = megaEvolutionData[playerPokemon.name];
+
+                await displayMessage(`Your ${playerPokemon.name} is evolving into its Mega Form!`);
+                actionsContainer.innerHTML = ''; // Hide buttons during animation
+                await new Promise(r => setTimeout(r, 2000));
+
+                playerSprite.src = megaPokemon.sprite;
+                playerSprite.classList.add('mega-glow');
+
+                await new Promise(r => setTimeout(r, 2000));
+                playerSprite.classList.remove('mega-glow');
+
+                const previousHealth = playerPokemon.health;
+                playerPokemon = { ...megaPokemon, health: previousHealth + (megaPokemon.maxHealth - playerPokemon.maxHealth) };
+                if (playerPokemon.health > playerPokemon.maxHealth) {
+                    playerPokemon.health = playerPokemon.maxHealth;
+                }
+
+                playerName.textContent = playerPokemon.name;
+                playerLevel.textContent = playerPokemon.level;
+                updateHealthUI(playerPokemon, 'player');
+
+                await displayMessage(`${playerPokemon.name} has Mega Evolved!`);
+                await new Promise(r => setTimeout(r, 1000));
+
+                // After mega evolution, it's still the player's turn to choose a move.
+                isPlayerTurn = true; 
+                showPlayerActions();
+            }
         }
 
         // Function to check if the game is over
@@ -337,7 +503,7 @@
                 checkEvolution();
             }
         }
-        
+
         // Function to check for and handle evolution
         async function checkEvolution() {
             const evolvesToName = evolutionData[playerPokemon.name];
@@ -346,15 +512,16 @@
                 if (evolvedPokemon) {
                     await displayMessage(`${playerPokemon.name} is evolving!`);
                     await new Promise(r => setTimeout(r, 2000));
-                    
-                    // Show evolution animation (simple sprite change)
+
                     playerSprite.src = evolvedPokemon.sprite;
                     playerSprite.style.animation = 'bounceIn 1s';
-                    
+
                     await new Promise(r => setTimeout(r, 1000));
-                    
-                    // Update player's Pokémon data
+
                     playerPokemon = { ...evolvedPokemon, health: evolvedPokemon.maxHealth };
+                    playerName.textContent = playerPokemon.name;
+                    playerLevel.textContent = playerPokemon.level;
+                    updateHealthUI(playerPokemon, 'player');
 
                     await displayMessage(`${playerPokemon.name} evolved into a magnificent ${evolvedPokemon.name}!`);
                     await new Promise(r => setTimeout(r, 2000));
@@ -367,9 +534,9 @@
         async function opponentTurn() {
             if (isGameOver) return;
             actionsContainer.innerHTML = '';
-            
+
             await displayMessage("The opponent is preparing to attack...");
-            
+
             const randomMove = opponentPokemon.moves[Math.floor(Math.random() * opponentPokemon.moves.length)];
             await performAttack(opponentPokemon, playerPokemon, randomMove);
 
@@ -384,6 +551,17 @@
         // Function to show player's attack options
         function showPlayerActions() {
             actionsContainer.innerHTML = '';
+            
+            // Mega Evolve button should be shown only if the condition is met
+            const canMegaEvolve = megaEvolutionData[playerPokemon.name] && !isMegaEvolved;
+            if (canMegaEvolve) {
+                const megaButton = document.createElement('button');
+                megaButton.textContent = "Mega Evolve!";
+                megaButton.className = "px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200 col-span-2";
+                megaButton.addEventListener('click', performMegaEvolution);
+                actionsContainer.appendChild(megaButton);
+            }
+
             playerPokemon.moves.forEach(move => {
                 const button = document.createElement('button');
                 button.textContent = move.name;
@@ -401,7 +579,7 @@
                 actionsContainer.appendChild(button);
             });
         }
-        
+
         // Function to show the restart button
         function showRestartButton() {
             actionsContainer.classList.add('hidden');
@@ -412,28 +590,28 @@
         function startBattle() {
             startScreen.classList.add('hidden');
             battleScreen.classList.remove('hidden');
-            
+            isMegaEvolved = false;
+
             // Set up initial UI
             playerSprite.src = playerPokemon.sprite;
             opponentSprite.src = opponentPokemon.sprite;
-            
+
             playerName.textContent = playerPokemon.name;
             playerLevel.textContent = playerPokemon.level;
             playerMaxHp.textContent = playerPokemon.maxHealth;
-            
+
             opponentName.textContent = opponentPokemon.name;
             opponentLevel.textContent = opponentPokemon.level;
             opponentMaxHp.textContent = opponentPokemon.maxHealth;
-            
+
             updateHealthUI(playerPokemon, 'player');
             updateHealthUI(opponentPokemon, 'opponent');
-            
+
             messageBox.textContent = `A wild ${opponentPokemon.name} appeared!`;
-            
+
             actionsContainer.classList.remove('hidden');
             restartContainer.classList.add('hidden');
-            
-            // Wait a moment and then start the player's turn
+
             setTimeout(() => {
                 displayMessage("What will your Pokémon do?");
                 showPlayerActions();
@@ -455,32 +633,39 @@
         function generatePokemonSelection() {
             pokemonSelection.innerHTML = '';
             selectionHeading.textContent = isChoosingPlayer ? 'Choose Your Pokémon' : 'Choose Your Opponent';
-            
-            pokemonData.forEach(p => {
+
+            const pokemonList = isChoosingPlayer ? pokemonData.filter(p => !p.name.includes('Mega')) : pokemonData.filter(p => !p.name.includes('Mega') && p.name !== playerPokemon.name);
+
+            pokemonList.forEach(p => {
                 const card = document.createElement('div');
                 card.className = "pokemon-card bg-gray-700 p-4 rounded-xl shadow-lg flex flex-col items-center transition-transform duration-200 ease-in-out hover:scale-105";
-                
-                // Disable the card if it's already selected
-                if ((playerPokemon && p.name === playerPokemon.name) || (opponentPokemon && p.name === opponentPokemon.name)) {
+
+                if (isChoosingPlayer && playerPokemon && p.name === playerPokemon.name) {
+                    card.classList.add('disabled');
+                } else if (!isChoosingPlayer && opponentPokemon && p.name === opponentPokemon.name) {
                     card.classList.add('disabled');
                 }
-                
+
                 card.innerHTML = `
                     <img class="w-24 h-24 mb-2" src="${p.sprite}" alt="${p.name}">
                     <h2 class="text-xl font-bold">${p.name}</h2>
                     <p class="text-sm text-gray-400">Lv. ${p.level}</p>
                 `;
-                
+
                 card.addEventListener('click', () => {
                     if (card.classList.contains('disabled')) return;
-                    
+
                     document.querySelectorAll('.pokemon-card').forEach(c => c.classList.remove('selected'));
                     card.classList.add('selected');
 
                     if (isChoosingPlayer) {
                         playerPokemon = { ...p };
                         isChoosingPlayer = false;
-                        setTimeout(generatePokemonSelection, 500); // Give a brief delay to show selection
+                        setTimeout(() => {
+                            generatePokemonSelection();
+                            selectionHeading.textContent = 'Choose Your Opponent';
+                            // The start button logic remains the same, it becomes visible after opponent is selected
+                        }, 500);
                     } else {
                         opponentPokemon = { ...p };
                         startBattleButton.classList.remove('hidden');
@@ -489,7 +674,7 @@
                 pokemonSelection.appendChild(card);
             });
         }
-        
+
         // Event listeners
         restartButton.addEventListener('click', showStartScreen);
         startBattleButton.addEventListener('click', startBattle);
