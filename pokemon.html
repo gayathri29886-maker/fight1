@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Battle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .battle-bg {
+            background-image: url('https://placehold.co/1000x600/1e293b/d1d5db?text=Battle+Arena');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        /* Custom CSS for the HP bars and message box */
+        .hp-bar-container {
+            height: 12px;
+            background-color: #333;
+            border: 1px solid #111;
+            border-radius: 9999px;
+            position: relative;
+        }
+
+        .hp-bar {
+            height: 100%;
+            background-color: #6ee7b7; /* Green-300 */
+            transition: width 0.5s ease-in-out;
+            border-radius: 9999px;
+        }
+
+        .hp-bar.low-health {
+            background-color: #fca5a5; /* Red-300 */
+        }
+        
+        .message-box {
+            background-color: #1a202c; /* Gray-900 */
+            border: 2px solid #4a5568; /* Gray-700 */
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 100px;
+        }
+
+        .pokemon-img {
+            image-rendering: pixelated;
+        }
+        
+        .pokemon-card {
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+
+        .pokemon-card.selected {
+            border-color: #3b82f6;
+            transform: scale(1.05);
+        }
+
+        .pokemon-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-white flex flex-col items-center justify-center min-h-screen p-4">
+    <main class="w-full max-w-4xl flex flex-col items-center">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="w-full text-center">
+            <h1 id="selection-heading" class="text-4xl font-bold mb-8">Choose Your Pokémon</h1>
+            <div id="pokemon-selection" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-items-center max-h-[70vh] overflow-y-auto">
+                <!-- Pokemon cards will be generated here -->
+            </div>
+            <button id="start-battle-button" class="mt-8 px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200 hidden">
+                Start Battle!
+            </button>
+        </div>
+
+        <!-- Battle Screen -->
+        <div id="battle-screen" class="w-full max-w-4xl flex-col items-center hidden">
+            <!-- Game Container -->
+            <div class="battle-bg w-full aspect-[4/3] max-w-[800px] bg-gray-900 rounded-2xl shadow-2xl p-6 flex flex-col justify-between">
+                
+                <!-- Opponent's UI -->
+                <div class="flex justify-end p-4">
+                    <div class="bg-gray-700 bg-opacity-80 backdrop-blur-sm p-4 rounded-xl shadow-lg w-full max-w-xs transition-opacity duration-300 ease-in-out" id="opponent-ui">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xl font-bold" id="opponent-name"></span>
+                            <span class="text-lg font-bold">Lv.<span id="opponent-level"></span></span>
+                        </div>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar" id="opponent-hp-bar"></div>
+                        </div>
+                        <div class="text-right text-sm font-semibold mt-1">
+                            <span id="opponent-current-hp"></span>/<span id="opponent-max-hp"></span> HP
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pokémon Sprites -->
+                <div class="flex justify-between items-end px-8">
+                    <img id="player-sprite" class="pokemon-img w-36 h-36 md:w-48 md:h-48 transition-all duration-300 ease-in-out transform -translate-x-12" src="" alt="Player Pokémon">
+                    <img id="opponent-sprite" class="pokemon-img w-36 h-36 md:w-48 md:h-48 transition-all duration-300 ease-in-out transform translate-x-12" src="" alt="Opponent Pokémon">
+                </div>
+
+                <!-- Player's UI -->
+                <div class="flex justify-start p-4">
+                    <div class="bg-gray-700 bg-opacity-80 backdrop-blur-sm p-4 rounded-xl shadow-lg w-full max-w-xs transition-opacity duration-300 ease-in-out" id="player-ui">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xl font-bold" id="player-name"></span>
+                            <span class="text-lg font-bold">Lv.<span id="player-level"></span></span>
+                        </div>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar" id="player-hp-bar"></div>
+                        </div>
+                        <div class="text-right text-sm font-semibold mt-1">
+                            <span id="player-current-hp"></span>/<span id="player-max-hp"></span> HP
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action and Message Box -->
+            <div class="bg-gray-900 message-box mt-4 p-6 rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4">
+                <div id="message" class="text-lg text-center md:text-left flex-grow font-semibold text-gray-200">
+                    What will your Pokémon do?
+                </div>
+                
+                <div id="actions-container" class="grid grid-cols-2 gap-4 w-full md:w-auto">
+                    <!-- Buttons will be added here by JavaScript -->
+                </div>
+                
+                <div id="restart-container" class="hidden">
+                    <button id="restart-button" class="w-full md:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200">Restart Battle</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const pokemonData = [
+            { name: 'Pikachu', level: 50, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png', moves: [{ name: 'Thunderbolt', damage: 40 }, { name: 'Quick Attack', damage: 25 }, { name: 'Iron Tail', damage: 55 }] },
+            { name: 'Charizard', level: 52, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png', moves: [{ name: 'Flamethrower', damage: 45 }, { name: 'Dragon Claw', damage: 35 }, { name: 'Air Slash', damage: 50 }] },
+            { name: 'Bulbasaur', level: 48, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png', moves: [{ name: 'Razor Leaf', damage: 30 }, { name: 'Vine Whip', damage: 20 }, { name: 'Solar Beam', damage: 60 }] },
+            { name: 'Blastoise', level: 55, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png', moves: [{ name: 'Hydro Pump', damage: 50 }, { name: 'Aqua Jet', damage: 25 }, { name: 'Skull Bash', damage: 45 }] },
+            { name: 'Snorlax', level: 60, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/143.png', moves: [{ name: 'Body Slam', damage: 60 }, { name: 'Heavy Slam', damage: 55 }, { name: 'Rest', damage: -100 }] },
+            { name: 'Gengar', level: 58, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png', moves: [{ name: 'Shadow Ball', damage: 45 }, { name: 'Lick', damage: 20 }, { name: 'Dream Eater', damage: 70 }] },
+            { name: 'Jolteon', level: 50, health: 130, maxHealth: 130, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/135.png', moves: [{ name: 'Thunder', damage: 60 }, { name: 'Pin Missile', damage: 30 }, { name: 'Double Kick', damage: 25 }] },
+            { name: 'Vaporeon', level: 50, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/134.png', moves: [{ name: 'Water Gun', damage: 30 }, { name: 'Hydro Pump', damage: 70 }, { name: 'Acid Armor', damage: -20 }] },
+            { name: 'Flareon', level: 50, health: 145, maxHealth: 145, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/136.png', moves: [{ name: 'Fire Spin', damage: 35 }, { name: 'Flamethrower', damage: 50 }, { name: 'Overheat', damage: 80 }] },
+            { name: 'Machamp', level: 55, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/68.png', moves: [{ name: 'Cross Chop', damage: 60 }, { name: 'Karate Chop', damage: 30 }, { name: 'Dynamic Punch', damage: 75 }] },
+            { name: 'Alakazam', level: 62, health: 120, maxHealth: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/65.png', moves: [{ name: 'Psychic', damage: 70 }, { name: 'Psybeam', damage: 40 }, { name: 'Confusion', damage: 25 }] },
+            { name: 'Arcanine', level: 58, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png', moves: [{ name: 'Flare Blitz', damage: 65 }, { name: 'Extreme Speed', damage: 50 }, { name: 'Crunch', damage: 40 }] },
+            { name: 'Gyarados', level: 60, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png', moves: [{ name: 'Hydro Pump', damage: 60 }, { name: 'Dragon Tail', damage: 45 }, { name: 'Bite', damage: 30 }] },
+            { name: 'Dragonite', level: 65, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png', moves: [{ name: 'Dragon Claw', damage: 50 }, { name: 'Hurricane', damage: 65 }, { name: 'Hyper Beam', damage: 90 }] },
+            { name: 'Aerodactyl', level: 55, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/142.png', moves: [{ name: 'Stone Edge', damage: 60 }, { name: 'Wing Attack', damage: 35 }, { name: 'Bite', damage: 30 }] },
+            { name: 'Lapras', level: 57, health: 230, maxHealth: 230, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/131.png', moves: [{ name: 'Ice Beam', damage: 55 }, { name: 'Surf', damage: 50 }, { name: 'Body Slam', damage: 40 }] },
+            { name: 'Exeggutor', level: 54, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/103.png', moves: [{ name: 'Psychic', damage: 60 }, { name: 'Stomp', damage: 35 }, { name: 'Solar Beam', damage: 70 }] },
+            { name: 'Vileplume', level: 50, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/45.png', moves: [{ name: 'Petal Dance', damage: 55 }, { name: 'Sludge Bomb', damage: 45 }, { name: 'Absorb', damage: 20 }] },
+            { name: 'Ninetales', level: 56, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/38.png', moves: [{ name: 'Fire Blast', damage: 65 }, { name: 'Will-O-Wisp', damage: 0 }, { name: 'Quick Attack', damage: 25 }] },
+            { name: 'Dugtrio', level: 50, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/51.png', moves: [{ name: 'Earthquake', damage: 70 }, { name: 'Sucker Punch', damage: 40 }, { name: 'Fissure', damage: 999 }] },
+            { name: 'Magneton', level: 53, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/82.png', moves: [{ name: 'Discharge', damage: 50 }, { name: 'Tri Attack', damage: 45 }, { name: 'Flash Cannon', damage: 60 }] },
+            { name: 'Golem', level: 58, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/76.png', moves: [{ name: 'Rock Slide', damage: 50 }, { name: 'Earthquake', damage: 70 }, { name: 'Explosion', damage: 100 }] },
+            { name: 'Onix', level: 45, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/95.png', moves: [{ name: 'Rock Throw', damage: 25 }, { name: 'Slam', damage: 40 }, { name: 'Rock Tomb', damage: 35 }] },
+            { name: 'Rhydon', level: 60, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/112.png', moves: [{ name: 'Horn Drill', damage: 999 }, { name: 'Megahorn', damage: 65 }, { name: 'Stone Edge', damage: 60 }] },
+            { name: 'Chansey', level: 45, health: 300, maxHealth: 300, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/113.png', moves: [{ name: 'Double-Edge', damage: 50 }, { name: 'Soft-Boiled', damage: -150 }, { name: 'Egg Bomb', damage: 45 }] },
+            { name: 'Tangela', level: 40, health: 120, maxHealth: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/114.png', moves: [{ name: 'Vine Whip', damage: 25 }, { name: 'Slam', damage: 40 }, { name: 'Power Whip', damage: 60 }] },
+            { name: 'Starmie', level: 50, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/121.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Psychic', damage: 60 }, { name: 'Swift', damage: 30 }] },
+            { name: 'Scyther', level: 52, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/123.png', moves: [{ name: 'Wing Attack', damage: 35 }, { name: 'Slash', damage: 50 }, { name: 'Double Hit', damage: 40 }] },
+            { name: 'Magmar', level: 54, health: 155, maxHealth: 155, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/126.png', moves: [{ name: 'Fire Punch', damage: 40 }, { name: 'Flamethrower', damage: 50 }, { name: 'Smog', damage: 15 }] },
+            { name: 'Electabuzz', level: 54, health: 150, maxHealth: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/125.png', moves: [{ name: 'Thunder Punch', damage: 40 }, { name: 'Thunderbolt', damage: 55 }, { name: 'Quick Attack', damage: 25 }] },
+            { name: 'Pinsir', level: 58, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/127.png', moves: [{ name: 'Guillotine', damage: 999 }, { name: 'Vice Grip', damage: 25 }, { name: 'X-Scissor', damage: 50 }] },
+            { name: 'Tauros', level: 59, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/128.png', moves: [{ name: 'Horn Attack', damage: 40 }, { name: 'Take Down', damage: 60 }, { name: 'Giga Impact', damage: 85 }] },
+            { name: 'Ditto', level: 40, health: 100, maxHealth: 100, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/132.png', moves: [{ name: 'Transform', damage: 0 }] },
+            { name: 'Eevee', level: 30, health: 90, maxHealth: 90, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png', moves: [{ name: 'Tackle', damage: 15 }, { name: 'Quick Attack', damage: 20 }, { name: 'Swift', damage: 25 }] },
+            { name: 'Porygon', level: 45, health: 140, maxHealth: 140, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/137.png', moves: [{ name: 'Tri Attack', damage: 50 }, { name: 'Psybeam', damage: 40 }, { name: 'Sharpen', damage: 0 }] },
+            { name: 'Kabutops', level: 58, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/141.png', moves: [{ name: 'Slash', damage: 50 }, { name: 'Rock Slide', damage: 55 }, { name: 'Hydro Pump', damage: 60 }] },
+            { name: 'Omastar', level: 58, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/139.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Ancient Power', damage: 45 }, { name: 'Rock Blast', damage: 30 }] },
+            { name: 'Articuno', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/144.png', moves: [{ name: 'Ice Beam', damage: 60 }, { name: 'Blizzard', damage: 80 }, { name: 'Hurricane', damage: 75 }] },
+            { name: 'Zapdos', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/other/official-artwork/145.png', moves: [{ name: 'Thunderbolt', damage: 60 }, { name: 'Drill Peck', damage: 50 }, { name: 'Zap Cannon', damage: 80 }] },
+            { name: 'Moltres', level: 70, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/146.png', moves: [{ name: 'Fire Spin', damage: 40 }, { name: 'Flamethrower', damage: 60 }, { name: 'Heat Wave', damage: 70 }] },
+            { name: 'Mewtwo', level: 80, health: 300, maxHealth: 300, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png', moves: [{ name: 'Psychic', damage: 80 }, { name: 'Shadow Ball', damage: 65 }, { name: 'Psystrike', damage: 90 }] },
+            { name: 'Mew', level: 75, health: 280, maxHealth: 280, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/151.png', moves: [{ name: 'Aura Sphere', damage: 70 }, { name: 'Metronome', damage: 0 }, { name: 'Psychic', damage: 75 }] },
+            { name: 'Tyranitar', level: 65, health: 230, maxHealth: 230, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/248.png', moves: [{ name: 'Stone Edge', damage: 60 }, { name: 'Earthquake', damage: 70 }, { name: 'Crunch', damage: 50 }] },
+            { name: 'Metagross', level: 62, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/376.png', moves: [{ name: 'Meteor Mash', damage: 65 }, { name: 'Zen Headbutt', damage: 55 }, { name: 'Hammer Arm', damage: 60 }] },
+            { name: 'Salamence', level: 64, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/373.png', moves: [{ name: 'Dragon Claw', damage: 50 }, { name: 'Fly', damage: 60 }, { name: 'Hydro Pump', damage: 70 }] },
+            { name: 'Garchomp', level: 66, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/445.png', moves: [{ name: 'Dragon Rush', damage: 75 }, { name: 'Earthquake', damage: 70 }, { name: 'Dragon Claw', damage: 50 }] },
+            { name: 'Lucario', level: 59, health: 180, maxHealth: 180, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/448.png', moves: [{ name: 'Aura Sphere', damage: 60 }, { name: 'Close Combat', damage: 70 }, { name: 'Metal Claw', damage: 30 }] },
+            { name: 'Scizor', level: 60, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/212.png', moves: [{ name: 'Bullet Punch', damage: 40 }, { name: 'Iron Head', damage: 55 }, { name: 'X-Scissor', damage: 50 }] },
+            { name: 'Weavile', level: 58, health: 160, maxHealth: 160, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/461.png', moves: [{ name: 'Night Slash', damage: 50 }, { name: 'Ice Punch', damage: 45 }, { name: 'Ice Shard', damage: 30 }] },
+            { name: 'Milotic', level: 61, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/350.png', moves: [{ name: 'Hydro Pump', damage: 60 }, { name: 'Aqua Ring', damage: -20 }, { name: 'Dragon Tail', damage: 40 }] },
+            { name: 'Blaziken', level: 63, health: 200, maxHealth: 200, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/257.png', moves: [{ name: 'Blaze Kick', damage: 60 }, { name: 'Flare Blitz', damage: 75 }, { name: 'Sky Uppercut', damage: 50 }] },
+            { name: 'Swampert', level: 63, health: 220, maxHealth: 220, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/260.png', moves: [{ name: 'Hydro Pump', damage: 65 }, { name: 'Earthquake', damage: 70 }, { name: 'Muddy Water', damage: 55 }] },
+            { name: 'Sceptile', level: 63, health: 190, maxHealth: 190, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/254.png', moves: [{ name: 'Leaf Blade', damage: 60 }, { name: 'Frenzy Plant', damage: 85 }, { name: 'Bullet Seed', damage: 25 }] },
+            { name: 'Aggron', level: 65, health: 250, maxHealth: 250, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/306.png', moves: [{ name: 'Iron Tail', damage: 60 }, { name: 'Double-Edge', damage: 70 }, { name: 'Rock Slide', damage: 50 }] },
+            { name: 'Gardevoir', level: 62, health: 170, maxHealth: 170, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/282.png', moves: [{ name: 'Psychic', damage: 60 }, { name: 'Moonblast', damage: 65 }, { name: 'Future Sight', damage: 80 }] },
+            { name: 'Mamoswine', level: 60, health: 240, maxHealth: 240, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/473.png', moves: [{ name: 'Avalanche', damage: 50 }, { name: 'Ice Fang', damage: 40 }, { name: 'Earthquake', damage: 70 }] },
+            { name: 'Togekiss', level: 61, health: 210, maxHealth: 210, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/468.png', moves: [{ name: 'Air Slash', damage: 50 }, { name: 'Dazzling Gleam', damage: 45 }, { name: 'Aura Sphere', damage: 60 }] },
+        ];
+        
+        let playerPokemon = null;
+        let opponentPokemon = null;
+        let isChoosingPlayer = true;
+
+        // DOM elements
+        const startScreen = document.getElementById('start-screen');
+        const battleScreen = document.getElementById('battle-screen');
+        const pokemonSelection = document.getElementById('pokemon-selection');
+        const selectionHeading = document.getElementById('selection-heading');
+        const startBattleButton = document.getElementById('start-battle-button');
+        
+        const playerSprite = document.getElementById('player-sprite');
+        const opponentSprite = document.getElementById('opponent-sprite');
+        const playerName = document.getElementById('player-name');
+        const playerLevel = document.getElementById('player-level');
+        const playerCurrentHp = document.getElementById('player-current-hp');
+        const playerMaxHp = document.getElementById('player-max-hp');
+        const playerHpBar = document.getElementById('player-hp-bar');
+
+        const opponentName = document.getElementById('opponent-name');
+        const opponentLevel = document.getElementById('opponent-level');
+        const opponentCurrentHp = document.getElementById('opponent-current-hp');
+        const opponentMaxHp = document.getElementById('opponent-max-hp');
+        const opponentHpBar = document.getElementById('opponent-hp-bar');
+
+        const messageBox = document.getElementById('message');
+        const actionsContainer = document.getElementById('actions-container');
+        const restartContainer = document.getElementById('restart-container');
+        const restartButton = document.getElementById('restart-button');
+
+        let isPlayerTurn = true;
+        let isGameOver = false;
+
+        // Function to update the HP bar and text
+        function updateHealthUI(pokemon, type) {
+            const hpBar = type === 'player' ? playerHpBar : opponentHpBar;
+            const currentHpSpan = type === 'player' ? playerCurrentHp : opponentCurrentHp;
+            const maxHpSpan = type === 'player' ? playerMaxHp : opponentMaxHp;
+            const hpPercentage = (pokemon.health / pokemon.maxHealth) * 100;
+
+            hpBar.style.width = `${Math.max(0, hpPercentage)}%`;
+            currentHpSpan.textContent = Math.max(0, pokemon.health);
+            maxHpSpan.textContent = pokemon.maxHealth;
+            
+            // Change HP bar color to red when health is low
+            if (hpPercentage < 25) {
+                hpBar.classList.add('low-health');
+            } else {
+                hpBar.classList.remove('low-health');
+            }
+        }
+
+        // Function to display messages in the message box
+        function displayMessage(text, delay = 1000) {
+            return new Promise(resolve => {
+                messageBox.textContent = text;
+                setTimeout(resolve, delay);
+            });
+        }
+
+        // Function to handle an attack
+        async function performAttack(attacker, defender, move) {
+            const damage = move.damage;
+            defender.health -= damage;
+            
+            await displayMessage(`${attacker.name} used ${move.name}!`);
+
+            // Update UI for the defender
+            updateHealthUI(defender, defender === playerPokemon ? 'player' : 'opponent');
+            
+            // Animate sprites to simulate a hit
+            const attackingSprite = attacker === playerPokemon ? playerSprite : opponentSprite;
+            const defendingSprite = defender === playerPokemon ? playerSprite : opponentSprite;
+
+            attackingSprite.style.transform = attacker === playerPokemon ? 'translateY(-10px)' : 'translateY(10px)';
+            await new Promise(r => setTimeout(r, 200));
+            attackingSprite.style.transform = attacker === playerPokemon ? 'translateY(0)' : 'translateY(0)';
+            defendingSprite.style.animation = 'shake 0.3s cubic-bezier(.36,.07,.19,.97) both';
+            
+            setTimeout(() => {
+                defendingSprite.style.animation = 'none';
+            }, 300);
+
+            await new Promise(r => setTimeout(r, 800)); // Wait for a moment after the attack
+        }
+
+        // Function to check if the game is over
+        function checkGameOver() {
+            if (playerPokemon.health <= 0) {
+                isGameOver = true;
+                displayMessage('Your Pokémon fainted! You lost the battle.');
+                showRestartButton();
+            } else if (opponentPokemon.health <= 0) {
+                isGameOver = true;
+                displayMessage('The opponent\'s Pokémon fainted! You won!');
+                showRestartButton();
+            }
+        }
+
+        // Opponent's turn logic (simple AI)
+        async function opponentTurn() {
+            if (isGameOver) return;
+            actionsContainer.innerHTML = '';
+            
+            await displayMessage("The opponent is preparing to attack...");
+            
+            const randomMove = opponentPokemon.moves[Math.floor(Math.random() * opponentPokemon.moves.length)];
+            await performAttack(opponentPokemon, playerPokemon, randomMove);
+
+            checkGameOver();
+            if (!isGameOver) {
+                isPlayerTurn = true;
+                await displayMessage("What will your Pokémon do?");
+                showPlayerActions();
+            }
+        }
+
+        // Function to show player's attack options
+        function showPlayerActions() {
+            actionsContainer.innerHTML = '';
+            playerPokemon.moves.forEach(move => {
+                const button = document.createElement('button');
+                button.textContent = move.name;
+                button.className = "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg transition-colors duration-200";
+                button.addEventListener('click', async () => {
+                    if (isPlayerTurn && !isGameOver) {
+                        isPlayerTurn = false;
+                        await performAttack(playerPokemon, opponentPokemon, move);
+                        checkGameOver();
+                        if (!isGameOver) {
+                            setTimeout(opponentTurn, 1000);
+                        }
+                    }
+                });
+                actionsContainer.appendChild(button);
+            });
+        }
+        
+        // Function to show the restart button
+        function showRestartButton() {
+            actionsContainer.classList.add('hidden');
+            restartContainer.classList.remove('hidden');
+        }
+
+        // Function to start the battle
+        function startBattle() {
+            startScreen.classList.add('hidden');
+            battleScreen.classList.remove('flex');
+            battleScreen.classList.remove('hidden');
+            
+            // Set up initial UI
+            playerSprite.src = playerPokemon.sprite;
+            opponentSprite.src = opponentPokemon.sprite;
+            
+            playerName.textContent = playerPokemon.name;
+            playerLevel.textContent = playerPokemon.level;
+            playerMaxHp.textContent = playerPokemon.maxHealth;
+            
+            opponentName.textContent = opponentPokemon.name;
+            opponentLevel.textContent = opponentPokemon.level;
+            opponentMaxHp.textContent = opponentPokemon.maxHealth;
+            
+            updateHealthUI(playerPokemon, 'player');
+            updateHealthUI(opponentPokemon, 'opponent');
+            
+            messageBox.textContent = `A wild ${opponentPokemon.name} appeared!`;
+            
+            actionsContainer.classList.remove('hidden');
+            restartContainer.classList.add('hidden');
+            
+            // Wait a moment and then start the player's turn
+            setTimeout(() => {
+                displayMessage("What will your Pokémon do?");
+                showPlayerActions();
+            }, 1000);
+        }
+
+        // Function to show the start screen
+        function showStartScreen() {
+            startScreen.classList.remove('hidden');
+            battleScreen.classList.add('hidden');
+            startBattleButton.classList.add('hidden');
+            isChoosingPlayer = true;
+            playerPokemon = null;
+            opponentPokemon = null;
+            generatePokemonSelection();
+        }
+
+        // Function to generate the Pokémon selection cards
+        function generatePokemonSelection() {
+            pokemonSelection.innerHTML = '';
+            selectionHeading.textContent = isChoosingPlayer ? 'Choose Your Pokémon' : 'Choose Your Opponent';
+            
+            pokemonData.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "pokemon-card bg-gray-700 p-4 rounded-xl shadow-lg flex flex-col items-center transition-transform duration-200 ease-in-out hover:scale-105";
+                
+                // Disable the card if it's already selected
+                if ((playerPokemon && p.name === playerPokemon.name) || (opponentPokemon && p.name === opponentPokemon.name)) {
+                    card.classList.add('disabled');
+                }
+                
+                card.innerHTML = `
+                    <img class="w-24 h-24 mb-2" src="${p.sprite}" alt="${p.name}">
+                    <h2 class="text-xl font-bold">${p.name}</h2>
+                    <p class="text-sm text-gray-400">Lv. ${p.level}</p>
+                `;
+                
+                card.addEventListener('click', () => {
+                    if (card.classList.contains('disabled')) return;
+                    
+                    document.querySelectorAll('.pokemon-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+
+                    if (isChoosingPlayer) {
+                        playerPokemon = { ...p };
+                        isChoosingPlayer = false;
+                        setTimeout(generatePokemonSelection, 500); // Give a brief delay to show selection
+                    } else {
+                        opponentPokemon = { ...p };
+                        startBattleButton.classList.remove('hidden');
+                    }
+                });
+                pokemonSelection.appendChild(card);
+            });
+        }
+        
+        // Event listeners
+        restartButton.addEventListener('click', showStartScreen);
+        startBattleButton.addEventListener('click', startBattle);
+
+        // Initial setup
+        window.onload = showStartScreen;
+    </script>
+</body>
+</html>
