@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fighting Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General game styling */
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            position: relative;
+            background-color: #333;
+            border: 4px solid #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            width: 90vw;
+            max-width: 800px;
+            height: 70vh;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #000;
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+            cursor: none;
+        }
+
+        /* UI elements */
+        .ui-top {
+            position: absolute;
+            top: 20px;
+            width: calc(100% - 40px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .health-bar-container {
+            background-color: #555;
+            height: 30px;
+            border: 2px solid #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            width: 40%;
+            transition: all 0.3s ease-in-out;
+            margin: 0 10px;
+        }
+
+        .health-bar {
+            background-color: #3366ff; /* User player is blue */
+            height: 100%;
+            transition: width 0.3s ease-in-out;
+        }
+
+        .health-bar.enemy {
+            background-color: #ff3366; /* CPU player is red */
+        }
+        
+        #timer {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        /* Start/End game message box */
+        #message-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            text-align: center;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #message-box.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #message-text {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        #start-button {
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px #2e7d32;
+            transition: all 0.2s ease-in-out;
+        }
+
+        #start-button:hover {
+            background-color: #66bb6a;
+            box-shadow: 0 2px #2e7d32;
+            transform: translateY(2px);
+        }
+
+        #start-button:active {
+            background-color: #2e7d32;
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        /* Boxing ring and crowd visuals */
+        .ring {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 20px;
+            background-color: #5d4037;
+            border-top: 5px solid #a1887f;
+            border-bottom: 5px solid #a1887f;
+            z-index: 5;
+        }
+
+        .crowd-line {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            height: 10px;
+            background: repeating-linear-gradient(
+                90deg,
+                #616161,
+                #616161 5px,
+                transparent 5px,
+                transparent 10px
+            );
+            z-index: 5;
+        }
+    </style>
+    <script src="https://unpkg.com/tone@14.9.1/build/Tone.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <div class="ui-top">
+            <div class="health-bar-container">
+                <div id="playerHealth" class="health-bar" style="width: 100%;"></div>
+            </div>
+            <div id="timer">60</div>
+            <div class="health-bar-container">
+                <div id="enemyHealth" class="health-bar enemy" style="width: 100%;"></div>
+            </div>
+        </div>
+        <canvas></canvas>
+        <div id="message-box" class="active">
+            <div id="message-text">Player: Arrow Keys, P (Attack), S (Block), O (Special)</div>
+            <button id="start-button">Start Game</button>
+        </div>
+        <div class="ring"></div>
+        <div class="crowd-line"></div>
+    </div>
+
+    <script>
+        // Get the canvas and context
+        const canvas = document.querySelector('canvas');
+        const c = canvas.getContext('2d');
+
+        // Set the canvas dimensions to match the container
+        const gameContainer = document.querySelector('.game-container');
+        canvas.width = gameContainer.clientWidth;
+        canvas.height = gameContainer.clientHeight;
+
+        // Gravity constant for jumping
+        const gravity = 0.7;
+
+        // Sound effects using Tone.js
+        const punchSynth = new Tone.Synth({
+            oscillator: { type: 'sine' },
+            envelope: {
+                attack: 0.005,
+                decay: 0.1,
+                sustain: 0.0,
+                release: 0.1
+            }
+        }).toDestination();
+        
+        const blockSynth = new Tone.Synth({
+            oscillator: { type: 'square' },
+            envelope: {
+                attack: 0.01,
+                decay: 0.05,
+                sustain: 0,
+                release: 0.1
+            }
+        }).toDestination();
+
+        const specialSynth = new Tone.MetalSynth({
+            frequency: 200,
+            envelope: {
+                attack: 0.001,
+                decay: 0.1,
+                sustain: 0.0,
+                release: 0.2
+            },
+            harmonicity: 3.1,
+            modulationIndex: 20,
+            resonance: 4000,
+            octaves: 1.5
+        }).toDestination();
+
+        // Fighter Class with more complex drawing logic
+        class Fighter {
+            constructor({ position, velocity, color, isFacingRight = true, isAI = false }) {
+                this.position = position;
+                this.velocity = velocity;
+                this.width = 50;
+                this.height = 100;
+                this.color = color;
+                this.isAttacking = false;
+                this.isSpecialAttacking = false;
+                this.canSpecialAttack = true;
+                this.isBlocking = false;
+                this.health = 100;
+                this.dead = false;
+                this.isFacingRight = isFacingRight;
+                this.isAI = isAI;
+                this.state = 'idle'; // New state property
+
+                // Attack box properties
+                this.attackBox = {
+                    position: { x: this.position.x, y: this.position.y },
+                    width: 70,
+                    height: 50
+                };
+            }
+
+            draw() {
+                // Determine color based on special attack and blocking state
+                let displayColor = this.color;
+                if (this.isBlocking) {
+                    displayColor = 'rgba(255, 255, 255, 0.5)';
+                } else if (this.isSpecialAttacking) {
+                    displayColor = 'rgba(255, 255, 0, 0.8)'; // Yellow flash for special attack
+                }
+
+                // Draw head
+                c.fillStyle = displayColor;
+                c.beginPath();
+                c.arc(this.position.x + this.width / 2, this.position.y + 15, 15, 0, Math.PI * 2, false);
+                c.fill();
+                c.closePath();
+
+                // Draw torso
+                c.fillRect(this.position.x + 10, this.position.y + 30, 30, 40);
+
+                // Draw legs
+                c.fillRect(this.position.x + 10, this.position.y + 70, 10, 30);
+                c.fillRect(this.position.x + 30, this.position.y + 70, 10, 30);
+
+                // Draw the punch if attacking
+                if (this.isAttacking) {
+                    c.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    const punchX = this.isFacingRight ? this.position.x + this.width : this.position.x - this.attackBox.width;
+                    c.fillRect(punchX, this.position.y + 35, this.attackBox.width, this.attackBox.height);
+                }
+
+                // Draw the special attack effect if special attacking
+                if (this.isSpecialAttacking) {
+                    c.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                    const specialPunchX = this.isFacingRight ? this.position.x + this.width : this.position.x - (this.attackBox.width + 30);
+                    c.fillRect(specialPunchX, this.position.y + 20, this.attackBox.width + 30, this.attackBox.height + 20);
+                }
+            }
+
+            update() {
+                if (this.dead) return;
+
+                // Update position
+                this.position.x += this.velocity.x;
+                this.position.y += this.velocity.y;
+
+                // Apply gravity and ground collision
+                if (this.position.y + this.height + this.velocity.y >= canvas.height) {
+                    this.velocity.y = 0;
+                    this.position.y = canvas.height - this.height; // Snap to the ground
+                } else {
+                    this.velocity.y += gravity;
+                }
+
+                this.draw();
+            }
+
+            attack() {
+                this.isAttacking = true;
+                punchSynth.triggerAttackRelease('C4', '8n');
+                setTimeout(() => {
+                    this.isAttacking = false;
+                }, 100);
+            }
+
+            specialAttack() {
+                if (!this.canSpecialAttack) return;
+                this.isSpecialAttacking = true;
+                this.canSpecialAttack = false;
+                specialSynth.triggerAttackRelease('C2', '2n');
+
+                // Reset special attack after a short duration
+                setTimeout(() => {
+                    this.isSpecialAttacking = false;
+                }, 200);
+
+                // Start cooldown timer
+                setTimeout(() => {
+                    this.canSpecialAttack = true;
+                }, 5000); // 5-second cooldown
+            }
+
+            block() {
+                this.isBlocking = true;
+            }
+
+            stopBlock() {
+                this.isBlocking = false;
+            }
+        }
+
+        // Initialize players
+        const player = new Fighter({
+            position: { x: canvas.width - 50, y: 0 },
+            velocity: { x: 0, y: 0 },
+            color: '#3366ff',
+            isFacingRight: false // Start facing left
+        });
+
+        const enemy = new Fighter({
+            position: { x: 0, y: 0 },
+            velocity: { x: 0, y: 0 },
+            color: '#ff3366',
+            isFacingRight: true,
+            isAI: true
+        });
+
+        // Key states for smooth movement
+        const keys = {
+            ArrowLeft: { pressed: false },
+            ArrowRight: { pressed: false },
+            s: { pressed: false }
+        };
+
+        // Collision detection function
+        function rectangularCollision({ rectangle1, rectangle2, special = false }) {
+            const attackBox = {
+                position: {
+                    x: rectangle1.position.x + (rectangle1.isFacingRight ? rectangle1.width : -rectangle1.attackBox.width),
+                    y: rectangle1.position.y + 35
+                },
+                width: rectangle1.attackBox.width,
+                height: rectangle1.attackBox.height
+            };
+
+            if (special) {
+                // Adjust for special attack
+                attackBox.width += 30;
+                attackBox.height += 20;
+                attackBox.position.x = rectangle1.position.x + (rectangle1.isFacingRight ? rectangle1.width : -attackBox.width);
+                attackBox.position.y = rectangle1.position.y + 20;
+            }
+
+            return (
+                attackBox.position.x + attackBox.width >= rectangle2.position.x &&
+                attackBox.position.x <= rectangle2.position.x + rectangle2.width &&
+                attackBox.position.y + attackBox.height >= rectangle2.position.y &&
+                attackBox.position.y <= rectangle2.position.y + rectangle2.height
+            );
+        }
+
+        // Timer and game state variables
+        let timer = 60;
+        let timerId;
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const startButton = document.getElementById('start-button');
+        const playerHealthBar = document.getElementById('playerHealth');
+        const enemyHealthBar = document.getElementById('enemyHealth');
+
+        // Function to determine winner and end game
+        function determineWinner({ player, enemy, timerId }) {
+            clearTimeout(timerId);
+            messageBox.classList.add('active');
+            if (player.health === enemy.health) {
+                messageText.innerHTML = 'It\'s a Tie!';
+            } else if (player.health > enemy.health) {
+                messageText.innerHTML = 'You Win!';
+            } else {
+                messageText.innerHTML = 'CPU Wins!';
+            }
+        }
+
+        // Main animation loop
+        function animate() {
+            const animationId = window.requestAnimationFrame(animate);
+            // Clear the canvas for the next frame
+            c.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw players
+            player.update();
+            enemy.update();
+
+            // Player control logic (Blue Boxer)
+            player.velocity.x = 0;
+            if (keys.ArrowLeft.pressed) {
+                player.velocity.x = -3;
+                player.isFacingRight = false;
+            } else if (keys.ArrowRight.pressed) {
+                player.velocity.x = 3;
+                player.isFacingRight = true;
+            }
+            if (keys.s.pressed) {
+                player.block();
+            } else {
+                player.stopBlock();
+            }
+
+
+            // CPU AI control logic (Red Boxer)
+            enemy.velocity.x = 0;
+            const distance = player.position.x - enemy.position.x;
+            const attackRange = 100;
+            const specialAttackRange = 130;
+            const moveSpeed = 2;
+
+            if (enemy.position.x > player.position.x) {
+                 enemy.isFacingRight = false;
+            } else {
+                enemy.isFacingRight = true;
+            }
+            
+            // AI decision making
+            // Simple logic: if in special attack range, use it. If in normal range, use normal attack. Otherwise, move towards the player.
+            // Also, if player is attacking, try to block.
+            enemy.stopBlock();
+            if (player.isAttacking) {
+                // If player is attacking, AI tries to block
+                enemy.block();
+            } else if (Math.abs(distance) <= specialAttackRange && enemy.canSpecialAttack) {
+                // If in special attack range and ready, use special attack
+                enemy.specialAttack();
+            } else if (Math.abs(distance) <= attackRange) {
+                // If in normal attack range, use normal attack
+                enemy.attack();
+            } else {
+                // If out of range, move closer
+                if (distance > 0) {
+                    enemy.velocity.x = moveSpeed;
+                } else {
+                    enemy.velocity.x = -moveSpeed;
+                }
+            }
+
+
+            // Player attacks enemy
+            if (rectangularCollision({ rectangle1: player, rectangle2: enemy }) && player.isAttacking) {
+                player.isAttacking = false;
+                const damage = enemy.isBlocking ? 5 : 20;
+                enemy.health -= damage;
+                enemyHealthBar.style.width = enemy.health + '%';
+                if (enemy.isBlocking) {
+                    blockSynth.triggerAttackRelease('C5', '8n');
+                } else {
+                    punchSynth.triggerAttackRelease('C4', '8n');
+                }
+            }
+
+            // Player special attacks enemy
+            if (rectangularCollision({ rectangle1: player, rectangle2: enemy, special: true }) && player.isSpecialAttacking) {
+                const damage = enemy.isBlocking ? 10 : 50;
+                enemy.health -= damage;
+                enemyHealthBar.style.width = enemy.health + '%';
+                if (enemy.isBlocking) {
+                    blockSynth.triggerAttackRelease('C5', '8n');
+                }
+            }
+
+            // Enemy attacks player
+            if (rectangularCollision({ rectangle1: enemy, rectangle2: player }) && enemy.isAttacking) {
+                enemy.isAttacking = false;
+                const damage = player.isBlocking ? 5 : 20;
+                player.health -= damage;
+                playerHealthBar.style.width = player.health + '%';
+                if (player.isBlocking) {
+                    blockSynth.triggerAttackRelease('C5', '8n');
+                } else {
+                    punchSynth.triggerAttackRelease('C4', '8n');
+                }
+            }
+
+            // Enemy special attacks player
+            if (rectangularCollision({ rectangle1: enemy, rectangle2: player, special: true }) && enemy.isSpecialAttacking) {
+                const damage = player.isBlocking ? 10 : 50;
+                player.health -= damage;
+                playerHealthBar.style.width = player.health + '%';
+                if (player.isBlocking) {
+                    blockSynth.triggerAttackRelease('C5', '8n');
+                }
+            }
+
+            // End game based on health
+            if (enemy.health <= 0 || player.health <= 0) {
+                determineWinner({ player, enemy, timerId });
+                player.dead = true;
+                enemy.dead = true;
+                cancelAnimationFrame(animationId);
+            }
+        }
+
+        // Function to decrease timer
+        function decreaseTimer() {
+            if (timer > 0) {
+                timerId = setTimeout(decreaseTimer, 1000);
+                timer--;
+                document.getElementById('timer').innerHTML = timer;
+            }
+
+            if (timer === 0) {
+                determineWinner({ player, enemy, timerId });
+            }
+        }
+
+        // Event listeners for player controls
+        window.addEventListener('keydown', (event) => {
+            if (!player.dead) {
+                switch (event.key) {
+                    case 'ArrowRight':
+                        keys.ArrowRight.pressed = true;
+                        break;
+                    case 'ArrowLeft':
+                        keys.ArrowLeft.pressed = true;
+                        break;
+                    case 'ArrowUp':
+                        // Only jump if on the ground
+                        if (player.position.y + player.height >= canvas.height - 1) {
+                            player.velocity.y = -20;
+                        }
+                        break;
+                    case 'p':
+                        player.attack();
+                        break;
+                    case 's':
+                        keys.s.pressed = true;
+                        break;
+                    case 'o':
+                        player.specialAttack();
+                        break;
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (event) => {
+            switch (event.key) {
+                case 'ArrowRight':
+                    keys.ArrowRight.pressed = false;
+                    break;
+                case 'ArrowLeft':
+                    keys.ArrowLeft.pressed = false;
+                    break;
+                case 's':
+                    keys.s.pressed = false;
+                    break;
+            }
+        });
+
+        // Start game button functionality
+        startButton.addEventListener('click', () => {
+            messageBox.classList.remove('active');
+            // Reset game state
+            player.health = 10000;
+            enemy.health = 100;
+            player.dead = false;
+            enemy.dead = false;
+            playerHealthBar.style.width = '100%';
+            enemyHealthBar.style.width = '100%';
+            player.position.x = canvas.width - 50;
+            player.position.y = 0;
+            enemy.position.x = 0;
+            enemy.position.y = 0;
+            player.velocity.x = 0;
+            player.velocity.y = 0;
+            enemy.velocity.x = 0;
+            enemy.velocity.y = 0;
+
+            timer = 60;
+            document.getElementById('timer').innerHTML = timer;
+            decreaseTimer();
+            animate();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+            player.position.x = canvas.width - 50;
+            player.position.y = 0;
+            enemy.position.x = 0;
+            enemy.position.y = 0;
+        });
+    </script>
+</body>
+</html>
