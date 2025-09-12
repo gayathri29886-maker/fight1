@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Match</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Bebas+Neue&display=swap');
+
+        :root {
+            --bg-color: #2c3e50;
+            --card-back-color: #34495e;
+            --card-text-color: #ecf0f1;
+            --card-selected-color: #3498db;
+            --card-correct-color: #2ecc71;
+            --card-incorrect-color: #e74c3c;
+            --main-font: 'Inter', sans-serif;
+            --title-font: 'Bebas Neue', sans-serif;
+        }
+
+        body {
+            font-family: var(--main-font);
+            background-color: var(--bg-color);
+            color: var(--card-text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            text-align: center;
+            width: 100%;
+            max-width: 900px;
+            background-color: #34495e;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            font-family: var(--title-font);
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: #f1c40f;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-size: 1.2rem;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 30px;
+        }
+
+        #message-box {
+            font-weight: bold;
+            color: #f1c40f;
+        }
+
+        .game-board {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .card {
+            background-color: var(--card-back-color);
+            border-radius: 10px;
+            min-height: 100px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(0.9rem, 2vw, 1.3rem);
+            text-align: center;
+            padding: 15px;
+            box-sizing: border-box;
+            border: 3px solid transparent;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .card.selected {
+            background-color: var(--card-selected-color);
+            border-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .card.correct {
+            background-color: var(--card-correct-color);
+            border-color: #27ae60;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        
+        .card.incorrect {
+            animation: shake 0.5s;
+            background-color: var(--card-incorrect-color);
+            border-color: #c0392b;
+        }
+
+        .btn-start {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            font-family: var(--title-font);
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+        }
+        
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-start:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.5s;
+        }
+
+        .modal-content {
+            background-color: var(--card-back-color);
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal h2 {
+            font-family: var(--title-font);
+            font-size: 2.5rem;
+            color: #f1c40f;
+            margin-top: 0;
+        }
+        
+        .modal p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .modal button {
+            background-color: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .modal button:hover {
+            background-color: #27ae60;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>History Match</h1>
+        <div class="game-info">
+            <div id="message-box">Click "Start Game" to begin!</div>
+            <div id="set-info">Set: <span id="current-set">1</span> / <span id="total-sets">0</span></div>
+            <div>Correct Matches: <span id="correct-matches">0</span></div>
+        </div>
+        <div class="game-board">
+            <div id="events-column" class="column"></div>
+            <div id="dates-column" class="column"></div>
+        </div>
+        <button id="start-btn" class="btn-start">Start Game</button>
+    </div>
+
+    <div id="game-end-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-message"></p>
+            <button id="modal-close-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Array of all historical event pairs
+        const allHistoryPairs = [
+            { id: 1, text: "Battle of Hastings", match: "1066" },
+            { id: 2, text: "Magna Carta", match: "1215" },
+            { id: 3, text: "First Moon Landing", match: "1969" },
+            { id: 4, text: "Fall of the Berlin Wall", match: "1989" },
+            { id: 5, text: "King Tutankhamun", match: "Ancient Egypt" },
+            { id: 6, text: "Leonardo da Vinci", match: "Mona Lisa" },
+            { id: 7, text: "Ferdinand Magellan", match: "First Circumnavigation" },
+            { id: 8, text: "Genghis Khan", match: "Mongol Empire" },
+            { id: 9, text: "Marie Curie", match: "Radioactivity" },
+            { id: 10, text: "Socrates", match: "Ancient Greece" },
+            { id: 11, text: "Christopher Columbus", match: "Americas" },
+            { id: 12, text: "Queen Victoria", match: "British Empire" },
+            { id: 13, text: "Gutenberg's Printing Press", match: "1440" },
+            { id: 14, text: "Pyramids of Giza", match: "Ancient Egypt" },
+            { id: 15, text: "Isaac Newton", match: "Theory of Gravity" },
+            
+        ];
+        
+        const questionsPerSet = 4;
+        let shuffledPairs = [];
+        let currentSetIndex = 0;
+        let currentSetPairs = [];
+
+        const eventsColumn = document.getElementById('events-column');
+        const datesColumn = document.getElementById('dates-column');
+        const startButton = document.getElementById('start-btn');
+        const correctMatchesSpan = document.getElementById('correct-matches');
+        const currentSetSpan = document.getElementById('current-set');
+        const totalSetsSpan = document.getElementById('total-sets');
+        const messageBox = document.getElementById('message-box');
+        const modal = document.getElementById('game-end-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        let selectedEventCard = null;
+        let selectedDateCard = null;
+        let correctMatchesInSet = 0;
+        let isChecking = false;
+
+        // Function to shuffle an array
+        const shuffle = (array) => {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Function to create and render the cards
+        const renderCards = (events, dates) => {
+            eventsColumn.innerHTML = '';
+            datesColumn.innerHTML = '';
+
+            events.forEach(event => {
+                const card = createCard(event.text, 'event', event.id);
+                eventsColumn.appendChild(card);
+            });
+
+            dates.forEach(date => {
+                const card = createCard(date.match, 'date', date.id);
+                datesColumn.appendChild(card);
+            });
+        }
+
+        // Helper function to create a single card element
+        const createCard = (content, type, id) => {
+            const card = document.createElement('div');
+            card.classList.add('card', type);
+            card.dataset.id = id;
+            card.textContent = content;
+            card.addEventListener('click', handleCardClick);
+            return card;
+        }
+
+        // Function to handle a card click
+        function handleCardClick() {
+            if (isChecking) return;
+            const type = this.classList.contains('event') ? 'event' : 'date';
+
+            // Clear previous selection of the same type
+            if (type === 'event') {
+                if (selectedEventCard) {
+                    selectedEventCard.classList.remove('selected');
+                }
+                selectedEventCard = this;
+            } else {
+                if (selectedDateCard) {
+                    selectedDateCard.classList.remove('selected');
+                }
+                selectedDateCard = this;
+            }
+
+            this.classList.add('selected');
+
+            // Check for a pair if both are selected
+            if (selectedEventCard && selectedDateCard) {
+                isChecking = true;
+                checkForMatch();
+            }
+        }
+
+        // Function to check if the selected cards are a match
+        const checkForMatch = () => {
+            const eventId = selectedEventCard.dataset.id;
+            const dateId = selectedDateCard.dataset.id;
+            
+            if (eventId === dateId) {
+                messageBox.textContent = "Correct! Nice one.";
+                setTimeout(() => {
+                    selectedEventCard.classList.remove('selected');
+                    selectedDateCard.classList.remove('selected');
+                    selectedEventCard.classList.add('correct');
+                    selectedDateCard.classList.add('correct');
+                    correctMatchesInSet++;
+                    correctMatchesSpan.textContent = correctMatchesInSet;
+                    resetSelections();
+
+                    if (correctMatchesInSet === currentSetPairs.length) {
+                        endSet();
+                    }
+                }, 500);
+
+            } else {
+                messageBox.textContent = "Incorrect. Try again!";
+                setTimeout(() => {
+                    selectedEventCard.classList.add('incorrect');
+                    selectedDateCard.classList.add('incorrect');
+                    setTimeout(() => {
+                         selectedEventCard.classList.remove('selected', 'incorrect');
+                         selectedDateCard.classList.remove('selected', 'incorrect');
+                         resetSelections();
+                    }, 800);
+                }, 500);
+            }
+        }
+        
+        // Reset selections for the next turn
+        const resetSelections = () => {
+            selectedEventCard = null;
+            selectedDateCard = null;
+            isChecking = false;
+        }
+
+        // Function to start the game or next set
+        const startGame = () => {
+            // First time start
+            if (shuffledPairs.length === 0) {
+                shuffledPairs = shuffle([...allHistoryPairs]);
+            }
+
+            // Check if all sets are completed
+            if (currentSetIndex * questionsPerSet >= shuffledPairs.length) {
+                endGame();
+                return;
+            }
+
+            startButton.disabled = true;
+            startButton.textContent = "Loading Next Set...";
+            messageBox.textContent = "Click on an event and its matching date.";
+            correctMatchesInSet = 0;
+            correctMatchesSpan.textContent = correctMatchesInSet;
+            resetSelections();
+            modal.style.display = 'none';
+
+            // Get the next set of questions
+            const startIndex = currentSetIndex * questionsPerSet;
+            currentSetPairs = shuffledPairs.slice(startIndex, startIndex + questionsPerSet);
+
+            const shuffledEvents = shuffle([...currentSetPairs]);
+            const shuffledDates = shuffle([...currentSetPairs]);
+            
+            renderCards(shuffledEvents, shuffledDates);
+            
+            currentSetIndex++;
+            currentSetSpan.textContent = currentSetIndex;
+            totalSetsSpan.textContent = Math.ceil(allHistoryPairs.length / questionsPerSet);
+
+            startButton.textContent = "Start Game";
+            startButton.disabled = false;
+            startButton.style.display = 'none';
+        }
+        
+        // Function to end the current set and prepare for the next
+        const endSet = () => {
+            if (currentSetIndex * questionsPerSet < allHistoryPairs.length) {
+                modalTitle.textContent = "Set Complete!";
+                modalMessage.textContent = `You've matched all ${currentSetPairs.length} pairs in this set. Ready for the next one?`;
+                modalCloseBtn.textContent = "Next Set";
+                modal.style.display = 'flex';
+                modalCloseBtn.onclick = startGame;
+            } else {
+                endGame();
+            }
+        }
+
+        // Function to end the entire game
+        const endGame = () => {
+            modalTitle.textContent = "Game Complete!";
+            modalMessage.textContent = `You've matched all ${allHistoryPairs.length} pairs. Well done!`;
+            modalCloseBtn.textContent = "Play Again";
+            modal.style.display = 'flex';
+            modalCloseBtn.onclick = () => {
+                currentSetIndex = 0;
+                shuffledPairs = [];
+                startGame();
+            };
+        }
+
+        // Initial setup
+        totalSetsSpan.textContent = Math.ceil(allHistoryPairs.length / questionsPerSet);
+        startButton.addEventListener('click', startGame);
+
+    </script>
+</body>
+</html>
