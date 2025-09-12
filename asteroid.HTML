@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroid Avoidance</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        #game-canvas {
+            background-color: #000000;
+            border: 2px solid #30363d;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .ui-panel {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+
+        .info-box {
+            padding: 10px 15px;
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        #user-id-box {
+            font-size: 0.8rem;
+            word-break: break-all;
+            max-width: 300px;
+            text-align: left;
+        }
+        
+        #leaderboard-button {
+            background-color: #30363d;
+            color: #c9d1d9;
+            padding: 10px 20px;
+            border: 1px solid #484f58;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        
+        #leaderboard-button:hover {
+            background-color: #484f58;
+        }
+
+        .button {
+            background-color: #238636;
+            color: #fff;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .button:hover {
+            background-color: #2ea043;
+            transform: translateY(-2px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        #game-messages {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-messages h2 {
+            margin-top: 0;
+            font-size: 2rem;
+        }
+
+        #game-messages p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        #leaderboard-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            display: none;
+        }
+        
+        #leaderboard-modal h3 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        #close-leaderboard {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            color: #8b949e;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        
+        #leaderboard-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #leaderboard-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        #leaderboard-list li:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-rank {
+            font-weight: bold;
+            width: 25px;
+            text-align: right;
+        }
+
+        .leaderboard-user {
+            flex-grow: 1;
+            margin-left: 10px;
+            font-size: 0.9rem;
+            color: #8b949e;
+            word-break: break-all;
+        }
+
+        .leaderboard-score {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        @media (max-width: 600px) {
+            .ui-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .info-box {
+                margin-bottom: 10px;
+            }
+            #user-id-box {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="ui-panel">
+            <div class="info-box">
+                Score: <span id="score">0</span>
+            </div>
+            <button id="leaderboard-button">Show Leaderboard</button>
+            <div id="user-id-box" class="info-box">
+                User ID: <span id="user-id"></span>
+            </div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+        <div id="game-messages">
+            <h2 id="message-header"></h2>
+            <p id="message-body"></p>
+            <button id="start-button" class="button">Start Game</button>
+        </div>
+        
+        <div id="leaderboard-modal">
+            <button id="close-leaderboard">X</button>
+            <h3>Leaderboard</h3>
+            <ul id="leaderboard-list">
+                <!-- Leaderboard entries will be added here by JS -->
+            </ul>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Firebase CDN imports for Firestore and Auth
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        setLogLevel('debug');
+        
+        // --- Global Variables (provided by the environment) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth, userId;
+        let isAuthReady = false;
+
+        // --- Game Logic ---
+        let canvas, ctx, scoreElement, gameMessages, messageHeader, messageBody, startButton, leaderboardButton, leaderboardModal, closeLeaderboardButton;
+        let thrusterPulse = 0;
+
+        const state = {
+            game: {
+                running: false,
+                score: 0,
+                lastUpdateTime: 0,
+                lastScoreUpdate: 0,
+                difficulty: 1,
+            },
+            player: {
+                x: 0,
+                y: 0,
+                size: 15,
+                angle: 0, // New property for player rotation
+                rotationSpeed: 0,
+            },
+            asteroids: [],
+            stars: [],
+            nebula: { x: 0, y: 0, size: 0, speedX: 0, speedY: 0 },
+            sun: { x: 0, y: 0, size: 0 },
+            blackHole: { x: 0, y: 0, size: 0, rotation: 0 },
+            keys: {},
+        };
+
+        const initFirebase = async () => {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                document.getElementById('user-id').textContent = userId;
+                isAuthReady = true;
+                
+                console.log("Firebase initialized. User ID:", userId);
+                setupLeaderboardListener();
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                // Fallback to anonymous ID if auth fails
+                userId = crypto.randomUUID();
+                document.getElementById('user-id').textContent = "Auth failed. Using local ID: " + userId;
+                isAuthReady = true;
+                setupLeaderboardListener();
+            }
+        };
+
+        const LEADERBOARD_PATH = `/artifacts/${appId}/public/data/leaderboard`;
+
+        const setupLeaderboardListener = () => {
+            if (!isAuthReady) return;
+
+            const leaderboardCollection = collection(db, LEADERBOARD_PATH);
+            const q = query(leaderboardCollection);
+
+            onSnapshot(q, (querySnapshot) => {
+                const leaderboard = [];
+                querySnapshot.forEach((doc) => {
+                    leaderboard.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort the leaderboard by score in descending order
+                leaderboard.sort((a, b) => b.score - a.score);
+                
+                updateLeaderboardUI(leaderboard);
+            }, (error) => {
+                console.error("Error fetching leaderboard:", error);
+            });
+        };
+        
+        const updateLeaderboardUI = (leaderboard) => {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            leaderboardList.innerHTML = '';
+            leaderboard.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="leaderboard-rank">${index + 1}.</span>
+                    <span class="leaderboard-user">${entry.userId}</span>
+                    <span class="leaderboard-score">${entry.score}</span>
+                `;
+                leaderboardList.appendChild(li);
+            });
+        };
+
+        const saveScore = async (score) => {
+            if (!isAuthReady || !userId) {
+                console.warn("Not authenticated to save score.");
+                return;
+            }
+
+            try {
+                const leaderboardCollection = collection(db, LEADERBOARD_PATH);
+                await addDoc(leaderboardCollection, {
+                    userId: userId,
+                    score: score,
+                    timestamp: Timestamp.now()
+                });
+                console.log("Score saved successfully!");
+            } catch (error) {
+                console.error("Error saving score:", error);
+            }
+        };
+        
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth > 800 ? 800 : window.innerWidth * 0.9;
+            canvas.height = canvas.width * 0.75;
+            state.player.x = canvas.width / 2;
+            state.player.y = canvas.height / 2;
+            ctx.font = '24px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Re-create background elements on resize
+            createBackgroundElements();
+        };
+
+        const gameStart = () => {
+            state.game.running = true;
+            state.game.score = 0;
+            state.game.difficulty = 1;
+            state.asteroids = [];
+            state.game.lastUpdateTime = performance.now();
+            gameMessages.style.display = 'none';
+            resizeCanvas();
+
+            // Spawn a bunch of asteroids to get the game started
+            for (let i = 0; i < 15; i++) {
+                createAsteroid();
+            }
+
+            animate();
+        };
+
+        const gameOver = () => {
+            state.game.running = false;
+            messageHeader.textContent = "Game Over";
+            messageBody.textContent = `Your final score: ${state.game.score}`;
+            gameMessages.style.display = 'flex';
+            saveScore(state.game.score);
+        };
+
+        const showStartScreen = () => {
+            messageHeader.textContent = "Asteroid Avoidance";
+            messageBody.textContent = `Use Arrow Keys or Swipe to move. Avoid the asteroids and survive!`;
+            gameMessages.style.display = 'flex';
+        };
+
+        const drawPlayer = () => {
+            ctx.save();
+            ctx.translate(state.player.x, state.player.y);
+            ctx.rotate(state.player.angle);
+
+            // Check if player is moving to draw thrusters
+            const isMoving = state.keys['ArrowUp'] || state.keys['w'] || state.keys['ArrowDown'] || state.keys['s'] ||
+                             state.keys['ArrowLeft'] || state.keys['a'] || state.keys['ArrowRight'] || state.keys['d'];
+            
+            if (isMoving) {
+                // Thruster effect
+                const pulse = Math.sin(thrusterPulse * 0.5) * 5 + 10;
+                ctx.beginPath();
+                ctx.moveTo(-state.player.size * 0.6, state.player.size * 1.5);
+                ctx.lineTo(state.player.size * 0.6, state.player.size * 1.5);
+                ctx.lineTo(0, state.player.size * 1.5 + pulse);
+                ctx.fillStyle = `rgba(255, 150, 0, ${0.5 + Math.sin(thrusterPulse) * 0.2})`;
+                ctx.fill();
+                thrusterPulse += 0.2;
+            }
+            
+            // Spaceship body
+            ctx.beginPath();
+            ctx.moveTo(0, -state.player.size * 1.2);
+            ctx.lineTo(-state.player.size, state.player.size * 1.2);
+            ctx.lineTo(state.player.size, state.player.size * 1.2);
+            ctx.closePath();
+            
+            const gradient = ctx.createLinearGradient(0, -state.player.size * 1.2, 0, state.player.size * 1.2);
+            gradient.addColorStop(0, '#6a737d');
+            gradient.addColorStop(0.5, '#484f58');
+            gradient.addColorStop(1, '#30363d');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Cockpit
+            ctx.beginPath();
+            ctx.arc(0, -state.player.size * 0.2, state.player.size * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e80ff';
+            ctx.fill();
+
+            ctx.restore();
+        };
+
+        const createAsteroid = () => {
+            const size = Math.random() * 20 + 10;
+            const side = Math.floor(Math.random() * 4);
+            let x, y, dx, dy;
+
+            switch (side) {
+                case 0: // Top
+                    x = Math.random() * canvas.width;
+                    y = -size;
+                    dx = (Math.random() - 0.5) * 3;
+                    dy = Math.random() * 2 + 1;
+                    break;
+                case 1: // Right
+                    x = canvas.width + size;
+                    y = Math.random() * canvas.height;
+                    dx = -(Math.random() * 2 + 1);
+                    dy = (Math.random() - 0.5) * 3;
+                    break;
+                case 2: // Bottom
+                    x = Math.random() * canvas.width;
+                    y = canvas.height + size;
+                    dx = (Math.random() - 0.5) * 3;
+                    dy = -(Math.random() * 2 + 1);
+                    break;
+                case 3: // Left
+                    x = -size;
+                    y = Math.random() * canvas.height;
+                    dx = Math.random() * 2 + 1;
+                    dy = (Math.random() - 0.5) * 3;
+                    break;
+            }
+
+            // Increase speed based on difficulty
+            const speedMultiplier = 1 + (state.game.difficulty - 1) * 0.2;
+            dx *= speedMultiplier;
+            dy *= speedMultiplier;
+            
+            state.asteroids.push({
+                x, y, size, dx, dy,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.05
+            });
+        };
+
+        // Function to draw a jagged asteroid shape with shading
+        const drawJaggedAsteroid = (x, y, size, rotation) => {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+
+            const numPoints = Math.floor(Math.random() * 5) + 8;
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const angle = (i / numPoints) * Math.PI * 2;
+                const variance = Math.random() * 0.4 + 0.8;
+                const px = size * Math.cos(angle) * variance;
+                const py = size * Math.sin(angle) * variance;
+                points.push({ x: px, y: py });
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            
+            const gradient = ctx.createRadialGradient(
+                -size * 0.5, -size * 0.5, size * 0.1, // Inner circle
+                0, 0, size * 1.5 // Outer circle
+            );
+            gradient.addColorStop(0, '#8b949e');
+            gradient.addColorStop(0.5, '#484f58');
+            gradient.addColorStop(1, '#30363d');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#30363d';
+            ctx.stroke();
+            
+            ctx.restore();
+        };
+        
+        const createBackgroundElements = () => {
+            // Create a field of stars
+            state.stars = [];
+            const numStars = 200;
+            for (let i = 0; i < numStars; i++) {
+                state.stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5,
+                    opacity: Math.random()
+                });
+            }
+
+            // Create Sun
+            state.sun.x = Math.random() * (canvas.width * 2) - canvas.width;
+            state.sun.y = Math.random() * (canvas.height * 2) - canvas.height;
+            state.sun.size = Math.random() * 200 + 100;
+
+            // Create Black Hole
+            state.blackHole.x = Math.random() * canvas.width;
+            state.blackHole.y = Math.random() * canvas.height;
+            state.blackHole.size = Math.random() * 30 + 30;
+
+            // Create Nebula
+            state.nebula.x = Math.random() * canvas.width;
+            state.nebula.y = Math.random() * canvas.height;
+            state.nebula.size = canvas.width * 0.7;
+            state.nebula.speedX = (Math.random() - 0.5) * 0.2;
+            state.nebula.speedY = (Math.random() - 0.5) * 0.2;
+        };
+
+        const drawBackground = (playerMoveX, playerMoveY) => {
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw nebula
+            const nebulaGradient = ctx.createRadialGradient(
+                state.nebula.x, state.nebula.y, 0,
+                state.nebula.x, state.nebula.y, state.nebula.size
+            );
+            nebulaGradient.addColorStop(0, 'rgba(109, 64, 185, 0.2)');
+            nebulaGradient.addColorStop(0.5, 'rgba(185, 64, 109, 0.1)');
+            nebulaGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = nebulaGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update nebula position
+            state.nebula.x += state.nebula.speedX;
+            state.nebula.y += state.nebula.speedY;
+
+            // Draw sun
+            const sunGradient = ctx.createRadialGradient(
+                state.sun.x, state.sun.y, state.sun.size * 0.1,
+                state.sun.x, state.sun.y, state.sun.size
+            );
+            sunGradient.addColorStop(0, 'rgba(255, 255, 150, 0.8)');
+            sunGradient.addColorStop(0.5, 'rgba(255, 200, 50, 0.4)');
+            sunGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            ctx.fillStyle = sunGradient;
+            ctx.beginPath();
+            ctx.arc(state.sun.x, state.sun.y, state.sun.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw stars with parallax
+            state.stars.forEach(star => {
+                const parallaxX = (star.x + playerMoveX * 0.05); // Reduced parallax for stars
+                const parallaxY = (star.y + playerMoveY * 0.05);
+
+                // Wrap stars around the screen
+                star.x = (parallaxX + canvas.width) % canvas.width;
+                star.y = (parallaxY + canvas.height) % canvas.height;
+                
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+                ctx.fill();
+                
+                // Animate opacity for a twinkling effect
+                star.opacity += (Math.random() - 0.5) * 0.05;
+                if (star.opacity > 1) star.opacity = 1;
+                if (star.opacity < 0.1) star.opacity = 0.1;
+            });
+
+            // Draw black hole
+            ctx.save();
+            ctx.translate(state.blackHole.x, state.blackHole.y);
+            ctx.rotate(state.blackHole.rotation);
+            ctx.beginPath();
+            const accretionGradient = ctx.createRadialGradient(
+                0, 0, state.blackHole.size * 1.5,
+                0, 0, state.blackHole.size * 2.5
+            );
+            accretionGradient.addColorStop(0, 'rgba(255, 0, 255, 0.5)');
+            accretionGradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.3)');
+            accretionGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = accretionGradient;
+            ctx.arc(0, 0, state.blackHole.size * 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(0, 0, state.blackHole.size, 0, Math.PI * 2);
+            ctx.fillStyle = '#000';
+            ctx.fill();
+            ctx.restore();
+            state.blackHole.rotation += 0.01;
+        };
+        
+        const applyBlackHoleGravity = () => {
+            const pullStrength = 0.005; // Adjust this value to change gravity pull
+            
+            // Pull player towards black hole
+            const dx = state.blackHole.x - state.player.x;
+            const dy = state.blackHole.y - state.player.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < 300) { // Only apply gravity when within range
+                const force = pullStrength * state.blackHole.size / dist;
+                state.player.x += dx * force;
+                state.player.y += dy * force;
+            }
+
+            // Pull asteroids towards black hole
+            state.asteroids.forEach(asteroid => {
+                const dxA = state.blackHole.x - asteroid.x;
+                const dyA = state.blackHole.y - asteroid.y;
+                const distA = Math.sqrt(dxA * dxA + dyA * dyA);
+                
+                if (distA < 300) {
+                    const forceA = pullStrength * state.blackHole.size / distA;
+                    asteroid.x += dxA * forceA;
+                    asteroid.y += dyA * forceA;
+                }
+            });
+        };
+
+        const updateAsteroids = () => {
+            state.asteroids.forEach(asteroid => {
+                asteroid.x += asteroid.dx;
+                asteroid.y += asteroid.dy;
+                asteroid.rotation += asteroid.rotationSpeed;
+            });
+            state.asteroids = state.asteroids.filter(asteroid => asteroid.x > -50 && asteroid.x < canvas.width + 50 && asteroid.y > -50 && asteroid.y < canvas.height + 50);
+        };
+
+        const drawAsteroids = () => {
+            state.asteroids.forEach(asteroid => {
+                drawJaggedAsteroid(asteroid.x, asteroid.y, asteroid.size, asteroid.rotation);
+            });
+        };
+
+        const checkCollisions = () => {
+            for (const asteroid of state.asteroids) {
+                const dx = state.player.x - asteroid.x;
+                const dy = state.player.y - asteroid.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < state.player.size + asteroid.size) {
+                    gameOver();
+                    break;
+                }
+            }
+            // Check collision with black hole
+            const dxBh = state.blackHole.x - state.player.x;
+            const dyBh = state.blackHole.y - state.player.y;
+            const distBh = Math.sqrt(dxBh * dxBh + dyBh * dyBh);
+            if (distBh < state.player.size + state.blackHole.size * 0.7) {
+                gameOver();
+            }
+        };
+
+        const updatePlayerPosition = (delta) => {
+            const speed = 250; // pixels per second
+            const moveStep = speed * delta / 1000;
+            let playerMoveX = 0;
+            let playerMoveY = 0;
+
+            if (state.keys['ArrowUp'] || state.keys['w']) playerMoveY -= moveStep;
+            if (state.keys['ArrowDown'] || state.keys['s']) playerMoveY += moveStep;
+            if (state.keys['ArrowLeft'] || state.keys['a']) playerMoveX -= moveStep;
+            if (state.keys['ArrowRight'] || state.keys['d']) playerMoveX += moveStep;
+            
+            state.player.x += playerMoveX;
+            state.player.y += playerMoveY;
+
+            // Update player angle to face direction of movement
+            if (playerMoveX !== 0 || playerMoveY !== 0) {
+                state.player.angle = Math.atan2(playerMoveY, playerMoveX) + Math.PI / 2;
+            }
+
+            // Clamp player position to the canvas boundaries
+            state.player.x = Math.max(state.player.size, Math.min(canvas.width - state.player.size, state.player.x));
+            state.player.y = Math.max(state.player.size, Math.min(canvas.height - state.player.size, state.player.y));
+            
+            // Return movement for parallax
+            return { x: playerMoveX, y: playerMoveY };
+        };
+
+        const gameLoop = (timestamp) => {
+            if (!state.game.running) {
+                return;
+            }
+            const delta = timestamp - state.game.lastUpdateTime;
+            state.game.lastUpdateTime = timestamp;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const playerMovement = updatePlayerPosition(delta);
+            drawBackground(playerMovement.x, playerMovement.y);
+            
+            applyBlackHoleGravity();
+            updateAsteroids();
+            checkCollisions();
+            
+            drawPlayer();
+            drawAsteroids();
+
+            // Spawn new asteroids based on time
+            if (timestamp - state.game.lastScoreUpdate > 1000) {
+                state.game.score += 1;
+                scoreElement.textContent = state.game.score;
+                state.game.lastScoreUpdate = timestamp;
+            }
+            
+            // Increase difficulty over time
+            state.game.difficulty = 1 + Math.floor(state.game.score / 10);
+            const asteroidSpawnRate = 1000 / (state.game.difficulty * 1.5); // Increased spawn rate
+            if (state.asteroids.length < 50 && Math.random() < 1 / asteroidSpawnRate) {
+                createAsteroid();
+            }
+
+            requestAnimationFrame(gameLoop);
+        };
+
+        // Initial setup function
+        const initGame = () => {
+            // Get DOM elements here, after the page has loaded
+            canvas = document.getElementById('game-canvas');
+            ctx = canvas.getContext('2d');
+            scoreElement = document.getElementById('score');
+            gameMessages = document.getElementById('game-messages');
+            messageHeader = document.getElementById('message-header');
+            messageBody = document.getElementById('message-body');
+            startButton = document.getElementById('start-button');
+            leaderboardButton = document.getElementById('leaderboard-button');
+            leaderboardModal = document.getElementById('leaderboard-modal');
+            closeLeaderboardButton = document.getElementById('close-leaderboard');
+            
+            // Keyboard controls
+            window.addEventListener('keydown', e => state.keys[e.key] = true);
+            window.addEventListener('keyup', e => state.keys[e.key] = false);
+
+            // Touch controls
+            let touchStart = null;
+            canvas.addEventListener('touchstart', e => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                touchStart = { x: touch.clientX, y: touch.clientY };
+            });
+
+            canvas.addEventListener('touchend', e => {
+                e.preventDefault();
+                touchStart = null;
+            });
+
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                if (!touchStart) return;
+
+                const touch = e.touches[0];
+                const dx = touch.clientX - touchStart.x;
+                const dy = touch.clientY - touchStart.y;
+                touchStart = { x: touch.clientX, y: touch.clientY };
+
+                const movementThreshold = 5;
+                if (Math.abs(dx) > movementThreshold || Math.abs(dy) > movementThreshold) {
+                    const moveStep = Math.sqrt(dx * dx + dy * dy);
+                    state.player.x += dx * 0.1; // Reduced sensitivity
+                    state.player.y += dy * 0.1;
+                    // Clamp position
+                    state.player.x = Math.max(state.player.size, Math.min(canvas.width - state.player.size, state.player.x));
+                    state.player.y = Math.max(state.player.size, Math.min(canvas.height - state.player.size, state.player.y));
+                }
+            });
+            
+            // Leaderboard button listeners
+            leaderboardButton.addEventListener('click', () => {
+                leaderboardModal.style.display = 'block';
+            });
+            closeLeaderboardButton.addEventListener('click', () => {
+                leaderboardModal.style.display = 'none';
+            });
+
+            showStartScreen();
+            resizeCanvas();
+            startButton.addEventListener('click', gameStart);
+            initFirebase();
+        };
+
+        // Start the game initialization when the window loads
+        window.addEventListener('load', initGame);
+        
+        const animate = () => requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
