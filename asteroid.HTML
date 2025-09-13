@@ -12,7 +12,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            min-height: 10vh;
             margin: 0;
             overflow: hidden;
             flex-direction: column;
@@ -190,8 +190,14 @@
             cursor: pointer;
             transition: background-color 0.3s, transform 0.1s;
         }
+
+        .spaceship-option.locked {
+            filter: grayscale(100%);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         
-        .spaceship-option:hover {
+        .spaceship-option:hover:not(.locked) {
             background-color: #1f2732;
             transform: translateY(-2px);
         }
@@ -204,6 +210,27 @@
         .spaceship-option h4 {
             margin: 0;
             font-size: 1.1rem;
+        }
+
+        #boss-health-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 400px;
+            height: 20px;
+            background-color: #484f58;
+            border-radius: 5px;
+            border: 1px solid #30363d;
+            overflow: hidden;
+            display: none; /* Initially hidden */
+        }
+        
+        #boss-health-fill {
+            height: 100%;
+            background-color: #e3302a;
+            transition: width 0.3s ease-in-out;
         }
         
         @media (max-width: 600px) {
@@ -234,6 +261,9 @@
             <div id="user-id-box" class="info-box">
                 User ID: <span id="user-id"></span>
             </div>
+        </div>
+        <div id="boss-health-bar">
+            <div id="boss-health-fill"></div>
         </div>
         <canvas id="game-canvas"></canvas>
         <div id="game-messages" class="modal-overlay">
@@ -269,7 +299,7 @@
         // Firebase CDN imports for Firestore and Auth
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, Timestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         setLogLevel('debug');
         
@@ -282,8 +312,13 @@
         let isAuthReady = false;
 
         // --- Game Logic ---
-        let canvas, ctx, scoreElement, gameMessages, messageHeader, messageBody, startButton, leaderboardButton, leaderboardModal, closeLeaderboardButton, spaceshipButton, spaceshipModal, closeSpaceshipModal;
+        const BOSS_INTERVAL = 50; // The boss appears every 50 points
+        const PROJECTILE_COOLDOWN = 300; // Cooldown in milliseconds
+        const BOSS_HEALTH = 200;
+
+        let canvas, ctx, scoreElement, gameMessages, messageHeader, messageBody, startButton, leaderboardButton, leaderboardModal, closeLeaderboardButton, spaceshipButton, spaceshipModal, closeSpaceshipModal, bossHealthBar, bossHealthFill;
         let thrusterPulse = 0;
+        let lastProjectileTime = 0;
 
         const state = {
             game: {
@@ -292,6 +327,8 @@
                 lastUpdateTime: 0,
                 lastScoreUpdate: 0,
                 difficulty: 1,
+                isBossFight: false,
+                bossSpawnedThisInterval: false,
             },
             player: {
                 x: 0,
@@ -299,8 +336,11 @@
                 size: 15,
                 angle: 0,
                 shipType: 'scout', // Default ship type
+                unlockedShips: ['scout'] // Initially only 'scout' is unlocked
             },
             asteroids: [],
+            projectiles: [],
+            boss: null,
             stars: [],
             nebula: { x: 0, y: 0, size: 0, speedX: 0, speedY: 0 },
             sun: { x: 0, y: 0, size: 0 },
@@ -325,6 +365,7 @@
                 document.getElementById('user-id').textContent = userId;
                 isAuthReady = true;
                 
+                await loadUnlockedShips();
                 console.log("Firebase initialized. User ID:", userId);
                 setupLeaderboardListener();
             } catch (error) {
@@ -338,6 +379,7 @@
         };
 
         const LEADERBOARD_PATH = `/artifacts/${appId}/public/data/leaderboard`;
+        const USER_DATA_PATH = `/artifacts/${appId}/users/${userId}/gameData`;
 
         const setupLeaderboardListener = () => {
             if (!isAuthReady) return;
@@ -360,20 +402,6 @@
             });
         };
         
-        const updateLeaderboardUI = (leaderboard) => {
-            const leaderboardList = document.getElementById('leaderboard-list');
-            leaderboardList.innerHTML = '';
-            leaderboard.forEach((entry, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span class="leaderboard-rank">${index + 1}.</span>
-                    <span class="leaderboard-user">${entry.userId}</span>
-                    <span class="leaderboard-score">${entry.score}</span>
-                `;
-                leaderboardList.appendChild(li);
-            });
-        };
-
         const saveScore = async (score) => {
             if (!isAuthReady || !userId) {
                 console.warn("Not authenticated to save score.");
@@ -392,7 +420,62 @@
                 console.error("Error saving score:", error);
             }
         };
-        
+
+        const loadUnlockedShips = async () => {
+            if (!isAuthReady) return;
+            try {
+                const docRef = doc(db, USER_DATA_PATH, 'ships');
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    state.player.unlockedShips = docSnap.data().unlockedShips;
+                    console.log("Unlocked ships loaded:", state.player.unlockedShips);
+                } else {
+                    console.log("No unlocked ships found, starting with defaults.");
+                }
+            } catch (error) {
+                console.error("Error loading unlocked ships:", error);
+            }
+            generateSpaceshipOptions();
+        };
+
+        const saveUnlockedShips = async () => {
+            if (!isAuthReady || !userId) {
+                console.warn("Not authenticated to save data.");
+                return;
+            }
+            try {
+                const docRef = doc(db, USER_DATA_PATH, 'ships');
+                await setDoc(docRef, { unlockedShips: state.player.unlockedShips });
+                console.log("Unlocked ships saved successfully!");
+            } catch (error) {
+                console.error("Error saving unlocked ships:", error);
+            }
+        };
+
+        const unlockShip = (shipType) => {
+            if (!state.player.unlockedShips.includes(shipType)) {
+                state.player.unlockedShips.push(shipType);
+                saveUnlockedShips();
+                generateSpaceshipOptions();
+                showMessage(`New Ship Unlocked: ${SPACESHIPS[shipType].name}`, 'Check out your new ship in the menu!', true);
+            }
+        };
+
+        const updateLeaderboardUI = (leaderboard) => {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            leaderboardList.innerHTML = '';
+            leaderboard.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="leaderboard-rank">${index + 1}.</span>
+                    <span class="leaderboard-user">${entry.userId}</span>
+                    <span class="leaderboard-score">${entry.score}</span>
+                `;
+                leaderboardList.appendChild(li);
+            });
+        };
+
         const resizeCanvas = () => {
             canvas.width = window.innerWidth > 800 ? 800 : window.innerWidth * 0.9;
             canvas.height = canvas.width * 0.75;
@@ -411,7 +494,12 @@
             state.game.score = 0;
             state.game.difficulty = 1;
             state.asteroids = [];
+            state.projectiles = [];
+            state.boss = null;
+            state.game.isBossFight = false;
+            state.game.bossSpawnedThisInterval = false;
             state.game.lastUpdateTime = performance.now();
+            bossHealthBar.style.display = 'none';
             gameMessages.style.display = 'none';
             resizeCanvas();
 
@@ -431,10 +519,19 @@
             saveScore(state.game.score);
         };
 
-        const showStartScreen = () => {
-            messageHeader.textContent = "Asteroid Avoidance";
-            messageBody.textContent = `Use Arrow Keys or Swipe to move. Avoid the asteroids and survive!`;
+        const showMessage = (header, body, canRestart) => {
+            messageHeader.textContent = header;
+            messageBody.textContent = body;
             gameMessages.style.display = 'flex';
+            if (canRestart) {
+                startButton.style.display = 'block';
+            } else {
+                startButton.style.display = 'none';
+            }
+        };
+
+        const showStartScreen = () => {
+            showMessage("Asteroid Avoidance", "Use Arrow Keys or Swipe to move. Press SPACE to fire. Avoid the asteroids and survive!", true);
         };
 
         // --- Spaceship Drawing Functions ---
@@ -680,6 +777,32 @@
             ctx.fill();
         };
 
+        const drawTitanShip = (size) => {
+            // A heavily armored, triangular boss ship
+            ctx.beginPath();
+            ctx.moveTo(0, -size * 2);
+            ctx.lineTo(-size * 2.5, size * 2);
+            ctx.lineTo(size * 2.5, size * 2);
+            ctx.closePath();
+            const gradient = ctx.createLinearGradient(0, -size, 0, size * 2);
+            gradient.addColorStop(0, '#59698d');
+            gradient.addColorStop(0.5, '#404c64');
+            gradient.addColorStop(1, '#2f384a');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Cockpit
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.5, size * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e80ff';
+            ctx.fill();
+            
+            // Side cannons
+            ctx.fillStyle = '#8b949e';
+            ctx.fillRect(-size * 2.5, size * 1.5, size, size * 0.5);
+            ctx.fillRect(size * 1.5, size * 1.5, size, size * 0.5);
+        };
+        
         const SPACESHIPS = {
             scout: { name: 'Scout', draw: drawScoutShip, size: 15 },
             aegis: { name: 'Aegis', draw: drawAegisShip, size: 18 },
@@ -687,7 +810,8 @@
             valkyrie: { name: 'Valkyrie', draw: drawValkyrieShip, size: 17 },
             falcon: { name: 'Falcon', draw: drawFalconShip, size: 16 },
             phoenix: { name: 'Phoenix', draw: drawPhoenixShip, size: 18 },
-            mantis: { name: 'Mantis', draw: drawMantisShip, size: 17 }
+            mantis: { name: 'Mantis', draw: drawMantisShip, size: 17 },
+            titan: { name: 'Titan', draw: drawTitanShip, size: 40 }
         };
 
         const drawPlayer = () => {
@@ -763,7 +887,7 @@
         };
 
         // Function to draw a jagged asteroid shape with shading
-        const drawJaggedAsteroid = (x, y, size, rotation) => {
+        const drawJaggedAsteroid = (x, y, rotation, size) => {
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(rotation);
@@ -801,7 +925,7 @@
             
             ctx.restore();
         };
-        
+
         const createBackgroundElements = () => {
             // Create a field of stars
             state.stars = [];
@@ -1010,24 +1134,156 @@
                 drawJaggedAsteroid(asteroid.x, asteroid.y, asteroid.rotation, asteroid.size);
             });
         };
+        
+        const fireProjectile = () => {
+            const currentTime = performance.now();
+            if (currentTime - lastProjectileTime > PROJECTILE_COOLDOWN) {
+                lastProjectileTime = currentTime;
+                
+                // Calculate projectile starting position and velocity
+                const projectileSize = 5;
+                const playerShip = SPACESHIPS[state.player.shipType];
+                const startX = state.player.x + (playerShip.size * 1.5) * Math.sin(state.player.angle);
+                const startY = state.player.y - (playerShip.size * 1.5) * Math.cos(state.player.angle);
+                const speed = 10;
+                const dx = speed * Math.sin(state.player.angle);
+                const dy = -speed * Math.cos(state.player.angle);
 
+                state.projectiles.push({ x: startX, y: startY, dx, dy, size: projectileSize });
+            }
+        };
+
+        const updateProjectiles = () => {
+            state.projectiles.forEach(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+            });
+            // Remove off-screen projectiles
+            state.projectiles = state.projectiles.filter(p => p.x > 0 && p.x < canvas.width && p.y > 0 && p.y < canvas.height);
+        };
+
+        const drawProjectiles = () => {
+            state.projectiles.forEach(p => {
+                ctx.fillStyle = '#ff6b3d';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        };
+
+        const spawnBoss = () => {
+            state.game.isBossFight = true;
+            state.game.bossSpawnedThisInterval = true;
+            state.asteroids = [];
+            state.projectiles = [];
+            
+            // Spawn the boss at a random position off-screen
+            const side = Math.floor(Math.random() * 4);
+            let x, y, dx, dy;
+            const size = SPACESHIPS['titan'].size;
+            
+            switch(side) {
+                case 0: x = Math.random() * canvas.width; y = -size * 2; break;
+                case 1: x = canvas.width + size * 2; y = Math.random() * canvas.height; break;
+                case 2: x = Math.random() * canvas.width; y = canvas.height + size * 2; break;
+                case 3: x = -size * 2; y = Math.random() * canvas.height; break;
+            }
+            
+            state.boss = {
+                x, y,
+                dx: 0, dy: 0,
+                size,
+                health: BOSS_HEALTH,
+                maxHealth: BOSS_HEALTH,
+                rotation: 0,
+                rotationSpeed: 0.01,
+                hitRadius: size * 1.5
+            };
+
+            bossHealthBar.style.display = 'block';
+        };
+        
+        const updateBoss = () => {
+            if (!state.boss) return;
+
+            // Simple movement: move towards the player
+            const dx = state.player.x - state.boss.x;
+            const dy = state.player.y - state.boss.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            const speed = 1 + (state.game.difficulty - 1) * 0.1;
+            state.boss.dx = (dx / dist) * speed;
+            state.boss.dy = (dy / dist) * speed;
+
+            state.boss.x += state.boss.dx;
+            state.boss.y += state.boss.dy;
+            state.boss.rotation += state.boss.rotationSpeed;
+        };
+
+        const drawBoss = () => {
+            if (!state.boss) return;
+            
+            const size = state.boss.size;
+            ctx.save();
+            ctx.translate(state.boss.x, state.boss.y);
+            ctx.rotate(state.boss.rotation);
+            SPACESHIPS['titan'].draw(size);
+            ctx.restore();
+
+            // Update health bar
+            const healthPercentage = state.boss.health / state.boss.maxHealth;
+            bossHealthFill.style.width = `${healthPercentage * 100}%`;
+        };
+        
         const checkCollisions = () => {
             const playerSize = SPACESHIPS[state.player.shipType].size;
-            for (const asteroid of state.asteroids) {
-                const dx = state.player.x - asteroid.x;
-                const dy = state.player.y - asteroid.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < playerSize + asteroid.size) {
+            
+            if (state.game.isBossFight) {
+                // Collision with boss
+                const dxBoss = state.player.x - state.boss.x;
+                const dyBoss = state.player.y - state.boss.y;
+                const distBoss = Math.sqrt(dxBoss * dxBoss + dyBoss * dyBoss);
+                if (distBoss < playerSize + state.boss.hitRadius) {
                     gameOver();
-                    break;
                 }
-            }
-            // Check collision with black hole
-            const dxBh = state.blackHole.x - state.player.x;
-            const dyBh = state.blackHole.y - state.player.y;
-            const distBh = Math.sqrt(dxBh * dxBh + dyBh * dyBh);
-            if (distBh < playerSize + state.blackHole.size * 0.7) {
-                gameOver();
+
+                // Projectile collision with boss
+                state.projectiles.forEach((p, pIndex) => {
+                    const dx = state.boss.x - p.x;
+                    const dy = state.boss.y - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < state.boss.hitRadius) {
+                        state.boss.health -= 10;
+                        state.projectiles.splice(pIndex, 1);
+                        if (state.boss.health <= 0) {
+                            // Boss defeated!
+                            const newShip = 'falcon'; // Let's unlock the Falcon ship
+                            unlockShip(newShip);
+                            state.game.isBossFight = false;
+                            state.boss = null;
+                            state.projectiles = [];
+                            bossHealthBar.style.display = 'none';
+                            showMessage("BOSS DEFEATED!", "You've unlocked a new ship! The game will now resume.", true);
+                        }
+                    }
+                });
+            } else {
+                for (const asteroid of state.asteroids) {
+                    const dx = state.player.x - asteroid.x;
+                    const dy = state.player.y - asteroid.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < playerSize + asteroid.size) {
+                        gameOver();
+                        break;
+                    }
+                }
+                // Check collision with black hole
+                const dxBh = state.blackHole.x - state.player.x;
+                const dyBh = state.blackHole.y - state.player.y;
+                const distBh = Math.sqrt(dxBh * dxBh + dyBh * dyBh);
+                if (distBh < playerSize + state.blackHole.size * 0.7) {
+                    gameOver();
+                }
             }
         };
 
@@ -1070,11 +1326,23 @@
             drawBackground(playerMovement.x, playerMovement.y);
             
             applyBlackHoleGravity();
-            updateAsteroids();
             checkCollisions();
             
             drawPlayer();
-            drawAsteroids();
+
+            if (state.game.isBossFight) {
+                updateBoss();
+                drawBoss();
+                updateProjectiles();
+                drawProjectiles();
+            } else {
+                updateAsteroids();
+                drawAsteroids();
+                // Check if it's time for a boss fight
+                if (state.game.score > 0 && state.game.score % BOSS_INTERVAL === 0 && !state.game.bossSpawnedThisInterval) {
+                    spawnBoss();
+                }
+            }
 
             // Spawn new asteroids based on time
             if (timestamp - state.game.lastScoreUpdate > 1000) {
@@ -1083,10 +1351,15 @@
                 state.game.lastScoreUpdate = timestamp;
             }
             
+            // Reset boss spawned flag after passing the threshold
+            if (state.game.score % BOSS_INTERVAL !== 0) {
+                state.game.bossSpawnedThisInterval = false;
+            }
+
             // Increase difficulty over time
             state.game.difficulty = 1 + Math.floor(state.game.score / 10);
             const asteroidSpawnRate = 1000 / (state.game.difficulty * 1.5); // Increased spawn rate
-            if (state.asteroids.length < 50 && Math.random() < 1 / asteroidSpawnRate) {
+            if (!state.game.isBossFight && state.asteroids.length < 50 && Math.random() < 1 / asteroidSpawnRate) {
                 createAsteroid();
             }
 
@@ -1101,6 +1374,12 @@
                 const option = document.createElement('div');
                 option.classList.add('spaceship-option');
                 option.setAttribute('data-ship-type', key);
+                
+                const isUnlocked = state.player.unlockedShips.includes(key);
+                if (!isUnlocked) {
+                    option.classList.add('locked');
+                }
+
                 option.innerHTML = `<h4>${ship.name}</h4>`;
 
                 const canvasPreview = document.createElement('canvas');
@@ -1112,21 +1391,32 @@
                 option.appendChild(canvasPreview);
 
                 option.addEventListener('click', () => {
-                    state.player.shipType = key;
-                    state.player.size = ship.size;
-                    const allOptions = document.querySelectorAll('.spaceship-option');
-                    allOptions.forEach(opt => opt.classList.remove('selected'));
-                    option.classList.add('selected');
-                    spaceshipModal.style.display = 'none';
-                    if (state.game.running) {
-                        animate();
+                    if (isUnlocked) {
+                        state.player.shipType = key;
+                        state.player.size = ship.size;
+                        const allOptions = document.querySelectorAll('.spaceship-option');
+                        allOptions.forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                        spaceshipModal.style.display = 'none';
+                        if (state.game.running) {
+                            animate();
+                        }
+                    } else {
+                        // User clicked a locked ship
+                        showMessage("LOCKED", "You must defeat the boss to unlock this ship.", false);
                     }
                 });
 
                 grid.appendChild(option);
             });
             // Select the current ship on load
-            document.querySelector(`[data-ship-type="${state.player.shipType}"]`).classList.add('selected');
+            const currentShipOption = document.querySelector(`[data-ship-type="${state.player.shipType}"]`);
+            if (currentShipOption) {
+                 currentShipOption.classList.add('selected');
+            } else {
+                 // Fallback if the selected ship is somehow missing from options
+                 document.querySelector(`[data-ship-type="scout"]`).classList.add('selected');
+            }
         };
 
         // Initial setup function
@@ -1145,9 +1435,18 @@
             spaceshipButton = document.getElementById('spaceship-button');
             spaceshipModal = document.getElementById('spaceship-modal');
             closeSpaceshipModal = document.getElementById('close-spaceship-modal');
+            bossHealthBar = document.getElementById('boss-health-bar');
+            bossHealthFill = document.getElementById('boss-health-fill');
+            
+            startButton.addEventListener('click', gameStart);
             
             // Keyboard controls
-            window.addEventListener('keydown', e => state.keys[e.key] = true);
+            window.addEventListener('keydown', e => {
+                state.keys[e.key] = true;
+                if (e.key === ' ' && state.game.running) {
+                    fireProjectile();
+                }
+            });
             window.addEventListener('keyup', e => state.keys[e.key] = false);
 
             // Touch controls
@@ -1190,7 +1489,7 @@
             });
             closeLeaderboardButton.addEventListener('click', () => {
                 leaderboardModal.style.display = 'none';
-                if (state.game.score > 0) { // Resume only if game has started
+                if (!state.game.running) { 
                     state.game.running = true;
                     animate();
                 }
@@ -1202,7 +1501,7 @@
             });
             closeSpaceshipModal.addEventListener('click', () => {
                 spaceshipModal.style.display = 'none';
-                if (state.game.score > 0) { // Resume only if game has started
+                if (!state.game.running) { 
                     state.game.running = true;
                     animate();
                 }
@@ -1210,8 +1509,6 @@
 
             showStartScreen();
             resizeCanvas();
-            generateSpaceshipOptions();
-            startButton.addEventListener('click', gameStart);
             initFirebase();
         };
 
