@@ -60,7 +60,7 @@
             text-align: left;
         }
         
-        #leaderboard-button {
+        .button {
             background-color: #30363d;
             color: #c9d1d9;
             padding: 10px 20px;
@@ -72,11 +72,11 @@
             transition: background-color 0.3s, transform 0.1s;
         }
         
-        #leaderboard-button:hover {
+        .button:hover {
             background-color: #484f58;
         }
 
-        .button {
+        .start-button {
             background-color: #238636;
             color: #fff;
             padding: 12px 24px;
@@ -89,64 +89,46 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
         
-        .button:hover {
+        .start-button:hover {
             background-color: #2ea043;
             transform: translateY(-2px);
         }
 
-        .button:active {
+        .start-button:active {
             transform: translateY(0);
         }
 
-        #game-messages {
+        .modal-overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 30px 40px;
-            border-radius: 12px;
-            text-align: center;
-            z-index: 10;
             display: none;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            z-index: 10;
         }
 
-        #game-messages h2 {
-            margin-top: 0;
-            font-size: 2rem;
-        }
-
-        #game-messages p {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
-
-        #leaderboard-modal {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        .modal {
             background-color: #161b22;
             border: 1px solid #30363d;
             border-radius: 12px;
             padding: 20px;
             width: 80%;
-            max-width: 400px;
+            max-width: 500px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-            z-index: 20;
-            display: none;
+            text-align: center;
+            position: relative;
         }
         
-        #leaderboard-modal h3 {
+        .modal h3 {
             margin-top: 0;
-            text-align: center;
             font-size: 1.5rem;
         }
 
-        #close-leaderboard {
+        .close-button {
             position: absolute;
             top: 10px;
             right: 15px;
@@ -157,13 +139,13 @@
             background: none;
         }
         
-        #leaderboard-list {
+        .leaderboard-list, .spaceship-list {
             list-style-type: none;
             padding: 0;
             margin: 0;
         }
 
-        #leaderboard-list li {
+        .leaderboard-list li {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -171,7 +153,7 @@
             border-bottom: 1px solid #30363d;
         }
 
-        #leaderboard-list li:last-child {
+        .leaderboard-list li:last-child {
             border-bottom: none;
         }
 
@@ -194,6 +176,36 @@
             color: #fff;
         }
 
+        .spaceship-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .spaceship-option {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        
+        .spaceship-option:hover {
+            background-color: #1f2732;
+            transform: translateY(-2px);
+        }
+
+        .spaceship-option.selected {
+            border-color: #2ea043;
+            box-shadow: 0 0 8px #2ea043;
+        }
+        
+        .spaceship-option h4 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
         @media (max-width: 600px) {
             .ui-panel {
                 flex-direction: column;
@@ -205,6 +217,9 @@
             #user-id-box {
                 text-align: center;
             }
+            .spaceship-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -214,24 +229,39 @@
             <div class="info-box">
                 Score: <span id="score">0</span>
             </div>
-            <button id="leaderboard-button">Show Leaderboard</button>
+            <button id="spaceship-button" class="button">Menu</button>
+            <button id="leaderboard-button" class="button">Show Leaderboard</button>
             <div id="user-id-box" class="info-box">
                 User ID: <span id="user-id"></span>
             </div>
         </div>
         <canvas id="game-canvas"></canvas>
-        <div id="game-messages">
-            <h2 id="message-header"></h2>
-            <p id="message-body"></p>
-            <button id="start-button" class="button">Start Game</button>
+        <div id="game-messages" class="modal-overlay">
+            <div class="modal">
+                <h2 id="message-header"></h2>
+                <p id="message-body"></p>
+                <button id="start-button" class="start-button">Start Game</button>
+            </div>
         </div>
         
-        <div id="leaderboard-modal">
-            <button id="close-leaderboard">X</button>
-            <h3>Leaderboard</h3>
-            <ul id="leaderboard-list">
-                <!-- Leaderboard entries will be added here by JS -->
-            </ul>
+        <div id="leaderboard-modal" class="modal-overlay">
+            <div class="modal">
+                <button id="close-leaderboard" class="close-button">X</button>
+                <h3>Leaderboard</h3>
+                <ul id="leaderboard-list">
+                    <!-- Leaderboard entries will be added here by JS -->
+                </ul>
+            </div>
+        </div>
+        
+        <div id="spaceship-modal" class="modal-overlay">
+            <div class="modal">
+                <button id="close-spaceship-modal" class="close-button">X</button>
+                <h3>Choose Your Spaceship</h3>
+                <div id="spaceship-grid" class="spaceship-grid">
+                    <!-- Spaceship options will be dynamically generated here -->
+                </div>
+            </div>
         </div>
     </div>
     
@@ -252,7 +282,7 @@
         let isAuthReady = false;
 
         // --- Game Logic ---
-        let canvas, ctx, scoreElement, gameMessages, messageHeader, messageBody, startButton, leaderboardButton, leaderboardModal, closeLeaderboardButton;
+        let canvas, ctx, scoreElement, gameMessages, messageHeader, messageBody, startButton, leaderboardButton, leaderboardModal, closeLeaderboardButton, spaceshipButton, spaceshipModal, closeSpaceshipModal;
         let thrusterPulse = 0;
 
         const state = {
@@ -267,8 +297,8 @@
                 x: 0,
                 y: 0,
                 size: 15,
-                angle: 0, // New property for player rotation
-                rotationSpeed: 0,
+                angle: 0,
+                shipType: 'scout', // Default ship type
             },
             asteroids: [],
             stars: [],
@@ -406,7 +436,129 @@
             gameMessages.style.display = 'flex';
         };
 
+        // --- Spaceship Drawing Functions ---
+        const drawScoutShip = (size) => {
+            // Spaceship body
+            ctx.beginPath();
+            ctx.moveTo(0, -size * 1.2);
+            ctx.lineTo(-size, size * 1.2);
+            ctx.lineTo(size, size * 1.2);
+            ctx.closePath();
+            
+            const gradient = ctx.createLinearGradient(0, -size * 1.2, 0, size * 1.2);
+            gradient.addColorStop(0, '#6a737d');
+            gradient.addColorStop(0.5, '#484f58');
+            gradient.addColorStop(1, '#30363d');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Cockpit
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.2, size * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e80ff';
+            ctx.fill();
+        };
+
+        const drawAegisShip = (size) => {
+            // Main body
+            ctx.beginPath();
+            ctx.rect(-size, -size, size * 2, size * 2);
+            ctx.fillStyle = '#9e7c53';
+            ctx.fill();
+
+            // Cockpit
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e80ff';
+            ctx.fill();
+
+            // Thrusters
+            ctx.beginPath();
+            ctx.rect(-size * 0.8, size, size * 0.6, size * 0.5);
+            ctx.rect(size * 0.2, size, size * 0.6, size * 0.5);
+            ctx.fillStyle = '#484f58';
+            ctx.fill();
+        };
+
+        const drawViperShip = (size) => {
+             // Main body
+             ctx.beginPath();
+             ctx.moveTo(0, -size * 1.5);
+             ctx.lineTo(-size, size * 1.5);
+             ctx.lineTo(size, size * 1.5);
+             ctx.closePath();
+             ctx.fillStyle = '#55825d';
+             ctx.fill();
+ 
+             // Wings
+             ctx.beginPath();
+             ctx.moveTo(-size, 0);
+             ctx.lineTo(-size * 2.5, size * 0.5);
+             ctx.lineTo(-size, size);
+             ctx.closePath();
+             ctx.fillStyle = '#6a737d';
+             ctx.fill();
+ 
+             ctx.beginPath();
+             ctx.moveTo(size, 0);
+             ctx.lineTo(size * 2.5, size * 0.5);
+             ctx.lineTo(size, size);
+             ctx.closePath();
+             ctx.fillStyle = '#6a737d';
+             ctx.fill();
+ 
+             // Cockpit
+             ctx.beginPath();
+             ctx.arc(0, -size * 0.5, size * 0.4, 0, Math.PI * 2);
+             ctx.fillStyle = '#1e80ff';
+             ctx.fill();
+        };
+
+        const drawValkyrieShip = (size) => {
+            // Main body
+            ctx.beginPath();
+            ctx.moveTo(0, -size * 1.5);
+            ctx.lineTo(-size * 0.5, size * 0.5);
+            ctx.lineTo(size * 0.5, size * 0.5);
+            ctx.closePath();
+            ctx.fillStyle = '#8a5a9e';
+            ctx.fill();
+
+            // Wings
+            ctx.beginPath();
+            ctx.moveTo(-size * 0.5, size * 0.5);
+            ctx.lineTo(-size * 2, size * 1.5);
+            ctx.lineTo(-size * 1.5, size * 0.5);
+            ctx.closePath();
+            ctx.fillStyle = '#6a737d';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(size * 0.5, size * 0.5);
+            ctx.lineTo(size * 2, size * 1.5);
+            ctx.lineTo(size * 1.5, size * 0.5);
+            ctx.closePath();
+            ctx.fillStyle = '#6a737d';
+            ctx.fill();
+
+            // Cockpit
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.5, size * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e80ff';
+            ctx.fill();
+        };
+
+        const SPACESHIPS = {
+            scout: { name: 'Scout', draw: drawScoutShip, size: 15 },
+            aegis: { name: 'Aegis', draw: drawAegisShip, size: 18 },
+            viper: { name: 'Viper', draw: drawViperShip, size: 16 },
+            valkyrie: { name: 'Valkyrie', draw: drawValkyrieShip, size: 17 }
+        };
+
         const drawPlayer = () => {
+            const ship = SPACESHIPS[state.player.shipType];
+            const size = ship.size;
+
             ctx.save();
             ctx.translate(state.player.x, state.player.y);
             ctx.rotate(state.player.angle);
@@ -419,34 +571,15 @@
                 // Thruster effect
                 const pulse = Math.sin(thrusterPulse * 0.5) * 5 + 10;
                 ctx.beginPath();
-                ctx.moveTo(-state.player.size * 0.6, state.player.size * 1.5);
-                ctx.lineTo(state.player.size * 0.6, state.player.size * 1.5);
-                ctx.lineTo(0, state.player.size * 1.5 + pulse);
+                ctx.moveTo(-size * 0.6, size * 1.5);
+                ctx.lineTo(size * 0.6, size * 1.5);
+                ctx.lineTo(0, size * 1.5 + pulse);
                 ctx.fillStyle = `rgba(255, 150, 0, ${0.5 + Math.sin(thrusterPulse) * 0.2})`;
                 ctx.fill();
                 thrusterPulse += 0.2;
             }
             
-            // Spaceship body
-            ctx.beginPath();
-            ctx.moveTo(0, -state.player.size * 1.2);
-            ctx.lineTo(-state.player.size, state.player.size * 1.2);
-            ctx.lineTo(state.player.size, state.player.size * 1.2);
-            ctx.closePath();
-            
-            const gradient = ctx.createLinearGradient(0, -state.player.size * 1.2, 0, state.player.size * 1.2);
-            gradient.addColorStop(0, '#6a737d');
-            gradient.addColorStop(0.5, '#484f58');
-            gradient.addColorStop(1, '#30363d');
-            ctx.fillStyle = gradient;
-            ctx.fill();
-
-            // Cockpit
-            ctx.beginPath();
-            ctx.arc(0, -state.player.size * 0.2, state.player.size * 0.4, 0, Math.PI * 2);
-            ctx.fillStyle = '#1e80ff';
-            ctx.fill();
-
+            ship.draw(size);
             ctx.restore();
         };
 
@@ -685,11 +818,12 @@
         };
 
         const checkCollisions = () => {
+            const playerSize = SPACESHIPS[state.player.shipType].size;
             for (const asteroid of state.asteroids) {
                 const dx = state.player.x - asteroid.x;
                 const dy = state.player.y - asteroid.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < state.player.size + asteroid.size) {
+                if (distance < playerSize + asteroid.size) {
                     gameOver();
                     break;
                 }
@@ -698,7 +832,7 @@
             const dxBh = state.blackHole.x - state.player.x;
             const dyBh = state.blackHole.y - state.player.y;
             const distBh = Math.sqrt(dxBh * dxBh + dyBh * dyBh);
-            if (distBh < state.player.size + state.blackHole.size * 0.7) {
+            if (distBh < playerSize + state.blackHole.size * 0.7) {
                 gameOver();
             }
         };
@@ -765,6 +899,42 @@
             requestAnimationFrame(gameLoop);
         };
 
+        const generateSpaceshipOptions = () => {
+            const grid = document.getElementById('spaceship-grid');
+            grid.innerHTML = '';
+            Object.keys(SPACESHIPS).forEach(key => {
+                const ship = SPACESHIPS[key];
+                const option = document.createElement('div');
+                option.classList.add('spaceship-option');
+                option.setAttribute('data-ship-type', key);
+                option.innerHTML = `<h4>${ship.name}</h4>`;
+
+                const canvasPreview = document.createElement('canvas');
+                canvasPreview.width = 100;
+                canvasPreview.height = 100;
+                const ctxPreview = canvasPreview.getContext('2d');
+                ctxPreview.translate(50, 50);
+                ship.draw(15);
+                option.appendChild(canvasPreview);
+
+                option.addEventListener('click', () => {
+                    state.player.shipType = key;
+                    state.player.size = ship.size;
+                    const allOptions = document.querySelectorAll('.spaceship-option');
+                    allOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    spaceshipModal.style.display = 'none';
+                    if (state.game.running) {
+                        animate();
+                    }
+                });
+
+                grid.appendChild(option);
+            });
+            // Select the current ship on load
+            document.querySelector(`[data-ship-type="${state.player.shipType}"]`).classList.add('selected');
+        };
+
         // Initial setup function
         const initGame = () => {
             // Get DOM elements here, after the page has loaded
@@ -778,6 +948,9 @@
             leaderboardButton = document.getElementById('leaderboard-button');
             leaderboardModal = document.getElementById('leaderboard-modal');
             closeLeaderboardButton = document.getElementById('close-leaderboard');
+            spaceshipButton = document.getElementById('spaceship-button');
+            spaceshipModal = document.getElementById('spaceship-modal');
+            closeSpaceshipModal = document.getElementById('close-spaceship-modal');
             
             // Keyboard controls
             window.addEventListener('keydown', e => state.keys[e.key] = true);
@@ -816,16 +989,34 @@
                 }
             });
             
-            // Leaderboard button listeners
+            // UI button listeners
             leaderboardButton.addEventListener('click', () => {
-                leaderboardModal.style.display = 'block';
+                leaderboardModal.style.display = 'flex';
+                state.game.running = false; // Pause game
             });
             closeLeaderboardButton.addEventListener('click', () => {
                 leaderboardModal.style.display = 'none';
+                if (state.game.score > 0) { // Resume only if game has started
+                    state.game.running = true;
+                    animate();
+                }
+            });
+
+            spaceshipButton.addEventListener('click', () => {
+                spaceshipModal.style.display = 'flex';
+                state.game.running = false; // Pause game
+            });
+            closeSpaceshipModal.addEventListener('click', () => {
+                spaceshipModal.style.display = 'none';
+                if (state.game.score > 0) { // Resume only if game has started
+                    state.game.running = true;
+                    animate();
+                }
             });
 
             showStartScreen();
             resizeCanvas();
+            generateSpaceshipOptions();
             startButton.addEventListener('click', gameStart);
             initFirebase();
         };
