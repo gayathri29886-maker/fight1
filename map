@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Placement Challenge</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #game-container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            gap: 20px;
+        }
+
+        #map-area {
+            flex-grow: 1;
+            background-color: #fff;
+            border: 2px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            padding: 10px;
+            /* Placeholder for the map's aspect ratio */
+            height: 600px;
+        }
+
+        #state-list {
+            width: 200px;
+            padding: 15px;
+            background-color: #eef;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .state-piece {
+            padding: 8px;
+            margin-bottom: 5px;
+            background-color: #3f51b5;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+            cursor: grab;
+            transition: transform 0.1s;
+        }
+
+        .state-piece.dragging {
+            opacity: 0.7;
+            cursor: grabbing;
+        }
+
+        #score-board {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* SVG Styles */
+        #us-map {
+            width: 100%;
+            height: 100%;
+            border: 1px dashed #333; /* Outline of the map boundary */
+        }
+
+        /* Target area for the states */
+        .target-state {
+            fill: #ddd; /* Color of the empty state slot */
+            stroke: #555;
+            stroke-width: 1;
+            transition: fill 0.3s;
+        }
+
+        /* Placed state styles */
+        .placed-state {
+            fill: #4CAF50; /* Green for correctly placed */
+            stroke: #388E3C;
+        }
+
+        /* Helper class for the target (optional) */
+        .active-target {
+            fill: #FFEB3B !important;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌎 State Placement Challenge</h1>
+
+    <div id="score-board">
+        Score: <span id="score">0</span> | Placed: <span id="placed-count">0</span> / 50
+    </div>
+
+    <div id="game-container">
+        <div id="state-list">
+            <h2>States to Place</h2>
+        </div>
+
+        <div id="map-area">
+            <svg id="us-map" viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg">
+                <path class="target-state" id="TX" data-state="Texas" d="M784,520 L780,500 L800,480 L820,500 L784,520 Z" />
+                <path class="target-state" id="CA" data-state="California" d="M100,200 L120,250 L80,300 L60,250 L100,200 Z" />
+                <path class="target-state" id="NY" data-state="New York" d="M750,150 L770,180 L730,200 L710,170 L750,150 Z" />
+                
+                </svg>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Game Data ---
+        const ALL_STATES = [
+            { name: "Texas", abbr: "TX", target: document.getElementById('TX') },
+            { name: "California", abbr: "CA", target: document.getElementById('CA') },
+            { name: "New York", abbr: "NY", target: document.getElementById('NY') },
+            // Add all 50 states here with correct abbr and target element reference
+        ];
+
+        let score = 0;
+        let placedCount = 0;
+        let draggingState = null;
+        const STATE_LIST = document.getElementById('state-list');
+        const MAP_AREA = document.getElementById('map-area');
+        const SCORE_ELEM = document.getElementById('score');
+        const PLACED_ELEM = document.getElementById('placed-count');
+        const US_MAP_SVG = document.getElementById('us-map');
+
+        // --- 2. Initialize Game ---
+        function initializeGame() {
+            // Create draggable pieces for the states
+            ALL_STATES.forEach(state => {
+                const piece = document.createElement('div');
+                piece.className = 'state-piece';
+                piece.textContent = state.name;
+                piece.setAttribute('data-abbr', state.abbr);
+                piece.draggable = true;
+
+                // Event Listeners for drag-and-drop
+                piece.addEventListener('dragstart', handleDragStart);
+                STATE_LIST.appendChild(piece);
+            });
+
+            // Event Listeners for the drop zone
+            MAP_AREA.addEventListener('dragover', handleDragOver);
+            MAP_AREA.addEventListener('drop', handleDrop);
+        }
+
+        // --- 3. Drag Logic ---
+
+        function handleDragStart(e) {
+            draggingState = {
+                name: e.target.textContent,
+                abbr: e.target.getAttribute('data-abbr'),
+                element: e.target
+            };
+            e.target.classList.add('dragging');
+            // DataTransfer is needed for the drag to be valid, but we don't use the data itself
+            e.dataTransfer.setData('text/plain', draggingState.abbr);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault(); // This is crucial to allow a drop
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        // --- 4. Drop Logic ---
+
+        function handleDrop(e) {
+            e.preventDefault();
+            if (!draggingState) return;
+
+            const droppedAbbr = draggingState.abbr;
+            const targetElement = e.target; 
+            
+            // Check if dropped *over* a map target element
+            if (targetElement.classList.contains('target-state')) {
+                const targetAbbr = targetElement.id;
+
+                if (droppedAbbr === targetAbbr) {
+                    // **SUCCESS!**
+                    console.log(`${draggingState.name} placed correctly!`);
+                    updateScore(100);
+                    placeState(draggingState.element, targetElement);
+                } else {
+                    // **FAILURE!** - Dropped on the wrong state
+                    console.log(`Incorrect! ${draggingState.name} is not ${targetElement.getAttribute('data-state')}.`);
+                    updateScore(-20); // Penalty
+                }
+            } else {
+                // **FAILURE!** - Dropped on the main map background
+                console.log("Dropped outside a target area.");
+                updateScore(-5); // Minor penalty
+            }
+
+            draggingState.element.classList.remove('dragging');
+            draggingState = null;
+            checkGameStatus();
+        }
+
+        // --- 5. Game Update Functions ---
+
+        function placeState(pieceElement, targetElement) {
+            // 1. Visually lock the state in the map
+            targetElement.classList.remove('target-state');
+            targetElement.classList.add('placed-state');
+
+            // 2. Remove the state piece from the list
+            pieceElement.remove();
+
+            // 3. Update counter
+            placedCount++;
+            PLACED_ELEM.textContent = placedCount;
+        }
+
+        function updateScore(points) {
+            score += points;
+            SCORE_ELEM.textContent = score;
+        }
+
+        function checkGameStatus() {
+            if (placedCount === ALL_STATES.length) {
+                alert(`Game Over! You placed all states with a score of ${score}!`);
+            }
+        }
+
+        // Start the game!
+        initializeGame();
+    </script>
+</body>
+</html>
