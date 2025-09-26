@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>State Placement Challenge</title>
+    <title>Realistic State Placement Game</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f4f4f9;
+            background-color: #e8f5e9; /* Light Green Background */
             margin: 0;
             padding: 20px;
         }
@@ -19,221 +19,220 @@
             display: flex;
             width: 90%;
             max-width: 1200px;
-            gap: 20px;
+            gap: 30px;
+        }
+
+        #state-bank {
+            width: 200px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            max-height: 700px;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
 
         #map-area {
             flex-grow: 1;
-            background-color: #fff;
-            border: 2px solid #ccc;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #f0f0f0;
+            border: 3px dashed #a5d6a7; /* Dashed border for the blank map */
+            border-radius: 10px;
             position: relative;
-            padding: 10px;
-            /* Placeholder for the map's aspect ratio */
-            height: 600px;
-        }
-
-        #state-list {
-            width: 200px;
-            padding: 15px;
-            background-color: #eef;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            max-height: 600px;
-            overflow-y: auto;
+            min-height: 700px; /* Set a fixed height for the map container */
+            overflow: hidden;
         }
 
         .state-piece {
-            padding: 8px;
-            margin-bottom: 5px;
-            background-color: #3f51b5;
+            position: absolute; /* Crucial for realistic dragging */
+            padding: 10px 15px;
+            background-color: #66bb6a; /* Green for drag pieces */
             color: white;
-            border-radius: 4px;
+            border-radius: 5px;
             text-align: center;
             cursor: grab;
-            transition: transform 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: opacity 0.1s, transform 0.1s;
+            z-index: 10;
         }
 
         .state-piece.dragging {
             opacity: 0.7;
             cursor: grabbing;
+            transform: scale(1.1);
+            z-index: 100; /* Bring to front while dragging */
         }
-
-        #score-board {
-            margin-bottom: 20px;
-            font-size: 1.2em;
+        
+        .state-piece.placed {
+            cursor: default;
+            z-index: 5;
+            background-color: #388e3c; /* Darker green when locked */
+        }
+        
+        #feedback {
+            font-size: 1.5em;
             font-weight: bold;
-            color: #333;
+            color: #d32f2f;
+            text-align: center;
+            margin-bottom: 15px;
         }
-
-        /* SVG Styles */
-        #us-map {
-            width: 100%;
-            height: 100%;
-            border: 1px dashed #333; /* Outline of the map boundary */
-        }
-
-        /* Target area for the states */
-        .target-state {
-            fill: #ddd; /* Color of the empty state slot */
-            stroke: #555;
-            stroke-width: 1;
-            transition: fill 0.3s;
-        }
-
-        /* Placed state styles */
-        .placed-state {
-            fill: #4CAF50; /* Green for correctly placed */
-            stroke: #388E3C;
-        }
-
-        /* Helper class for the target (optional) */
-        .active-target {
-            fill: #FFEB3B !important;
-        }
+        
     </style>
 </head>
 <body>
 
-    <h1>🌎 State Placement Challenge</h1>
-
+    <div id="feedback">Place the states in the correct location.</div>
     <div id="score-board">
-        Score: <span id="score">0</span> | Placed: <span id="placed-count">0</span> / 50
+        Score: <span id="score">0</span>
     </div>
 
     <div id="game-container">
-        <div id="state-list">
-            <h2>States to Place</h2>
-        </div>
+        <div id="state-bank">
+            <h2>State Bank</h2>
+            </div>
 
         <div id="map-area">
-            <svg id="us-map" viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg">
-                <path class="target-state" id="TX" data-state="Texas" d="M784,520 L780,500 L800,480 L820,500 L784,520 Z" />
-                <path class="target-state" id="CA" data-state="California" d="M100,200 L120,250 L80,300 L60,250 L100,200 Z" />
-                <path class="target-state" id="NY" data-state="New York" d="M750,150 L770,180 L730,200 L710,170 L750,150 Z" />
-                
-                </svg>
-        </div>
+            </div>
     </div>
 
     <script>
-        // --- 1. Game Data ---
-        const ALL_STATES = [
-            { name: "Texas", abbr: "TX", target: document.getElementById('TX') },
-            { name: "California", abbr: "CA", target: document.getElementById('CA') },
-            { name: "New York", abbr: "NY", target: document.getElementById('NY') },
-            // Add all 50 states here with correct abbr and target element reference
-        ];
+        // --- 1. CONFIGURATION & TARGET COORDINATES ---
+        
+        // Target Map Size for Calibration (corresponds to map-area min-height)
+        const MAP_WIDTH = 1000; // Conceptual width for aspect ratio
+        const MAP_HEIGHT = 700; // Matches CSS min-height
+        const ACCURACY_THRESHOLD = 50; // Max distance (in pixels) for a correct placement
 
+        // Define the correct absolute center points (X, Y) relative to the MAP_AREA (0,0)
+        // These coordinates are crucial for "realism" and must be calibrated for a full map SVG.
+        const TARGET_POSITIONS = {
+            "Texas": { x: 700, y: 550 },     // Southwest/Gulf Coast
+            "California": { x: 150, y: 350 },  // West Coast
+            "New York": { x: 800, y: 150 },    // Northeast
+            "Florida": { x: 900, y: 600 },    // Southeast
+            "Michigan": { x: 650, y: 250 },    // Midwest (Example of another state)
+        };
+        
         let score = 0;
-        let placedCount = 0;
-        let draggingState = null;
-        const STATE_LIST = document.getElementById('state-list');
-        const MAP_AREA = document.getElementById('map-area');
+        let activePiece = null;
+        let mapAreaRect = null;
+        const BANK_ELEMENT = document.getElementById('state-bank');
+        const MAP_ELEMENT = document.getElementById('map-area');
         const SCORE_ELEM = document.getElementById('score');
-        const PLACED_ELEM = document.getElementById('placed-count');
-        const US_MAP_SVG = document.getElementById('us-map');
+        const FEEDBACK_ELEM = document.getElementById('feedback');
 
-        // --- 2. Initialize Game ---
-        function initializeGame() {
-            // Create draggable pieces for the states
-            ALL_STATES.forEach(state => {
-                const piece = document.createElement('div');
-                piece.className = 'state-piece';
-                piece.textContent = state.name;
-                piece.setAttribute('data-abbr', state.abbr);
-                piece.draggable = true;
+        // --- 2. Utility Functions ---
 
-                // Event Listeners for drag-and-drop
-                piece.addEventListener('dragstart', handleDragStart);
-                STATE_LIST.appendChild(piece);
-            });
-
-            // Event Listeners for the drop zone
-            MAP_AREA.addEventListener('dragover', handleDragOver);
-            MAP_AREA.addEventListener('drop', handleDrop);
+        // Function to calculate distance between two points
+        function getDistance(p1, p2) {
+            return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
         }
 
-        // --- 3. Drag Logic ---
+        // --- 3. Drag and Drop Implementation (Mouse Events) ---
 
-        function handleDragStart(e) {
-            draggingState = {
-                name: e.target.textContent,
-                abbr: e.target.getAttribute('data-abbr'),
-                element: e.target
-            };
-            e.target.classList.add('dragging');
-            // DataTransfer is needed for the drag to be valid, but we don't use the data itself
-            e.dataTransfer.setData('text/plain', draggingState.abbr);
-            e.dataTransfer.effectAllowed = 'move';
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault(); // This is crucial to allow a drop
-            e.dataTransfer.dropEffect = 'move';
-        }
-
-        // --- 4. Drop Logic ---
-
-        function handleDrop(e) {
-            e.preventDefault();
-            if (!draggingState) return;
-
-            const droppedAbbr = draggingState.abbr;
-            const targetElement = e.target; 
+        function startDrag(e) {
+            activePiece = e.target;
+            activePiece.classList.add('dragging');
             
-            // Check if dropped *over* a map target element
-            if (targetElement.classList.contains('target-state')) {
-                const targetAbbr = targetElement.id;
+            // Get the current boundaries of the map area
+            mapAreaRect = MAP_ELEMENT.getBoundingClientRect();
 
-                if (droppedAbbr === targetAbbr) {
-                    // **SUCCESS!**
-                    console.log(`${draggingState.name} placed correctly!`);
+            // Set the initial offset to prevent the piece from "jumping" to the mouse corner
+            let initialX = e.clientX - activePiece.getBoundingClientRect().left;
+            let initialY = e.clientY - activePiece.getBoundingClientRect().top;
+            activePiece.dataset.offsetX = initialX;
+            activePiece.dataset.offsetY = initialY;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', drop);
+        }
+
+        function drag(e) {
+            if (!activePiece) return;
+
+            // Calculate new position based on mouse position and initial offset
+            let newLeft = e.clientX - mapAreaRect.left - activePiece.dataset.offsetX;
+            let newTop = e.clientY - mapAreaRect.top - activePiece.dataset.offsetY;
+
+            // Keep the piece confined to the map area for better UX
+            newLeft = Math.max(0, Math.min(newLeft, mapAreaRect.width - activePiece.offsetWidth));
+            newTop = Math.max(0, Math.min(newTop, mapAreaRect.height - activePiece.offsetHeight));
+
+            activePiece.style.left = newLeft + 'px';
+            activePiece.style.top = newTop + 'px';
+        }
+
+        function drop(e) {
+            if (!activePiece) return;
+
+            activePiece.classList.remove('dragging');
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', drop);
+
+            // --- VALIDATION LOGIC ---
+            
+            // 1. Get the center point of the dropped piece relative to the map container
+            const droppedPieceRect = activePiece.getBoundingClientRect();
+            const pieceCenterX = (droppedPieceRect.left + droppedPieceRect.right) / 2 - mapAreaRect.left;
+            const pieceCenterY = (droppedPieceRect.top + droppedPieceRect.bottom) / 2 - mapAreaRect.top;
+            
+            const stateName = activePiece.textContent;
+            const targetPos = TARGET_POSITIONS[stateName];
+            
+            if (targetPos) {
+                const distance = getDistance(
+                    { x: pieceCenterX, y: pieceCenterY }, 
+                    targetPos
+                );
+
+                if (distance <= ACCURACY_THRESHOLD) {
+                    // **SUCCESS: Placed Correctly!**
+                    FEEDBACK_ELEM.textContent = `${stateName} placed accurately!`;
+                    activePiece.classList.add('placed');
+                    activePiece.removeEventListener('mousedown', startDrag); // Lock the piece
+
+                    // Snap to the precise target center point (for clean visual lock)
+                    activePiece.style.left = (targetPos.x - activePiece.offsetWidth / 2) + 'px';
+                    activePiece.style.top = (targetPos.y - activePiece.offsetHeight / 2) + 'px';
+
                     updateScore(100);
-                    placeState(draggingState.element, targetElement);
+                    MAP_ELEMENT.appendChild(activePiece); // Move from bank to map
                 } else {
-                    // **FAILURE!** - Dropped on the wrong state
-                    console.log(`Incorrect! ${draggingState.name} is not ${targetElement.getAttribute('data-state')}.`);
-                    updateScore(-20); // Penalty
+                    // **FAILURE: Too far!**
+                    FEEDBACK_ELEM.textContent = `${stateName} placement is too far. Try again!`;
+                    updateScore(-20);
+                    // Piece flies back to the bank (reset its position)
+                    activePiece.style.left = '';
+                    activePiece.style.top = '';
+                    BANK_ELEMENT.appendChild(activePiece);
                 }
             } else {
-                // **FAILURE!** - Dropped on the main map background
-                console.log("Dropped outside a target area.");
-                updateScore(-5); // Minor penalty
+                 // **Shouldn't happen with correct setup**
+                 FEEDBACK_ELEM.textContent = `Error: No target defined for ${stateName}.`;
             }
 
-            draggingState.element.classList.remove('dragging');
-            draggingState = null;
-            checkGameStatus();
+            activePiece = null;
         }
-
-        // --- 5. Game Update Functions ---
-
-        function placeState(pieceElement, targetElement) {
-            // 1. Visually lock the state in the map
-            targetElement.classList.remove('target-state');
-            targetElement.classList.add('placed-state');
-
-            // 2. Remove the state piece from the list
-            pieceElement.remove();
-
-            // 3. Update counter
-            placedCount++;
-            PLACED_ELEM.textContent = placedCount;
-        }
-
+        
         function updateScore(points) {
             score += points;
             SCORE_ELEM.textContent = score;
         }
 
-        function checkGameStatus() {
-            if (placedCount === ALL_STATES.length) {
-                alert(`Game Over! You placed all states with a score of ${score}!`);
-            }
+        // --- 4. Initialization ---
+
+        function initializeGame() {
+            // Create draggable pieces for all states in the configuration
+            Object.keys(TARGET_POSITIONS).forEach(stateName => {
+                const piece = document.createElement('div');
+                piece.className = 'state-piece';
+                piece.textContent = stateName;
+                piece.addEventListener('mousedown', startDrag); // Use mousedown for realistic drag
+
+                BANK_ELEMENT.appendChild(piece);
+            });
         }
 
-        // Start the game!
         initializeGame();
     </script>
 </body>
