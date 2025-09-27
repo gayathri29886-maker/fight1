@@ -3,237 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realistic State Placement Game</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #e8f5e9; /* Light Green Background */
-            margin: 0;
-            padding: 20px;
-        }
-
-        #game-container {
-            display: flex;
-            width: 90%;
-            max-width: 1200px;
-            gap: 30px;
-        }
-
-        #state-bank {
-            width: 200px;
-            padding: 15px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-            max-height: 700px;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        #map-area {
-            flex-grow: 1;
-            background-color: #f0f0f0;
-            border: 3px dashed #a5d6a7; /* Dashed border for the blank map */
-            border-radius: 10px;
-            position: relative;
-            min-height: 700px; /* Set a fixed height for the map container */
-            overflow: hidden;
-        }
-
-        .state-piece {
-            position: absolute; /* Crucial for realistic dragging */
-            padding: 10px 15px;
-            background-color: #66bb6a; /* Green for drag pieces */
-            color: white;
-            border-radius: 5px;
-            text-align: center;
-            cursor: grab;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: opacity 0.1s, transform 0.1s;
-            z-index: 10;
-        }
-
-        .state-piece.dragging {
-            opacity: 0.7;
-            cursor: grabbing;
-            transform: scale(1.1);
-            z-index: 100; /* Bring to front while dragging */
-        }
-        
-        .state-piece.placed {
-            cursor: default;
-            z-index: 5;
-            background-color: #388e3c; /* Darker green when locked */
-        }
-        
-        #feedback {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #d32f2f;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-    </style>
+    <title>Pair Up! HTML Matcher Game</title>
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
 
-    <div id="feedback">Place the states in the correct location.</div>
-    <div id="score-board">
-        Score: <span id="score">0</span>
+    <header>
+        <h1>🔬 Subject Matcher: Pair Up!</h1>
+        <p>Click two cards to find a matching term and definition.</p>
+    </header>
+
+    <div id="game-info">
+        <p>Matches Found: <span id="matches-count">0</span> / 4</p>
+        <p>Total Clicks: <span id="click-count">0</span></p>
+        <button onclick="startGame()">Start New Game</button>
     </div>
 
-    <div id="game-container">
-        <div id="state-bank">
-            <h2>State Bank</h2>
-            </div>
+    <div id="game-board">
+        </div>
+    
+    <script src="script.js"></script>
 
-        <div id="map-area">
-            </div>
-    </div>
-
-    <script>
-        // --- 1. CONFIGURATION & TARGET COORDINATES ---
-        
-        // Target Map Size for Calibration (corresponds to map-area min-height)
-        const MAP_WIDTH = 1000; // Conceptual width for aspect ratio
-        const MAP_HEIGHT = 700; // Matches CSS min-height
-        const ACCURACY_THRESHOLD = 50; // Max distance (in pixels) for a correct placement
-
-        // Define the correct absolute center points (X, Y) relative to the MAP_AREA (0,0)
-        // These coordinates are crucial for "realism" and must be calibrated for a full map SVG.
-        const TARGET_POSITIONS = {
-            "Texas": { x: 700, y: 550 },     // Southwest/Gulf Coast
-            "California": { x: 150, y: 350 },  // West Coast
-            "New York": { x: 800, y: 150 },    // Northeast
-            "Florida": { x: 900, y: 600 },    // Southeast
-            "Michigan": { x: 650, y: 250 },    // Midwest (Example of another state)
-        };
-        
-        let score = 0;
-        let activePiece = null;
-        let mapAreaRect = null;
-        const BANK_ELEMENT = document.getElementById('state-bank');
-        const MAP_ELEMENT = document.getElementById('map-area');
-        const SCORE_ELEM = document.getElementById('score');
-        const FEEDBACK_ELEM = document.getElementById('feedback');
-
-        // --- 2. Utility Functions ---
-
-        // Function to calculate distance between two points
-        function getDistance(p1, p2) {
-            return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-        }
-
-        // --- 3. Drag and Drop Implementation (Mouse Events) ---
-
-        function startDrag(e) {
-            activePiece = e.target;
-            activePiece.classList.add('dragging');
-            
-            // Get the current boundaries of the map area
-            mapAreaRect = MAP_ELEMENT.getBoundingClientRect();
-
-            // Set the initial offset to prevent the piece from "jumping" to the mouse corner
-            let initialX = e.clientX - activePiece.getBoundingClientRect().left;
-            let initialY = e.clientY - activePiece.getBoundingClientRect().top;
-            activePiece.dataset.offsetX = initialX;
-            activePiece.dataset.offsetY = initialY;
-            
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', drop);
-        }
-
-        function drag(e) {
-            if (!activePiece) return;
-
-            // Calculate new position based on mouse position and initial offset
-            let newLeft = e.clientX - mapAreaRect.left - activePiece.dataset.offsetX;
-            let newTop = e.clientY - mapAreaRect.top - activePiece.dataset.offsetY;
-
-            // Keep the piece confined to the map area for better UX
-            newLeft = Math.max(0, Math.min(newLeft, mapAreaRect.width - activePiece.offsetWidth));
-            newTop = Math.max(0, Math.min(newTop, mapAreaRect.height - activePiece.offsetHeight));
-
-            activePiece.style.left = newLeft + 'px';
-            activePiece.style.top = newTop + 'px';
-        }
-
-        function drop(e) {
-            if (!activePiece) return;
-
-            activePiece.classList.remove('dragging');
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', drop);
-
-            // --- VALIDATION LOGIC ---
-            
-            // 1. Get the center point of the dropped piece relative to the map container
-            const droppedPieceRect = activePiece.getBoundingClientRect();
-            const pieceCenterX = (droppedPieceRect.left + droppedPieceRect.right) / 2 - mapAreaRect.left;
-            const pieceCenterY = (droppedPieceRect.top + droppedPieceRect.bottom) / 2 - mapAreaRect.top;
-            
-            const stateName = activePiece.textContent;
-            const targetPos = TARGET_POSITIONS[stateName];
-            
-            if (targetPos) {
-                const distance = getDistance(
-                    { x: pieceCenterX, y: pieceCenterY }, 
-                    targetPos
-                );
-
-                if (distance <= ACCURACY_THRESHOLD) {
-                    // **SUCCESS: Placed Correctly!**
-                    FEEDBACK_ELEM.textContent = `${stateName} placed accurately!`;
-                    activePiece.classList.add('placed');
-                    activePiece.removeEventListener('mousedown', startDrag); // Lock the piece
-
-                    // Snap to the precise target center point (for clean visual lock)
-                    activePiece.style.left = (targetPos.x - activePiece.offsetWidth / 2) + 'px';
-                    activePiece.style.top = (targetPos.y - activePiece.offsetHeight / 2) + 'px';
-
-                    updateScore(100);
-                    MAP_ELEMENT.appendChild(activePiece); // Move from bank to map
-                } else {
-                    // **FAILURE: Too far!**
-                    FEEDBACK_ELEM.textContent = `${stateName} placement is too far. Try again!`;
-                    updateScore(-20);
-                    // Piece flies back to the bank (reset its position)
-                    activePiece.style.left = '';
-                    activePiece.style.top = '';
-                    BANK_ELEMENT.appendChild(activePiece);
-                }
-            } else {
-                 // **Shouldn't happen with correct setup**
-                 FEEDBACK_ELEM.textContent = `Error: No target defined for ${stateName}.`;
-            }
-
-            activePiece = null;
-        }
-        
-        function updateScore(points) {
-            score += points;
-            SCORE_ELEM.textContent = score;
-        }
-
-        // --- 4. Initialization ---
-
-        function initializeGame() {
-            // Create draggable pieces for all states in the configuration
-            Object.keys(TARGET_POSITIONS).forEach(stateName => {
-                const piece = document.createElement('div');
-                piece.className = 'state-piece';
-                piece.textContent = stateName;
-                piece.addEventListener('mousedown', startDrag); // Use mousedown for realistic drag
-
-                BANK_ELEMENT.appendChild(piece);
-            });
-        }
-
-        initializeGame();
-    </script>
 </body>
 </html>
