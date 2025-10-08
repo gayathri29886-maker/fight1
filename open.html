@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Safe Place Puzzle</title>
+    <style>
+        /* Basic CSS for the game look */
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #00ff00; /* Classic "Hacker" green text */
+            margin: 20px;
+        }
+        #game-output {
+            border: 1px solid #00ff00;
+            padding: 15px;
+            min-height: 200px;
+            margin-bottom: 15px;
+        }
+        .safe {
+            color: #ffcc00; /* Gold for safe place */
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Open World: The Old Bunker</h1>
+    <div id="game-output">
+        <p>You find yourself at the entrance of a forgotten concrete bunker. The heavy steel door is sealed shut, but there's a dusty keypad next to it.</p>
+        <p>A note is scratched into the wall above the keypad: *The first digit is three.*</p>
+        <p>You need to find the 4-digit code to reach the safe place inside.</p>
+    </div>
+
+    <label for="code-input">Enter 4-Digit Code:</label>
+    <input type="text" id="code-input" maxlength="4" placeholder="____">
+    <button onclick="checkPuzzle()">Enter</button>
+
+    <script>
+        // --- Game Logic (JavaScript) ---
+        const CORRECT_CODE = "3714";
+        const outputDiv = document.getElementById('game-output');
+        const inputField = document.getElementById('code-input');
+
+        function checkPuzzle() {
+            const playerInput = inputField.value.trim();
+
+            if (playerInput === CORRECT_CODE) {
+                // Puzzle Solved!
+                outputDiv.innerHTML = '<h2 class="safe">✅ SUCCESS!</h2>' +
+                    '<p class="safe">The heavy door grinds open, revealing a warmly lit chamber. You have reached the Safe Place! You are secure.</p>' +
+                    '<p>The open-world adventure continues...</p>';
+                inputField.disabled = true;
+            } else if (playerInput.length === 4) {
+                // Incorrect Guess
+                outputDiv.innerHTML += '<p style="color: red;">❌ Access Denied. The keypad flashes red. Try again.</p>';
+            } else {
+                // Invalid Input
+                 outputDiv.innerHTML += '<p style="color: orange;">⚠️ Please enter exactly 4 digits.</p>';
+            }
+            inputField.value = ''; // Clear input after attempt
+        }
+    </script>
+</body>
+</html>
