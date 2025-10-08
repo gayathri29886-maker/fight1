@@ -3,63 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Safe Place Puzzle</title>
+    <title>Basic 3D WebGL World</title>
     <style>
-        /* Basic CSS for the game look */
-        body {
-            font-family: 'Courier New', monospace;
-            background-color: #1a1a1a;
-            color: #00ff00; /* Classic "Hacker" green text */
-            margin: 20px;
-        }
-        #game-output {
-            border: 1px solid #00ff00;
-            padding: 15px;
-            min-height: 200px;
-            margin-bottom: 15px;
-        }
-        .safe {
-            color: #ffcc00; /* Gold for safe place */
-            font-size: 1.5em;
-        }
+        /* Hide scrollbars and set the canvas to full screen */
+        body { margin: 0; overflow: hidden; }
     </style>
 </head>
 <body>
-    <h1>Open World: The Old Bunker</h1>
-    <div id="game-output">
-        <p>You find yourself at the entrance of a forgotten concrete bunker. The heavy steel door is sealed shut, but there's a dusty keypad next to it.</p>
-        <p>A note is scratched into the wall above the keypad: *The first digit is three.*</p>
-        <p>You need to find the 4-digit code to reach the safe place inside.</p>
-    </div>
-
-    <label for="code-input">Enter 4-Digit Code:</label>
-    <input type="text" id="code-input" maxlength="4" placeholder="____">
-    <button onclick="checkPuzzle()">Enter</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // --- Game Logic (JavaScript) ---
-        const CORRECT_CODE = "3714";
-        const outputDiv = document.getElementById('game-output');
-        const inputField = document.getElementById('code-input');
+        // --- Core Three.js Setup ---
+        
+        let scene, camera, renderer, controls;
 
-        function checkPuzzle() {
-            const playerInput = inputField.value.trim();
+        function init() {
+            // 1. Scene: The container for all objects, lights, and cameras
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb); // Light blue sky
 
-            if (playerInput === CORRECT_CODE) {
-                // Puzzle Solved!
-                outputDiv.innerHTML = '<h2 class="safe">✅ SUCCESS!</h2>' +
-                    '<p class="safe">The heavy door grinds open, revealing a warmly lit chamber. You have reached the Safe Place! You are secure.</p>' +
-                    '<p>The open-world adventure continues...</p>';
-                inputField.disabled = true;
-            } else if (playerInput.length === 4) {
-                // Incorrect Guess
-                outputDiv.innerHTML += '<p style="color: red;">❌ Access Denied. The keypad flashes red. Try again.</p>';
-            } else {
-                // Invalid Input
-                 outputDiv.innerHTML += '<p style="color: orange;">⚠️ Please enter exactly 4 digits.</p>';
-            }
-            inputField.value = ''; // Clear input after attempt
+            // 2. Camera: Defines the player's viewpoint
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 10, 20); // Initial camera position (above the ground)
+
+            // 3. Renderer: Renders the scene onto the canvas
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // 4. Controls: Allow the user to look around (OrbitControls for mouse control)
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; // smooth out camera movement
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 5;
+            controls.maxDistance = 100;
+
+            // --- Open World & Puzzle Elements ---
+
+            // Ground (The "Open World" plane)
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x228b22 }); // Forest Green
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2; // Rotate flat
+            ground.position.y = 0;
+            scene.add(ground);
+            
+            // "Safe Place" - A simple structure
+            const safeGeometry = new THREE.BoxGeometry(5, 5, 5);
+            const safeMaterial = new THREE.MeshStandardMaterial({ color: 0xffa500, metalness: 0.8, roughness: 0.2 }); // Shiny Gold
+            const safePlace = new THREE.Mesh(safeGeometry, safeMaterial);
+            safePlace.position.set(10, 2.5, -10); // Position it away from the center
+            scene.add(safePlace);
+
+            // Light (for realism)
+            const ambientLight = new THREE.AmbientLight(0x404040, 3); // Soft ambient light
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xffffff, 2); // Simulating the sun
+            sunLight.position.set(50, 50, 50);
+            scene.add(sunLight);
+            
+            // --- Puzzle Logic (Conceptual) ---
+            // In a real game, you'd track the player's position and trigger an event when they are near the 'safePlace'.
+            // For this basic example, we will just show the scene.
         }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // only required if controls.enableDamping is set to true
+            renderer.render(scene, camera);
+        }
+
+        // Handle resizing the window
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        init();
+        animate();
     </script>
 </body>
 </html>
