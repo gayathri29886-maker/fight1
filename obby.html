@@ -3,650 +3,521 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Obby: Checkpoint Challenge</title>
+    <title>Realistic AI Clash (Scrolling)</title>
+    <!-- Load Tailwind CSS for utility classes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0fdf4;
+            background-color: #0d0d0d;
+            color: #f0f0f0;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
-            margin: 0;
             padding: 20px;
         }
-        #game-container {
-            background-color: #ffffff;
-            border: 8px solid #365314;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            max-width: 800px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
         canvas {
-            background-color: #e0f2fe;
-            border: 4px solid #365314;
-            border-radius: 8px;
-            touch-action: manipulation;
+            /* Stage background: subtle gradient for "realism" */
+            background: linear-gradient(to bottom, #444444 0%, #1a1a1a 80%, #0d0d0d 100%);
+            display: block;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            border-radius: 16px;
+            border: 4px solid #333;
+            max-width: 100%;
+            height: auto;
         }
-        .controls, .status {
-            margin-top: 10px;
+
+        /* Health Bar Styling */
+        .health-bar-container {
             width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .status-item {
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 700;
-        }
-        .lives {
-            background-color: #fef08a; /* Yellow for Lives */
-            color: #b45309;
-        }
-        .control-button {
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: 700;
-            background-color: #65a30d;
-            color: white;
-            border: none;
+            height: 35px;
+            background: #555;
+            border: 4px solid #222;
             border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #4d7c0f;
-            transition: background-color 0.1s, box-shadow 0.1s, transform 0.1s;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
         }
-        .control-button:active {
-            background-color: #4d7c0f;
-            box-shadow: 0 0 0 #4d7c0f;
-            transform: translateY(4px);
+
+        .health-bar {
+            height: 100%;
+            transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border-radius: 4px;
         }
-        .control-button:disabled {
-            background-color: #9ca3af;
-            box-shadow: none;
-            transform: translateY(0);
-            cursor: not-allowed;
+
+        .game-container {
+            width: 100%;
+            max-width: 900px;
         }
-        @media (max-width: 600px) {
-            .controls-mobile {
-                justify-content: space-around;
-            }
-            .status {
-                justify-content: space-around;
-            }
+
+        /* Fight Message Overlay */
+        #displayText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: 900;
+            color: #ffdd57; /* Gold Yellow */
+            text-shadow: 0 0 15px rgba(255, 204, 0, 1), 0 0 30px rgba(255, 100, 0, 0.7);
+            pointer-events: none;
+            z-index: 10;
+            user-select: none;
+        }
+
+        /* Timer Styling */
+        #timer {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 255, 255, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 255, 255, 0.4); }
         }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <h1 class="text-3xl font-bold text-center text-green-800 mb-4">Stickman Obby: Checkpoint Challenge</h1>
-    <canvas id="gameCanvas" width="700" height="450"></canvas>
+    <div class="game-container flex flex-col items-center space-y-6">
+        <h1 class="text-4xl font-extrabold text-white mb-4 uppercase tracking-widest">AI CLASH OF RECTS (SCROLLING)</h1>
 
-    <div class="status w-full">
-        <p id="message" class="text-lg font-semibold text-green-700">Go for the blue flags to save your progress!</p>
-        <div id="lives-counter" class="status-item lives">Lives: 3</div>
-    </div>
-
-    <div class="controls mt-4">
-        <button id="resetButton" class="control-button w-full" disabled>Start New Game</button>
-    </div>
-
-    <!-- Mobile Controls for touch -->
-    <div class="controls controls-mobile mt-4 sm:hidden justify-center space-x-4">
-        <button id="mobileLeft" class="control-button px-6 py-3">◀️ Left</button>
-        <button id="mobileJump" class="control-button px-6 py-3">⬆️ Jump</button>
-        <button id="mobileRight" class="control-button px-6 py-3">▶️ Right</button>
-    </div>
-</div>
-
-<script>
-    // --- Global Variables and Constants ---
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const messageElement = document.getElementById('message');
-    const resetButton = document.getElementById('resetButton');
-    const livesCounterElement = document.getElementById('lives-counter');
-
-    // Display size (fixed size for viewport)
-    const VIEWPORT_WIDTH = 700;
-    const VIEWPORT_HEIGHT = 450;
-    canvas.width = VIEWPORT_WIDTH;
-    canvas.height = VIEWPORT_HEIGHT;
-
-    // The entire game world size (extended)
-    const WORLD_WIDTH = 3500;
-    const WORLD_HEIGHT = 450;
-
-    // Game Physics Constants
-    const GRAVITY = 0.6;
-    const JUMP_FORCE = -13;
-    const SPEED = 3.5; // Adjusted speed!
-
-    // Game State
-    let isRunning = true;
-    let hasWon = false;
-    let animationFrameId;
-    let cameraX = 0;
-    
-    let LIVES = 3;
-    const INITIAL_LIVES = 3;
-    let CURRENT_CHECKPOINT = { x: 50, y: WORLD_HEIGHT - 60 }; // Start position
-
-    // Player Object
-    let PLAYER = {
-        x: CURRENT_CHECKPOINT.x,
-        y: CURRENT_CHECKPOINT.y,
-        width: 20,
-        height: 40,
-        velocityX: 0,
-        velocityY: 0,
-        onGround: false,
-        isJumping: false,
-        color: '#1e3a8a'
-    };
-
-    // Input Tracking
-    const KEYS = { left: false, right: false, jump: false };
-
-    // Platform Types
-    const PLATFORM_TYPE = {
-        NORMAL: 'normal',
-        HAZARD: 'hazard',
-        MOVING: 'moving',
-        CHECKPOINT: 'checkpoint', // New type
-        GOAL: 'goal'
-    };
-
-    // Level Definition (Extended with Checkpoints and difficulty ramp)
-    // Note: 'startX', 'endX', 'startY', 'endY', and 'speed' are used only for MOVING platforms.
-    const LEVEL = [
-        // Start Zone
-        { x: 0, y: WORLD_HEIGHT - 20, w: 250, h: 20, type: PLATFORM_TYPE.NORMAL, color: '#4ade80', reached: true },
-        
-        // Easy Jumps
-        { x: 300, y: WORLD_HEIGHT - 80, w: 100, h: 20, type: PLATFORM_TYPE.NORMAL, color: '#4ade80' },
-        { x: 450, y: WORLD_HEIGHT - 120, w: 50, h: 20, type: PLATFORM_TYPE.NORMAL, color: '#4ade80' },
-
-        // Hazard 1: Small Lava Pit
-        { x: 550, y: WORLD_HEIGHT - 20, w: 120, h: 20, type: PLATFORM_TYPE.HAZARD, color: '#ef4444' },
-
-        // --- CHECKPOINT 1 ---
-        { x: 750, y: WORLD_HEIGHT - 100, w: 150, h: 20, type: PLATFORM_TYPE.CHECKPOINT, color: '#3b82f6', isFlag: true, reached: false },
-
-        // **SECTION 2: Moving Platform Challenge** (Increased Difficulty)
-        
-        // Moving Platform 1 (Horizontal, faster)
-        { x: 1000, y: WORLD_HEIGHT - 200, w: 100, h: 20, type: PLATFORM_TYPE.MOVING, color: '#fb923c', startX: 950, endX: 1300, speed: 3, currentDir: 1 },
-
-        // Small stationary platform
-        { x: 1400, y: WORLD_HEIGHT - 200, w: 50, h: 20, type: PLATFORM_TYPE.NORMAL, color: '#4ade80' },
-        
-        // Hazard 2: Long Gap over abyss
-        
-        // Moving Platform 2 (Vertical, fast)
-        { x: 1650, y: WORLD_HEIGHT - 350, w: 60, h: 20, type: PLATFORM_TYPE.MOVING, color: '#fb923c', startY: WORLD_HEIGHT - 400, endY: WORLD_HEIGHT - 150, speed: 2, currentDir: 1, isVertical: true },
-
-        // --- CHECKPOINT 2 ---
-        { x: 1900, y: WORLD_HEIGHT - 120, w: 150, h: 20, type: PLATFORM_TYPE.CHECKPOINT, color: '#3b82f6', isFlag: true, reached: false },
-
-        // **SECTION 3: Precision Jumps and High Hazard** (Highest Difficulty)
-        
-        // Floating platform chain
-        { x: 2150, y: WORLD_HEIGHT - 180, w: 50, h: 20, type: PLATFORM_TYPE.NORMAL, color: '#4ade80' },
-        { x: 2300, y: WORLD_HEIGHT - 250, w: 50, h: 20, type: PLATFORM_TYPE.NORMAL, color: '#4ade80' },
-        
-        // High, tricky horizontal platform over lava
-        { x: 2450, y: WORLD_HEIGHT - 100, w: 200, h: 20, type: PLATFORM_TYPE.HAZARD, color: '#ef4444' },
-        
-        // Moving Platform 3 (Combining horizontal and vertical movement for maximum difficulty - must be timed perfectly)
-        { x: 2800, y: WORLD_HEIGHT - 250, w: 80, h: 20, type: PLATFORM_TYPE.MOVING, color: '#fb923c', startX: 2750, endX: 2950, startY: WORLD_HEIGHT - 300, endY: WORLD_HEIGHT - 100, speed: 1.5, currentDir: 1, isVertical: false, movePhase: 0 },
-
-        // Final safe spot before goal
-        { x: 3100, y: WORLD_HEIGHT - 180, w: 80, h: 20, type: PLATFORM_TYPE.NORMAL, color: '#4ade80' },
-        
-        // Final Goal Platform
-        { x: WORLD_WIDTH - 200, y: WORLD_HEIGHT - 180, w: 200, h: 20, type: PLATFORM_TYPE.GOAL, color: '#facc15' },
-    ];
-
-
-    // --- Game Logic Functions ---
-
-    function resetPlayerPosition() {
-        PLAYER.x = CURRENT_CHECKPOINT.x;
-        PLAYER.y = CURRENT_CHECKPOINT.y;
-        PLAYER.velocityX = 0;
-        PLAYER.velocityY = 0;
-        PLAYER.onGround = false;
-        PLAYER.isJumping = false;
-
-        // Force camera to immediately follow the new checkpoint position
-        cameraX = PLAYER.x - VIEWPORT_WIDTH / 2;
-        cameraX = Math.max(0, cameraX);
-        cameraX = Math.min(WORLD_WIDTH - VIEWPORT_WIDTH, cameraX);
-    }
-
-    function resetGame(fullReset = true) {
-        if (fullReset) {
-            LIVES = INITIAL_LIVES;
-            CURRENT_CHECKPOINT = { x: 50, y: WORLD_HEIGHT - 60 }; // Reset start position
+        <!-- Health and Timer UI -->
+        <div class="w-full flex justify-center items-center gap-6 p-4 bg-[#1a1a1a] rounded-xl shadow-2xl">
             
-            // Reset all checkpoint flags and moving platforms
-            LEVEL.forEach(p => {
-                if (p.isFlag) p.reached = false;
-                if (p.type === PLATFORM_TYPE.MOVING) {
-                    p.x = p.startX || p.x;
-                    p.y = p.startY || p.y;
-                    p.currentDir = 1;
-                    p.movePhase = 0; // Reset combined movement phase
+            <!-- Player 1 Health -->
+            <div class="flex-1 space-y-1">
+                <p class="text-sm font-bold text-red-400">PLAYER (YOU)</p>
+                <div class="health-bar-container">
+                    <div id="player1Health" class="health-bar bg-red-600" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Timer -->
+            <div id="timer" class="text-4xl font-black bg-gray-900 text-yellow-400 rounded-full h-16 w-16 flex items-center justify-center shadow-lg border-2 border-yellow-400">60</div>
+
+            <!-- AI Health -->
+            <div class="flex-1 space-y-1 text-right">
+                <p class="text-sm font-bold text-blue-400">AI (CPU)</p>
+                <div class="health-bar-container flex justify-end">
+                    <div id="player2Health" class="health-bar bg-blue-600" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Canvas Area -->
+        <div class="relative w-full aspect-[4/3] max-h-[675px]">
+            <canvas id="gameCanvas" width="900" height="675"></canvas>
+            <div id="displayText" class="hidden"></div>
+        </div>
+
+        <!-- Controls Hint -->
+        <div class="w-full text-center text-sm p-4 bg-[#1a1a1a] rounded-xl shadow-lg border border-gray-700">
+            <h3 class="font-bold text-lg mb-2 text-red-400">PLAYER CONTROLS:</h3>
+            <p>
+                Move: <span class="font-mono bg-gray-700 px-2 py-1 rounded-md shadow-inner">A</span> (Left), 
+                <span class="font-mono bg-gray-700 px-2 py-1 rounded-md shadow-inner">D</span> (Right) 
+                | Jump: <span class="font-mono bg-gray-700 px-2 py-1 rounded-md shadow-inner">W</span> 
+                | **Attack:** <span class="font-mono bg-yellow-600 text-black px-2 py-1 rounded-md shadow-lg">Spacebar</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- Setup and Constants ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const GRAVITY = 0.7;
+        const CANVAS_WIDTH = canvas.width;
+        const CANVAS_HEIGHT = canvas.height;
+        const FLOOR = CANVAS_HEIGHT - 90; // Ground position
+        const AI_ATTACK_RANGE = 120;
+        const AI_OPTIMAL_DISTANCE = 150;
+        const STUN_DURATION = 300; // 300ms of stun
+
+        // UI elements
+        const timerEl = document.getElementById('timer');
+        const player1HealthEl = document.getElementById('player1Health');
+        const player2HealthEl = document.getElementById('player2Health');
+        const displayTextEl = document.getElementById('displayText');
+
+        // Game State
+        let timer = 60;
+        let isGameOver = false;
+        let timerId;
+        
+        // Camera Object: Tracks how much the world is offset
+        const camera = {
+            offset: { x: 0, y: 0 },
+            targetX: 0,
+            smoothing: 0.08
+        };
+        
+        // The game world width is much wider than the canvas (e.g., 2.5x the viewable area)
+        const WORLD_WIDTH = CANVAS_WIDTH * 2.5; 
+        const CAMERA_DEAD_ZONE = 100; // Area where the camera stops moving near edges
+
+        // --- Utility Functions ---
+
+        function decreaseTimer() {
+            if (timer > 0) {
+                timerId = setTimeout(decreaseTimer, 1000);
+                timer--;
+                timerEl.innerHTML = timer;
+            }
+
+            if (timer === 0) {
+                determineWinner({ player1, player2 });
+            }
+        }
+
+        function rectangularCollision({ rectangle1, rectangle2 }) {
+            return (
+                rectangle1.attackBox.position.x + rectangle1.attackBox.width >= rectangle2.position.x && 
+                rectangle1.attackBox.position.x <= rectangle2.position.x + rectangle2.width && 
+                rectangle1.attackBox.position.y + rectangle1.attackBox.height >= rectangle2.position.y && 
+                rectangle1.attackBox.position.y <= rectangle2.position.y + rectangle2.height 
+            );
+        }
+
+        function determineWinner({ player1, player2 }) {
+            if (isGameOver) return; 
+            isGameOver = true;
+            displayTextEl.style.display = 'block';
+            
+            if (timerId) clearTimeout(timerId);
+
+            if (player1.health === player2.health || (player1.health > 0 && player2.health > 0 && timer === 0)) {
+                displayTextEl.innerHTML = 'TIME OUT! TIE!';
+            } else if (player1.health > player2.health) {
+                displayTextEl.innerHTML = 'PLAYER WINS!';
+                displayTextEl.style.color = '#dc2626';
+            } else if (player2.health > player1.health) {
+                displayTextEl.innerHTML = 'AI WINS!';
+                displayTextEl.style.color = '#2563eb';
+            }
+        }
+
+        // --- Camera Logic ---
+        function updateCamera(p1, p2) {
+            // 1. Calculate the center point between the two fighters
+            const centerPoint = (p1.position.x + p2.position.x) / 2;
+            
+            // 2. Determine the desired offset to center the fighters
+            // We want the center point to be drawn at CANVAS_WIDTH / 2
+            camera.targetX = centerPoint - CANVAS_WIDTH / 2;
+
+            // 3. Clamp the camera offset to the boundaries of the world
+            // The stage starts at 0 and ends at WORLD_WIDTH.
+            // Max offset: WORLD_WIDTH - CANVAS_WIDTH
+            // Min offset: 0
+            
+            const maxOffset = WORLD_WIDTH - CANVAS_WIDTH;
+            camera.targetX = Math.max(0, Math.min(camera.targetX, maxOffset));
+
+
+            // 4. Smoothly move the current camera offset towards the target
+            camera.offset.x += (camera.targetX - camera.offset.x) * camera.smoothing;
+        }
+        
+        // --- Fighter Class ---
+        class Fighter {
+            constructor({ position, velocity, color, isAI = false }) {
+                this.position = position;
+                this.velocity = velocity;
+                this.width = 50;
+                this.height = 150;
+                this.color = color;
+                this.health = 100;
+                this.isAttacking = false;
+                this.attackCooldown = false;
+                this.isAI = isAI;
+                this.isStunned = false; // NEW: Stun state
+                this.attackBox = {
+                    position: { x: this.position.x, y: this.position.y },
+                    width: 100,
+                    height: 50,
+                };
+            }
+
+            draw() {
+                // Draw fighter rectangle
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                
+                // Draw a simple head 
+                ctx.fillStyle = 'white'; 
+                ctx.fillRect(this.position.x + 5, this.position.y - 15, this.width - 10, 20);
+
+                // Draw stun indicator if stunned
+                if(this.isStunned) {
+                    ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
+                    ctx.fillText('STUN!', this.position.x, this.position.y - 40);
                 }
-            });
-        }
-        
-        resetPlayerPosition();
-        
-        isRunning = true;
-        hasWon = false;
-        messageElement.textContent = "Go for the blue flags to save your progress!";
-        messageElement.classList.remove('text-red-600', 'text-yellow-600');
-        messageElement.classList.add('text-green-700');
-        resetButton.disabled = fullReset ? true : false;
-        livesCounterElement.textContent = `Lives: ${LIVES}`;
 
+                // Draw attack box (only if attacking)
+                if (this.isAttacking) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; 
+                    ctx.fillRect(
+                        this.attackBox.position.x,
+                        this.attackBox.position.y,
+                        this.attackBox.width,
+                        this.attackBox.height
+                    );
+                }
+            }
 
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-        }
-        gameLoop();
-    }
-
-    function checkCollision(objA, objB) {
-        return objA.x < objB.x + objB.w &&
-               objA.x + objA.width > objB.x &&
-               objA.y < objB.y + objB.h &&
-               objA.y + objA.height > objB.y;
-    }
-
-    function updateMovingPlatforms() {
-        for (const platform of LEVEL) {
-            if (platform.type === PLATFORM_TYPE.MOVING) {
-                if (platform.isVertical) {
-                    // Vertical Movement
-                    platform.y += platform.speed * platform.currentDir;
-                    if (platform.currentDir === 1 && platform.y >= platform.endY) {
-                        platform.currentDir = -1;
-                        platform.y = platform.endY;
-                    } else if (platform.currentDir === -1 && platform.y <= platform.startY) {
-                        platform.currentDir = 1;
-                        platform.y = platform.startY;
-                    }
-                } else if (platform.startY !== undefined) {
-                    // Combined Horizontal/Vertical (for platform 3)
-                    platform.movePhase += platform.speed / 50; // Use a smoother phase speed
-
-                    // Horizontal sinusoidal movement
-                    platform.x = platform.startX + Math.sin(platform.movePhase) * ((platform.endX - platform.startX) / 2);
-                    
-                    // Vertical sinusoidal movement
-                    platform.y = platform.startY + Math.cos(platform.movePhase * 0.5) * ((platform.endY - platform.startY) / 2);
-                    
+            update() {
+                this.draw();
+                
+                // Only update position if not stunned
+                if (!this.isStunned) {
+                    this.position.x += this.velocity.x;
+                    this.position.y += this.velocity.y;
+                }
+                
+                // Apply gravity always
+                if (this.position.y + this.height + this.velocity.y < FLOOR) {
+                    this.velocity.y += GRAVITY;
                 } else {
-                    // Horizontal Movement
-                    platform.x += platform.speed * platform.currentDir;
-                    if (platform.currentDir === 1 && platform.x + platform.w >= platform.endX) {
-                        platform.currentDir = -1;
-                        platform.x = platform.endX - platform.w;
-                    } else if (platform.currentDir === -1 && platform.x <= platform.startX) {
-                        platform.currentDir = 1;
-                        platform.x = platform.startX;
-                    }
+                    this.velocity.y = 0;
+                    this.position.y = FLOOR - this.height; // Snap to ground
+                }
+
+                // Horizontal boundary check against WORLD_WIDTH
+                if (this.position.x < 0) {
+                    this.position.x = 0;
+                } else if (this.position.x + this.width > WORLD_WIDTH) {
+                    this.position.x = WORLD_WIDTH - this.width;
+                }
+
+                // Update attack box position
+                if (this.isAI) {
+                    this.attackBox.position.x = this.position.x - this.attackBox.width + 10;
+                } else {
+                    this.attackBox.position.x = this.position.x + this.width - 10;
+                }
+                this.attackBox.position.y = this.position.y + 50; 
+            }
+
+            attack() {
+                if (this.attackCooldown || this.isStunned) return;
+
+                this.isAttacking = true;
+                this.attackCooldown = true;
+
+                setTimeout(() => {
+                    this.isAttacking = false;
+                }, 100);
+
+                setTimeout(() => {
+                    this.attackCooldown = false;
+                }, 500); 
+            }
+
+            takeHit() {
+                if (this.isStunned) return; // Cannot be hit while stunned (prevents infinite loop)
+
+                this.health -= 15;
+                if (this.health < 0) this.health = 0;
+
+                // NEW: Set stun state and prevent movement
+                this.isStunned = true;
+                this.velocity.x = 0; // Immediately stop horizontal movement
+                setTimeout(() => {
+                    this.isStunned = false;
+                }, STUN_DURATION);
+
+
+                // Update health bar UI
+                if (this.isAI) {
+                    player2HealthEl.style.width = this.health + '%';
+                } else {
+                    player1HealthEl.style.width = this.health + '%';
                 }
             }
-        }
-    }
 
-    function updateGame() {
-        if (!isRunning || hasWon) return;
-
-        updateMovingPlatforms();
-
-        // 1. Handle Input & Gravity
-        PLAYER.velocityX = 0;
-        if (KEYS.left) { PLAYER.velocityX = -SPEED; }
-        if (KEYS.right) { PLAYER.velocityX = SPEED; }
-        PLAYER.velocityY += GRAVITY;
-
-        // 2. Handle Jumping
-        if (KEYS.jump && PLAYER.onGround && !PLAYER.isJumping) {
-            PLAYER.velocityY = JUMP_FORCE;
-            PLAYER.onGround = false;
-            PLAYER.isJumping = true;
-            setTimeout(() => PLAYER.isJumping = false, 100);
-        } else if (!KEYS.jump) {
-            PLAYER.isJumping = false;
-        }
-
-        // 3. Update Position (Tentative move)
-        PLAYER.x += PLAYER.velocityX;
-        PLAYER.y += PLAYER.velocityY;
-
-        // 4. Collision Detection and Response
-        PLAYER.onGround = false;
-
-        for (const platform of LEVEL) {
-            const playerBox = { x: PLAYER.x, y: PLAYER.y, width: PLAYER.width, height: PLAYER.height };
-
-            if (checkCollision(playerBox, platform)) {
-                
-                // HAZARD/GOAL CHECK
-                if (platform.type === PLATFORM_TYPE.HAZARD) {
-                    gameOver("Lava claimed you!", false); // Death without full reset
+            // --- AI Logic Method ---
+            AI_move(target) {
+                if (this.health <= 0 || this.isStunned) { 
+                    this.velocity.x = 0; // Stop movement if defeated or stunned
                     return;
                 }
-                if (platform.type === PLATFORM_TYPE.GOAL) {
-                    winGame();
+
+                const distance = Math.abs(target.position.x - this.position.x);
+                const direction = target.position.x < this.position.x ? -1 : 1;
+                
+                this.velocity.x = 0; // Stop movement by default
+
+                // 1. Attack Decision
+                if (distance <= AI_ATTACK_RANGE && !this.attackCooldown && this.velocity.y === 0) {
+                    this.attack();
+                    this.velocity.x = -direction * 1; 
                     return;
                 }
-                
-                // CHECKPOINT LOGIC
-                if (platform.type === PLATFORM_TYPE.CHECKPOINT && !platform.reached) {
-                    platform.reached = true;
-                    // Set checkpoint slightly above the platform
-                    CURRENT_CHECKPOINT = { x: platform.x + (platform.w / 2) - (PLAYER.width / 2), y: platform.y - PLAYER.height - 10 };
-                    messageElement.textContent = "Checkpoint Reached! Progress Saved!";
-                    messageElement.classList.remove('text-green-700');
-                    messageElement.classList.add('text-blue-600');
-                    // Briefly revert message color after a delay
-                    setTimeout(() => messageElement.classList.remove('text-blue-600'), 1500);
-                    setTimeout(() => messageElement.classList.add('text-green-700'), 1500);
+
+                // 2. Movement Decision
+                if (distance > AI_OPTIMAL_DISTANCE) {
+                    this.velocity.x = direction * 3; 
+                } else if (distance < AI_ATTACK_RANGE - 50) {
+                    this.velocity.x = -direction * 1;
                 }
 
-                // NORMAL & MOVING PLATFORM COLLISION (LANDING ONLY)
-                const previousY = PLAYER.y - PLAYER.velocityY;
-                const previousBottom = previousY + PLAYER.height;
+                // 3. Dodge/Jump Decision 
+                if (this.velocity.y === 0 && Math.random() < 0.01) {
+                    this.velocity.y = -18; 
+                }
 
-                if (previousBottom <= platform.y && PLAYER.velocityY >= 0) {
-                    PLAYER.y = platform.y - PLAYER.height; // Snap to the top
-                    PLAYER.velocityY = 0; // Stop vertical movement
-                    PLAYER.onGround = true;
-
-                    // Carry the player with the moving platform
-                    if (platform.type === PLATFORM_TYPE.MOVING) {
-                        if (!platform.isVertical) {
-                             // Apply platform's velocity (horizontal and/or sinusoidal X)
-                            if (platform.startX !== undefined && platform.endX !== undefined && platform.startY === undefined) {
-                                PLAYER.x += platform.speed * platform.currentDir;
-                            } else if (platform.startY !== undefined) {
-                                // For combined movement, approximate X shift based on movePhase derivative (simpler approach)
-                                PLAYER.x += (platform.x - previousXForMovement); 
-                            }
-                        }
-                    }
+                // 4. Defensive Jump if player is attacking
+                if (target.isAttacking && this.velocity.y === 0) {
+                    this.velocity.y = -22; 
                 }
             }
         }
-        
-        // Save current platform x before update for next frame's movement transfer calculation
-        const previousXForMovement = PLAYER.x;
-        
-        // 5. World Boundaries Check & Camera Update
-        if (PLAYER.x < 0) { PLAYER.x = 0; }
-        if (PLAYER.x + PLAYER.width > WORLD_WIDTH) { PLAYER.x = WORLD_WIDTH - PLAYER.width; }
-        
-        // Camera Update
-        cameraX = PLAYER.x - VIEWPORT_WIDTH / 2;
-        cameraX = Math.max(0, cameraX);
-        cameraX = Math.min(WORLD_WIDTH - VIEWPORT_WIDTH, cameraX);
 
+        // --- Initialize Fighters ---
+        // Placing them farther apart for the scrolling effect to be immediately visible
+        const player1 = new Fighter({
+            position: { x: 300, y: 0 },
+            velocity: { x: 0, y: 0 },
+            color: '#dc2626', 
+            isAI: false
+        });
 
-        // 6. Fall Off World Check (Game Over)
-        if (PLAYER.y > WORLD_HEIGHT) {
-            gameOver("You fell into the abyss!", false); // Death without full reset
-        }
-    }
+        const player2 = new Fighter({
+            position: { x: 600, y: 100 },
+            velocity: { x: 0, y: 0 },
+            color: '#2563eb', 
+            isAI: true 
+        });
 
-    // --- Drawing Functions ---
+        // --- Input Handling ---
+        const keys = {
+            a: { pressed: false },
+            d: { pressed: false },
+        };
 
-    function drawStickman(ctx, player) {
-        const cx = player.x + player.width / 2;
-        const headRadius = 8;
-        const bodyY = player.y + headRadius * 2;
-        const bodyHeight = player.height - headRadius * 2 - 5;
+        window.addEventListener('keydown', (event) => {
+            if (isGameOver || player1.isStunned) return;
 
-        ctx.strokeStyle = player.color;
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
+            switch (event.key) {
+                // Player Keys
+                case 'a':
+                case 'A':
+                    keys.a.pressed = true;
+                    break;
+                case 'd':
+                case 'D':
+                    keys.d.pressed = true;
+                    break;
+                case 'w':
+                case 'W':
+                    if (player1.velocity.y === 0) player1.velocity.y = -20; // Jump force
+                    break;
+                case ' ':
+                    event.preventDefault(); 
+                    player1.attack();
+                    break;
+            }
+        });
 
-        // Head
-        ctx.fillStyle = player.color;
-        ctx.beginPath();
-        ctx.arc(cx, player.y + headRadius, headRadius, 0, Math.PI * 2);
-        ctx.fill();
+        window.addEventListener('keyup', (event) => {
+            switch (event.key) {
+                case 'a':
+                case 'A':
+                    keys.a.pressed = false;
+                    break;
+                case 'd':
+                case 'D':
+                    keys.d.pressed = false;
+                    break;
+            }
+        });
 
-        // Body
-        ctx.beginPath();
-        ctx.moveTo(cx, bodyY);
-        ctx.lineTo(cx, bodyY + bodyHeight);
-        ctx.stroke();
-
-        // Arms
-        ctx.beginPath();
-        ctx.moveTo(cx - 5, bodyY + 10);
-        ctx.lineTo(cx + 5, bodyY + 10);
-        ctx.stroke();
-
-        // Legs
-        const footY = player.y + player.height;
-        ctx.beginPath();
-        ctx.moveTo(cx, bodyY + bodyHeight);
-        ctx.lineTo(cx - 5, footY);
-        ctx.moveTo(cx, bodyY + bodyHeight);
-        ctx.lineTo(cx + 5, footY);
-        ctx.stroke();
-    }
-
-    function drawPlatform(ctx, p) {
-        ctx.beginPath();
-        ctx.rect(p.x, p.y, p.w, p.h);
-
-        // Styling based on type
-        ctx.shadowBlur = 0;
-        ctx.shadowColor = 'transparent';
-
-        if (p.type === PLATFORM_TYPE.HAZARD) {
-            ctx.fillStyle = '#f87171'; // Red/Lava
-            ctx.shadowColor = '#dc2626';
-            ctx.shadowBlur = 10;
-        } else if (p.type === PLATFORM_TYPE.GOAL) {
-            ctx.fillStyle = '#fcd34d'; // Gold/Goal
-            ctx.shadowColor = '#fbbf24';
-            ctx.shadowBlur = 10;
-        } else if (p.type === PLATFORM_TYPE.MOVING) {
-             ctx.fillStyle = '#fb923c'; // Orange/Moving
-             ctx.shadowColor = '#f97316';
-             ctx.shadowBlur = 8;
-        } else if (p.type === PLATFORM_TYPE.CHECKPOINT) {
-             ctx.fillStyle = p.color; // Blue/Checkpoint
-             if (p.reached) {
-                 ctx.shadowColor = '#2563eb';
-                 ctx.shadowBlur = 15;
-                 // Draw the flag pole and flag
-                 ctx.fillStyle = p.color;
-                 ctx.fillRect(p.x + p.w / 2 - 2, p.y - 40, 4, 40); // Pole
-                 
-                 ctx.beginPath(); // Flag
-                 ctx.moveTo(p.x + p.w / 2 + 2, p.y - 40);
-                 ctx.lineTo(p.x + p.w / 2 + 2, p.y - 20);
-                 ctx.lineTo(p.x + p.w / 2 + 20, p.y - 30);
-                 ctx.closePath();
-                 ctx.fill();
-             }
-        }
-        else {
-            ctx.fillStyle = p.color;
-        }
-        ctx.fill();
-
-        // Draw detail for hazards (spikes)
-        if (p.type === PLATFORM_TYPE.HAZARD) {
-            ctx.fillStyle = '#a1a1aa';
-            const spikeSize = 8;
-            for (let i = 0; i < p.w / spikeSize; i++) {
-                ctx.beginPath();
-                ctx.moveTo(p.x + i * spikeSize, p.y);
-                ctx.lineTo(p.x + i * spikeSize + spikeSize / 2, p.y - spikeSize);
-                ctx.lineTo(p.x + (i + 1) * spikeSize, p.y);
-                ctx.fill();
+        // Function to draw the scrolling background elements
+        function drawBackground() {
+            // Draw a series of fixed "pillars" to show the scrolling effect
+            const pillarCount = Math.floor(WORLD_WIDTH / 100); 
+            ctx.fillStyle = '#111';
+            for (let i = 0; i < pillarCount; i++) {
+                // Draw a tall, dark pillar
+                ctx.fillRect(i * 150 + 50, CANVAS_HEIGHT - 350, 10, 260);
             }
         }
-    }
 
-    function drawGame() {
-        // Clear canvas and draw sky background
-        ctx.clearRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
-        ctx.fillStyle = '#e0f2fe';
-        ctx.fillRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+        // --- Game Loop (Animation) ---
+        function animate() {
+            window.requestAnimationFrame(animate);
+            if (isGameOver) return; 
 
-        // --- Start Camera/Viewport Scroll ---
-        ctx.save();
-        ctx.translate(-cameraX, 0);
+            // 1. Calculate and Update Camera Position
+            updateCamera(player1, player2);
 
-        // Draw Platforms
-        LEVEL.forEach(p => drawPlatform(ctx, p));
-
-        // Draw Player
-        drawStickman(ctx, PLAYER);
-
-        // --- Stop Camera/Viewport Scroll ---
-        ctx.restore();
-
-        // Draw Win/Lose Screen overlay
-        if (!isRunning && !hasWon) {
-            drawOverlay("GAME OVER", "You ran out of lives!", '#dc2626');
-            resetButton.textContent = "Start New Game";
-        } else if (hasWon) {
-            drawOverlay("CHALLENGE COMPLETE!", "You mastered the long Obby!", '#16a34a');
-            resetButton.textContent = "Play Again";
-        }
-    }
-
-    function drawOverlay(title, subtitle, color) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
-
-        ctx.textAlign = 'center';
-        ctx.shadowBlur = 0;
-
-        // Title
-        ctx.font = 'bold 48px Inter, sans-serif';
-        ctx.fillStyle = color;
-        ctx.fillText(title, VIEWPORT_WIDTH / 2, VIEWPORT_HEIGHT / 2 - 30);
-
-        // Subtitle
-        ctx.font = '20px Inter, sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(subtitle, VIEWPORT_WIDTH / 2, VIEWPORT_HEIGHT / 2 + 10);
-    }
-
-    // --- Game States and Events ---
-
-    function gameOver(msg, fullRestartNeeded) {
-        if (fullRestartNeeded || LIVES <= 1) {
-            // Hard Game Over
-            LIVES = 0;
-            isRunning = false;
-            messageElement.textContent = `CRITICAL FAILURE: ${msg}`;
-            messageElement.classList.remove('text-green-700', 'text-yellow-600', 'text-blue-600');
-            messageElement.classList.add('text-red-600');
-            resetButton.disabled = false;
-            livesCounterElement.textContent = `Lives: ${LIVES}`;
-            cancelAnimationFrame(animationFrameId);
-        } else {
-            // Soft Game Over (Respawn at Checkpoint)
-            LIVES--;
-            messageElement.textContent = `LOST A LIFE! ${msg} Respawning at last checkpoint.`;
-            messageElement.classList.remove('text-green-700', 'text-yellow-600', 'text-blue-600');
-            messageElement.classList.add('text-red-600');
-            livesCounterElement.textContent = `Lives: ${LIVES}`;
-
-            // Reset player and immediately restart loop
-            resetPlayerPosition();
+            // 2. Clear the canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             
-            // Briefly revert message color after a delay
-            setTimeout(() => messageElement.classList.remove('text-red-600'), 1500);
-            setTimeout(() => messageElement.classList.add('text-green-700'), 1500);
-            // Ensure no interruption to the running game loop
+            // 3. Apply Camera Translation
+            ctx.save();
+            ctx.translate(-camera.offset.x, 0); // Shift the entire drawing surface
+
+            // 4. Draw Background and Ground
+            drawBackground();
+            ctx.fillStyle = '#0d0d0d';
+            ctx.fillRect(0, FLOOR, WORLD_WIDTH, CANVAS_HEIGHT - FLOOR); // Draw ground across the whole world
+
+            // 5. AI Logic
+            player2.AI_move(player1);
+
+            // 6. Player Input (Only if not stunned)
+            player1.velocity.x = 0;
+            if (!player1.isStunned) {
+                if (keys.a.pressed) player1.velocity.x = -5;
+                if (keys.d.pressed) player1.velocity.x = 5;
+            }
+
+            // 7. Update Fighters
+            player1.update();
+            player2.update();
+
+            // 8. Collision Detection and Hit Stun (Player attacking AI)
+            if (
+                player1.isAttacking &&
+                rectangularCollision({ rectangle1: player1, rectangle2: player2 })
+            ) {
+                player2.takeHit();
+                player1.isAttacking = false; 
+            }
+
+            // 9. Collision Detection and Hit Stun (AI attacking Player)
+            if (
+                player2.isAttacking &&
+                rectangularCollision({ rectangle1: player2, rectangle2: player1 })
+            ) {
+                player1.takeHit();
+                player2.isAttacking = false; 
+            }
+
+            // 10. Restore canvas (removes the translation)
+            ctx.restore();
+
+            // 11. End Game Check (Health)
+            if (player1.health <= 0 || player2.health <= 0) {
+                determineWinner({ player1, player2 });
+            }
         }
-    }
 
-    function winGame() {
-        isRunning = false;
-        hasWon = true;
-        messageElement.textContent = "You reached the GOAL! Obby Completed!";
-        messageElement.classList.remove('text-green-700', 'text-red-600', 'text-blue-600');
-        messageElement.classList.add('text-yellow-600');
-        resetButton.disabled = false;
-        livesCounterElement.textContent = `Lives: ${LIVES}`;
-        cancelAnimationFrame(animationFrameId);
-    }
+        // Start the game when the window loads
+        window.onload = function () {
+            // Set font for STUN message
+            ctx.font = "24px 'Inter'"; 
+            ctx.textAlign = 'center';
 
-    function gameLoop() {
-        if (!isRunning && !hasWon) return;
+            decreaseTimer();
+            animate();
+        };
 
-        updateGame();
-        drawGame();
-        animationFrameId = requestAnimationFrame(gameLoop);
-    }
-
-    // --- Event Listeners and Setup ---
-
-    function handleKeyDown(event) {
-        if (!isRunning) return;
-        switch (event.key) {
-            case 'ArrowLeft': case 'a': KEYS.left = true; break;
-            case 'ArrowRight': case 'd': KEYS.right = true; break;
-            case 'ArrowUp': case 'w': case ' ': KEYS.jump = true; break;
-        }
-    }
-
-    function handleKeyUp(event) {
-        switch (event.key) {
-            case 'ArrowLeft': case 'a': KEYS.left = false; break;
-            case 'ArrowRight': case 'd': KEYS.right = false; break;
-            case 'ArrowUp': case 'w': case ' ': KEYS.jump = false; break;
-        }
-    }
-
-    function setupEventListeners() {
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('keyup', handleKeyUp);
-        // Reset button now passes 'true' for a full reset
-        resetButton.addEventListener('click', () => resetGame(true)); 
-
-        // Mobile/Touch Controls
-        document.getElementById('mobileLeft').addEventListener('touchstart', (e) => { e.preventDefault(); KEYS.left = true; });
-        document.getElementById('mobileLeft').addEventListener('touchend', (e) => { e.preventDefault(); KEYS.left = false; });
-        document.getElementById('mobileRight').addEventListener('touchstart', (e) => { e.preventDefault(); KEYS.right = true; });
-        document.getElementById('mobileRight').addEventListener('touchend', (e) => { e.preventDefault(); KEYS.right = false; });
-        document.getElementById('mobileJump').addEventListener('touchstart', (e) => { e.preventDefault(); KEYS.jump = true; });
-        document.getElementById('mobileJump').addEventListener('touchend', (e) => { e.preventDefault(); KEYS.jump = false; });
-    }
-
-    // Initialize Game
-    window.onload = function() {
-        setupEventListeners();
-        resetGame(true); // Start a new game
-    };
-
-</script>
+    </script>
 </body>
 </html>
