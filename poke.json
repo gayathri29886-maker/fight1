@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "One-File Pokémon List",
+  "version": "1.0",
+  "description": "Displays the complete list of Pokémon by embedding all code into the manifest.json using a Data URI.",
+  "action": {
+    "default_title": "Full Pokémon List",
+    "default_popup": "data:text/html;charset=utf-8,<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>All Pokémon List</title><style>body{font-family:Arial,sans-serif;width:300px;margin:0;padding:10px;background-color:#f4f4f4;overflow-y:auto;max-height:500px}h2{color:#cc0000;text-align:center;margin-top:5px;font-size:1.2em}#pokemon-container{display:flex;flex-wrap:wrap;justify-content:space-around;gap:5px} .pokemon-card{background-color:#ffe033;border:1px solid #3b4cca;border-radius:3px;padding:5px;text-align:center;width:45%;font-size:.8em;margin-bottom:5px;box-sizing:border-box}.pokemon-number{font-weight:bold;color:#3b4cca}.loading{text-align:center;padding:20px;color:#cc0000}</style></head><body><h2>National Pokédex List</h2><div id='loading' class='loading'>Loading 1025 Pokémon...</div><div id='pokemon-container'></div><script>async function fetchAndDisplayPokemons(){const POKEMON_COUNT=1025;const API_URL=`https://pokeapi.co/api/v2/pokemon?limit=${POKEMON_COUNT}&offset=0`;const container=document.getElementById('pokemon-container');const loading=document.getElementById('loading');try{const response=await fetch(API_URL);if(!response.ok){throw new Error(`HTTP error! status: ${response.status}`);}const data=await response.json();const allPokemons=data.results;loading.style.display='none';allPokemons.forEach((pokemon,index)=>{const card=document.createElement('div');card.classList.add('pokemon-card');const capitalizedName=pokemon.name.charAt(0).toUpperCase()+pokemon.name.slice(1);const number=index+1;const paddedNumber=String(number).padStart(4,'0');card.innerHTML=`<span class='pokemon-number'>#${paddedNumber}</span><br>${capitalizedName}`;container.appendChild(card);});}catch(error){loading.textContent='❌ Error fetching data.';console.error('Failed to fetch Pokémon data:',error);}}document.addEventListener('DOMContentLoaded',fetchAndDisplayPokemons);</script></body></html>"
+  },
+  "permissions": [
+    "activeTab"
+  ]
+}
