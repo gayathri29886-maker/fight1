@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom Styles for Inter font and animations -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc; /* Light background */
@@ -125,7 +125,7 @@
         const handleInitializationError = (message) => {
             console.error("Initialization Error:", message);
             ui.loadingIndicator.classList.add('hidden');
-            ui.errorMessage.textContent = "Initialization Error: " + message;
+            ui.errorMessage.textContent = message;
             ui.errorMessage.classList.remove('hidden');
             ui.statusContainer.classList.remove('hidden'); 
             ui.formContainer.classList.add('hidden');
@@ -158,6 +158,12 @@
 
         /** Initializes Firebase and sets up the Auth State Listener. */
         const initFirebase = () => {
+            // CRITICAL CHECK: Ensure we have config data before proceeding.
+            if (Object.keys(firebaseConfig).length === 0) {
+                handleInitializationError("Database configuration is missing. The application cannot connect to the backend.");
+                return;
+            }
+
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
@@ -191,7 +197,8 @@
                 });
 
             } catch (error) {
-                handleInitializationError("Failed to initialize Firebase services.");
+                // Catch any errors during the initializeApp call itself
+                handleInitializationError("Failed to initialize Firebase services. Check the console for more technical details.");
             }
         };
 
