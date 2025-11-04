@@ -31,13 +31,16 @@
             <p class="mt-2 text-lg text-gray-500">Share your thoughts anonymously and see what others are saying.</p>
         </header>
 
-        <!-- Loading Indicator -->
-        <div id="loading-indicator" class="flex justify-center items-center p-8">
-            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span class="text-indigo-500 font-medium">Initializing...</span>
+        <!-- Loading Indicator / Status Message -->
+        <div id="status-container" class="flex justify-center items-center p-8 bg-white rounded-xl shadow-lg mb-8">
+            <div id="loading-indicator" class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-indigo-500 font-medium text-lg">Connecting to database...</span>
+            </div>
+            <p id="error-message" class="text-red-500 font-medium text-lg hidden"></p>
         </div>
 
         <!-- Feedback Submission Form -->
@@ -92,7 +95,9 @@
         let userId = null;
         let isAuthReady = false;
 
+        const statusContainer = document.getElementById('status-container');
         const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
         const formContainer = document.getElementById('form-container');
         const submitButton = document.getElementById('submit-button');
         const feedbackForm = document.getElementById('feedback-form');
@@ -114,35 +119,52 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
 
+                // This listener runs immediately to check auth status
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
                         userIdDisplay.textContent = userId;
                         userInfo.classList.remove('hidden');
                         isAuthReady = true;
-                        console.log("Firebase Auth Ready. User ID:", userId);
-                        // Once authenticated, enable form and start listening for data
-                        submitButton.disabled = false;
-                        loadingIndicator.classList.add('hidden');
+                        
+                        // Hide loading and show the working form
+                        statusContainer.classList.add('hidden');
                         formContainer.classList.remove('hidden');
+                        submitButton.disabled = false;
+                        
+                        console.log("Firebase Auth Ready. User ID:", userId);
                         startRealtimeListener();
                     } else {
                         // Attempt sign-in if not yet signed in
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            // Fallback to anonymous sign-in if no custom token
-                            await signInAnonymously(auth);
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                // Fallback to anonymous sign-in if no custom token
+                                await signInAnonymously(auth);
+                            }
+                        } catch(authError) {
+                            handleInitializationError("Authentication failed: " + authError.message);
                         }
                     }
                 });
 
             } catch (error) {
-                console.error("Firebase Initialization Error:", error);
-                loadingIndicator.innerHTML = '<p class="text-red-500 font-medium">Failed to initialize. Check console for details.</p>';
-                submitButton.disabled = true;
+                handleInitializationError("Firebase failed to initialize. Check console for details.");
             }
         };
+
+        // Function to handle and display initialization errors
+        const handleInitializationError = (message) => {
+            console.error("Initialization Error:", message);
+            loadingIndicator.classList.add('hidden');
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            statusContainer.classList.remove('hidden'); // Ensure the container is visible to show error
+            formContainer.classList.add('hidden');
+            submitButton.disabled = true;
+        };
+
 
         // Helper function to format the date
         const formatDate = (timestamp) => {
@@ -205,7 +227,7 @@
                         <p class="text-gray-800 text-lg whitespace-pre-wrap">${post.content}</p>
                         <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400">
                             <span>Posted ${formatDate(post.createdAt)}</span>
-                            <!-- Show the user ID that posted it for reference (optional, but good for public context) -->
+                            <!-- Show a masked user ID for public reference -->
                             <span class="font-medium">User: ${post.authorId ? post.authorId.substring(0, 8) + '...' : 'Anonymous'}</span>
                         </div>
                     `;
@@ -219,7 +241,7 @@
             e.preventDefault();
 
             if (!isAuthReady || !db) {
-                alertUser('System not ready. Please wait.', 'text-red-500');
+                alertUser('System not ready. Please wait or check connection.', 'text-red-500');
                 return;
             }
 
