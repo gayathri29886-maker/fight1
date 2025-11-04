@@ -8,10 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom Styles for Inter font and animations -->
     <style>
-        @import url('https://fonts.fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* Light background */
+            background-color: #f8fafc;
         }
         .post-card {
             transition: all 0.2s ease-in-out;
@@ -82,25 +82,32 @@
         </p>
     </div>
 
-    <!-- Firebase SDK Imports and Initialization -->
+    <!-- Firebase SDK Imports and Initialization (The JavaScript Part) -->
     <script type="module">
         // Import necessary Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- ENVIRONMENT VARIABLES AND INITIAL SETUP ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // =========================================================================================
+        // 🚨 CRITICAL: FIREBASE CONFIGURATION CHECK
+        // If you see a configuration error, replace the lines below with your own Firebase keys.
+        // =========================================================================================
+        
+        // Use environment variables if available, otherwise use placeholders for clarity
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'YOUR_APP_ID_FALLBACK';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY_FALLBACK" };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
+        
+        // This is the public path where all feedback is stored
+        const PUBLIC_COLLECTION_PATH = `artifacts/${appId}/public/data/feedback_posts`;
+        
+        // =========================================================================================
 
         let db;
         let auth;
         let userId = null;
         let isAuthReady = false;
-
-        // Firestore Path for Public Data: /artifacts/{appId}/public/data/feedback_posts
-        const PUBLIC_COLLECTION_PATH = `artifacts/${appId}/public/data/feedback_posts`;
 
         // --- DOM ELEMENT REFERENCES ---
         const ui = {
@@ -158,9 +165,11 @@
 
         /** Initializes Firebase and sets up the Auth State Listener. */
         const initFirebase = () => {
-            // CRITICAL CHECK: Ensure we have config data before proceeding.
-            if (Object.keys(firebaseConfig).length === 0) {
-                handleInitializationError("Database configuration is missing. The application cannot connect to the backend.");
+            // Check for missing config (either using the fallback placeholder or a genuinely empty object)
+            if (Object.keys(firebaseConfig).length === 0 || firebaseConfig.apiKey === "YOUR_API_KEY_FALLBACK") {
+                handleInitializationError(
+                    "Configuration Error: The database keys are missing. If this error persists, you must replace the 'FALLBACK' placeholders in the code with your Firebase API keys."
+                );
                 return;
             }
 
@@ -188,10 +197,10 @@
                             if (initialAuthToken) {
                                 await signInWithCustomToken(auth, initialAuthToken);
                             } else {
-                                await signInAnonymously(auth);
+                                await signInAnonymously(auth); // Use anonymous for public boards
                             }
                         } catch(authError) {
-                            handleInitializationError("Authentication failed.");
+                            handleInitializationError("Authentication failed. Check if Anonymous sign-in is enabled in Firebase Auth.");
                         }
                     }
                 });
