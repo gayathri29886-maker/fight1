@@ -90,17 +90,15 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================================
-        // 🚨 CRITICAL: FIREBASE CONFIGURATION CHECK
-        // If you see a configuration error, replace the lines below with your own Firebase keys.
+        // Configuration using required Canvas global variables
+        // We revert to using the mandatory global variables provided by the environment.
         // =========================================================================================
         
-        // Use environment variables if available, otherwise use placeholders for clarity
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'YOUR_APP_ID_FALLBACK';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY_FALLBACK" };
+        // Load environment variables. Fallbacks ensure app doesn't crash if variables are missing.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'canvas-default-app-id';
+        // Parse the config string, defaulting to an empty object if unavailable.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
-        
-        // This is the public path where all feedback is stored
-        const PUBLIC_COLLECTION_PATH = `artifacts/${appId}/public/data/feedback_posts`;
         
         // =========================================================================================
 
@@ -108,6 +106,9 @@
         let auth;
         let userId = null;
         let isAuthReady = false;
+
+        // Firestore Path for Public Data: /artifacts/{appId}/public/data/feedback_posts
+        const PUBLIC_COLLECTION_PATH = `artifacts/${appId}/public/data/feedback_posts`;
 
         // --- DOM ELEMENT REFERENCES ---
         const ui = {
@@ -165,10 +166,10 @@
 
         /** Initializes Firebase and sets up the Auth State Listener. */
         const initFirebase = () => {
-            // Check for missing config (either using the fallback placeholder or a genuinely empty object)
-            if (Object.keys(firebaseConfig).length === 0 || firebaseConfig.apiKey === "YOUR_API_KEY_FALLBACK") {
+            // Check if the provided config is usable (now relies on Canvas environment providing a valid one)
+            if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
                 handleInitializationError(
-                    "Configuration Error: The database keys are missing. If this error persists, you must replace the 'FALLBACK' placeholders in the code with your Firebase API keys."
+                    "Configuration Error: Firebase configuration is missing. The app relies on environment variables provided by the platform for keys."
                 );
                 return;
             }
@@ -192,12 +193,13 @@
                         
                         startRealtimeListener();
                     } else {
-                        // Attempt sign-in
+                        // Attempt sign-in using provided token or anonymously
                         try {
                             if (initialAuthToken) {
                                 await signInWithCustomToken(auth, initialAuthToken);
                             } else {
-                                await signInAnonymously(auth); // Use anonymous for public boards
+                                // Fallback to anonymous sign-in
+                                await signInAnonymously(auth); 
                             }
                         } catch(authError) {
                             handleInitializationError("Authentication failed. Check if Anonymous sign-in is enabled in Firebase Auth.");
