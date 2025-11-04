@@ -3,89 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Public Feedback Wall</title>
+    <title>The Community Feedback Wall</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Use Inter font family -->
+    <!-- Custom Styles for Inter font and animations -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f4f6f9;
+            background-color: #f8fafc; /* Light background */
         }
-        .feedback-card {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-            transition: transform 0.2s, box-shadow 0.2s;
+        .post-card {
+            transition: all 0.2s ease-in-out;
+            border-left: 5px solid #6366f1; /* Indigo accent */
         }
-        .feedback-card:hover {
-            transform: translateY(-2px);
+        .post-card:hover {
+            transform: translateY(-3px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-        <header class="text-center py-6 bg-white rounded-xl shadow-md mb-8">
-            <h1 class="text-4xl font-extrabold text-indigo-700">The Public Feedback Wall</h1>
-            <p class="mt-2 text-lg text-gray-500">Share your thoughts anonymously and see what others are saying.</p>
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center py-8 bg-white rounded-xl shadow-lg mb-8 border-b-4 border-indigo-600">
+            <h1 class="text-5xl font-extrabold text-gray-900 tracking-tight">Community Voice</h1>
+            <p class="mt-3 text-xl text-indigo-600">Post your public feedback in real-time.</p>
         </header>
 
-        <!-- Loading Indicator / Status Message -->
-        <div id="status-container" class="flex justify-center items-center p-8 bg-white rounded-xl shadow-lg mb-8">
-            <div id="loading-indicator" class="flex items-center">
-                <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <!-- Current User Info Section -->
+        <div id="user-info" class="bg-indigo-50 p-3 rounded-lg text-center text-sm mb-6 border border-indigo-200 hidden">
+            <p class="text-gray-700 font-medium">
+                Your Public Identifier:
+                <span id="user-id-display" class="font-mono text-indigo-800 bg-indigo-200 px-2 py-0.5 rounded-md text-xs sm:text-sm select-all"></span>
+            </p>
+        </div>
+        
+        <!-- Status Container (Loading/Error) -->
+        <div id="status-container" class="flex justify-center items-center p-8 bg-white rounded-xl shadow-md mb-8">
+            <div id="loading-indicator" class="flex items-center space-x-3">
+                <svg class="animate-spin h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span class="text-indigo-500 font-medium text-lg">Connecting to database...</span>
+                <span class="text-lg text-gray-600 font-semibold">Connecting...</span>
             </div>
-            <p id="error-message" class="text-red-500 font-medium text-lg hidden"></p>
+            <p id="error-message" class="text-red-600 font-semibold text-lg hidden"></p>
         </div>
 
         <!-- Feedback Submission Form -->
-        <div id="form-container" class="bg-white p-6 rounded-xl shadow-lg mb-10 border-t-4 border-indigo-500 hidden">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Post Your Feedback</h2>
+        <div id="form-container" class="bg-white p-6 rounded-xl shadow-lg mb-10 hidden">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Share a Post</h2>
             <form id="feedback-form">
-                <div class="mb-4">
-                    <label for="feedback-text" class="block text-sm font-medium text-gray-700 mb-2">Message (Max 300 chars):</label>
-                    <textarea id="feedback-text" name="feedback-text" rows="4" maxlength="300" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 resize-none text-gray-800"
-                        placeholder="Type your constructive feedback, suggestion, or thought here..."></textarea>
+                <textarea id="feedback-text" name="feedback-text" rows="5" maxlength="300" required
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 resize-none text-gray-800 placeholder-gray-400"
+                    placeholder="Type your feedback here (10 to 300 characters)..."></textarea>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-4">
+                    <p id="char-count" class="text-sm text-gray-500 mb-2 sm:mb-0">0 / 300 Characters</p>
+                    <button type="submit" id="submit-button"
+                        class="w-full sm:w-auto bg-indigo-600 text-white py-3 px-6 rounded-full font-bold hover:bg-indigo-700 transition duration-150 ease-in-out shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled>
+                        Post Publicly
+                    </button>
                 </div>
-                <button type="submit" id="submit-button"
-                    class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-indigo-700 transition duration-150 ease-in-out disabled:opacity-50"
-                    disabled>
-                    Submit Feedback
-                </button>
             </form>
-            <p id="submission-message" class="mt-4 text-sm text-center font-medium hidden"></p>
-        </div>
-
-        <!-- User ID Information (Mandatory for multi-user/public apps) -->
-        <div id="user-info" class="bg-gray-100 p-3 rounded-lg text-center text-sm mb-6 border border-gray-200 hidden">
-            <p class="text-gray-600">
-                Your Current User ID (for sharing/reference):
-                <span id="user-id-display" class="font-mono text-indigo-700 bg-indigo-100 px-2 py-1 rounded"></span>
-            </p>
+            <p id="submission-message" class="mt-4 text-sm text-center font-semibold hidden"></p>
         </div>
 
         <!-- Feedback Display Area -->
-        <h2 class="text-3xl font-bold text-gray-800 mb-5 border-b pb-2">Recent Public Posts</h2>
-        <div id="feedback-list" class="space-y-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 mt-10">All Public Posts</h2>
+        <div id="feedback-list" class="space-y-4">
             <!-- Feedback items will be inserted here -->
         </div>
 
-        <p id="empty-state" class="text-center text-gray-500 text-xl py-10 hidden">No feedback posts yet. Be the first to share your thoughts!</p>
+        <p id="empty-state" class="text-center text-gray-500 text-xl py-12 hidden border rounded-lg bg-white mt-4">
+            No posts yet. Start the conversation!
+        </p>
     </div>
 
     <!-- Firebase SDK Imports and Initialization -->
     <script type="module">
+        // Import necessary Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables provided by the environment
+        // --- ENVIRONMENT VARIABLES AND INITIAL SETUP ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -95,207 +99,213 @@
         let userId = null;
         let isAuthReady = false;
 
-        const statusContainer = document.getElementById('status-container');
-        const loadingIndicator = document.getElementById('loading-indicator');
-        const errorMessage = document.getElementById('error-message');
-        const formContainer = document.getElementById('form-container');
-        const submitButton = document.getElementById('submit-button');
-        const feedbackForm = document.getElementById('feedback-form');
-        const feedbackTextarea = document.getElementById('feedback-text');
-        const feedbackList = document.getElementById('feedback-list');
-        const emptyState = document.getElementById('empty-state');
-        const userIdDisplay = document.getElementById('user-id-display');
-        const userInfo = document.getElementById('user-info');
-        const submissionMessage = document.getElementById('submission-message');
-
         // Firestore Path for Public Data: /artifacts/{appId}/public/data/feedback_posts
-        const PUBLIC_FEEDBACK_COLLECTION_PATH = `artifacts/${appId}/public/data/feedback_posts`;
+        const PUBLIC_COLLECTION_PATH = `artifacts/${appId}/public/data/feedback_posts`;
 
-        // 1. Initialize Firebase and Authentication
-        const initFirebase = async () => {
+        // --- DOM ELEMENT REFERENCES ---
+        const ui = {
+            statusContainer: document.getElementById('status-container'),
+            loadingIndicator: document.getElementById('loading-indicator'),
+            errorMessage: document.getElementById('error-message'),
+            formContainer: document.getElementById('form-container'),
+            submitButton: document.getElementById('submit-button'),
+            feedbackTextarea: document.getElementById('feedback-text'),
+            feedbackForm: document.getElementById('feedback-form'),
+            feedbackList: document.getElementById('feedback-list'),
+            emptyState: document.getElementById('empty-state'),
+            userIdDisplay: document.getElementById('user-id-display'),
+            userInfo: document.getElementById('user-info'),
+            submissionMessage: document.getElementById('submission-message'),
+            charCount: document.getElementById('char-count'),
+        };
+
+        // --- HELPER FUNCTIONS ---
+
+        /** Displays initialization errors clearly to the user. */
+        const handleInitializationError = (message) => {
+            console.error("Initialization Error:", message);
+            ui.loadingIndicator.classList.add('hidden');
+            ui.errorMessage.textContent = "Initialization Error: " + message;
+            ui.errorMessage.classList.remove('hidden');
+            ui.statusContainer.classList.remove('hidden'); 
+            ui.formContainer.classList.add('hidden');
+            ui.submitButton.disabled = true;
+        };
+
+        /** Formats a Firestore Timestamp object into a readable string. */
+        const formatDate = (timestamp) => {
+            if (!timestamp || !timestamp.toDate) return 'Just now';
+            const date = timestamp.toDate();
+            return date.toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit', hour12: true
+            }) + ' on ' + date.toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric'
+            });
+        };
+        
+        /** Basic UI Alert Function (replaces alert()) */
+        const alertUser = (message, colorClass) => {
+            ui.submissionMessage.textContent = message;
+            ui.submissionMessage.className = `mt-4 text-sm text-center font-semibold ${colorClass}`;
+            ui.submissionMessage.classList.remove('hidden');
+
+            setTimeout(() => {
+                ui.submissionMessage.classList.add('hidden');
+            }, 5000);
+        };
+
+        // --- FIREBASE INITIALIZATION AND AUTHENTICATION ---
+
+        /** Initializes Firebase and sets up the Auth State Listener. */
+        const initFirebase = () => {
             try {
-                // setLogLevel('Debug'); // Uncomment to see Firebase logs
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // This listener runs immediately to check auth status
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
-                        userIdDisplay.textContent = userId;
-                        userInfo.classList.remove('hidden');
                         isAuthReady = true;
                         
-                        // Hide loading and show the working form
-                        statusContainer.classList.add('hidden');
-                        formContainer.classList.remove('hidden');
-                        submitButton.disabled = false;
+                        // Update UI for success
+                        ui.userIdDisplay.textContent = userId;
+                        ui.userInfo.classList.remove('hidden');
+                        ui.statusContainer.classList.add('hidden');
+                        ui.formContainer.classList.remove('hidden');
+                        ui.submitButton.disabled = ui.feedbackTextarea.value.trim().length < 10;
                         
-                        console.log("Firebase Auth Ready. User ID:", userId);
                         startRealtimeListener();
                     } else {
-                        // Attempt sign-in if not yet signed in
+                        // Attempt sign-in
                         try {
                             if (initialAuthToken) {
                                 await signInWithCustomToken(auth, initialAuthToken);
                             } else {
-                                // Fallback to anonymous sign-in if no custom token
                                 await signInAnonymously(auth);
                             }
                         } catch(authError) {
-                            handleInitializationError("Authentication failed: " + authError.message);
+                            handleInitializationError("Authentication failed.");
                         }
                     }
                 });
 
             } catch (error) {
-                handleInitializationError("Firebase failed to initialize. Check console for details.");
+                handleInitializationError("Failed to initialize Firebase services.");
             }
         };
 
-        // Function to handle and display initialization errors
-        const handleInitializationError = (message) => {
-            console.error("Initialization Error:", message);
-            loadingIndicator.classList.add('hidden');
-            errorMessage.textContent = message;
-            errorMessage.classList.remove('hidden');
-            statusContainer.classList.remove('hidden'); // Ensure the container is visible to show error
-            formContainer.classList.add('hidden');
-            submitButton.disabled = true;
-        };
+        // --- REAL-TIME DATA LISTENER ---
 
-
-        // Helper function to format the date
-        const formatDate = (timestamp) => {
-            if (!timestamp) return 'Just now';
-            // Firestore timestamp object: { seconds: ..., nanoseconds: ... }
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleTimeString('en-US', {
-                hour: '2-digit', minute: '2-digit', hour12: true
-            }) + ' - ' + date.toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric'
-            });
-        };
-
-        // 2. Real-time Listener for Public Feedback Posts
+        /** Sets up the real-time listener for public feedback posts. */
         const startRealtimeListener = () => {
-            if (!db || !isAuthReady) {
-                console.warn("Database not ready or not authenticated. Skipping listener setup.");
-                return;
-            }
+            if (!db || !isAuthReady) return;
 
-            const feedbackQuery = query(collection(db, PUBLIC_FEEDBACK_COLLECTION_PATH));
+            const feedbackQuery = query(collection(db, PUBLIC_COLLECTION_PATH));
 
             onSnapshot(feedbackQuery, (snapshot) => {
                 const posts = [];
                 snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    posts.push({
-                        id: doc.id,
-                        ...data
-                    });
+                    posts.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Sort by creation date (newest first). Firestore timestamps are objects.
+                // Sort by creation date (newest first) in memory
                 posts.sort((a, b) => {
-                    if (!a.createdAt) return 1;
-                    if (!b.createdAt) return -1;
-                    // Compare seconds value
-                    return b.createdAt.seconds - a.createdAt.seconds;
+                    const timeA = a.createdAt ? a.createdAt.seconds : 0;
+                    const timeB = b.createdAt ? b.createdAt.seconds : 0;
+                    return timeB - timeA;
                 });
 
                 renderFeedback(posts);
             }, (error) => {
                 console.error("Error listening to feedback posts:", error);
-                feedbackList.innerHTML = '<p class="text-red-500">Error loading posts.</p>';
+                ui.feedbackList.innerHTML = '<p class="text-red-500 text-center py-4">Failed to load posts in real-time.</p>';
             });
         };
 
-        // 3. Rendering Logic
-        const renderFeedback = (posts) => {
-            feedbackList.innerHTML = ''; // Clear previous content
+        // --- RENDERING LOGIC ---
 
+        /** Updates the DOM with the list of feedback posts. */
+        const renderFeedback = (posts) => {
+            ui.feedbackList.innerHTML = '';
+            
             if (posts.length === 0) {
-                emptyState.classList.remove('hidden');
+                ui.emptyState.classList.remove('hidden');
             } else {
-                emptyState.classList.add('hidden');
+                ui.emptyState.classList.add('hidden');
                 posts.forEach(post => {
                     const postElement = document.createElement('div');
-                    postElement.className = 'feedback-card bg-white p-5 rounded-lg border border-gray-200 shadow-sm';
+                    postElement.className = 'post-card bg-white p-5 rounded-lg shadow-sm border border-gray-100';
                     postElement.innerHTML = `
-                        <p class="text-gray-800 text-lg whitespace-pre-wrap">${post.content}</p>
-                        <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400">
-                            <span>Posted ${formatDate(post.createdAt)}</span>
-                            <!-- Show a masked user ID for public reference -->
-                            <span class="font-medium">User: ${post.authorId ? post.authorId.substring(0, 8) + '...' : 'Anonymous'}</span>
+                        <p class="text-gray-800 text-lg whitespace-pre-wrap leading-relaxed">${post.content}</p>
+                        <div class="mt-4 pt-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs text-gray-500">
+                            <span class="font-medium text-gray-600">
+                                Posted by User: ${post.authorId ? post.authorId.substring(0, 8) + '...' : 'Anonymous'}
+                            </span>
+                            <span class="mt-1 sm:mt-0 text-gray-400">
+                                ${formatDate(post.createdAt)}
+                            </span>
                         </div>
                     `;
-                    feedbackList.appendChild(postElement);
+                    ui.feedbackList.appendChild(postElement);
                 });
             }
         };
 
-        // 4. Form Submission Handler
-        feedbackForm.addEventListener('submit', async (e) => {
+        // --- EVENT LISTENERS ---
+
+        // Handle form submission
+        ui.feedbackForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             if (!isAuthReady || !db) {
-                alertUser('System not ready. Please wait or check connection.', 'text-red-500');
+                alertUser('System not ready. Please wait.', 'text-red-500');
                 return;
             }
 
-            const content = feedbackTextarea.value.trim();
-
+            const content = ui.feedbackTextarea.value.trim();
             if (content.length < 10) {
                 alertUser('Feedback must be at least 10 characters long.', 'text-red-500');
                 return;
             }
 
-            submitButton.disabled = true;
-            submitButton.textContent = 'Posting...';
+            ui.submitButton.disabled = true;
+            ui.submitButton.textContent = 'Posting...';
 
             try {
-                // Add the new document to the public collection
-                await addDoc(collection(db, PUBLIC_FEEDBACK_COLLECTION_PATH), {
+                await addDoc(collection(db, PUBLIC_COLLECTION_PATH), {
                     content: content,
-                    authorId: userId, // Record who posted it (even if anonymous)
-                    createdAt: serverTimestamp() // Use Firestore's server timestamp
+                    authorId: userId,
+                    createdAt: serverTimestamp()
                 });
 
-                feedbackTextarea.value = ''; // Clear form
-                alertUser('Feedback posted successfully!', 'text-green-600');
+                ui.feedbackTextarea.value = ''; 
+                ui.charCount.textContent = '0 / 300 Characters';
+                alertUser('Post successful! Reflected instantly.', 'text-green-600');
 
             } catch (error) {
                 console.error("Error submitting feedback:", error);
-                alertUser('Failed to post feedback: ' + error.message, 'text-red-500');
+                alertUser('Failed to post: ' + error.message, 'text-red-500');
             } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Submit Feedback';
+                ui.submitButton.disabled = true; // Still disabled until new text is typed
+                ui.submitButton.textContent = 'Post Publicly';
             }
         });
 
-        // 5. Basic UI Alert Function (Replaces alert())
-        const alertUser = (message, colorClass) => {
-            submissionMessage.textContent = message;
-            submissionMessage.className = `mt-4 text-sm text-center font-medium ${colorClass}`;
-            submissionMessage.classList.remove('hidden');
+        // Handle textarea input validation and character count
+        ui.feedbackTextarea.addEventListener('input', () => {
+            const currentLength = ui.feedbackTextarea.value.length;
+            ui.charCount.textContent = `${currentLength} / 300 Characters`;
 
-            // Hide the message after 5 seconds
-            setTimeout(() => {
-                submissionMessage.classList.add('hidden');
-            }, 5000);
-        };
-
-        // Enable button when content is present
-        feedbackTextarea.addEventListener('input', () => {
             if (isAuthReady) {
-                submitButton.disabled = feedbackTextarea.value.trim().length < 10;
+                const isValid = currentLength >= 10 && currentLength <= 300;
+                ui.submitButton.disabled = !isValid;
+                ui.charCount.classList.toggle('text-red-500', currentLength < 10);
             }
         });
 
 
-        // Start the application
+        // --- START APPLICATION ---
         initFirebase();
 
     </script>
