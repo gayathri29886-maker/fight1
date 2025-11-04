@@ -11,11 +11,11 @@
             font-family: 'Orbitron', sans-serif;
             background: #0d0d1a;
             color: #e0e0f0;
-            overflow: hidden;
+            overflow: hidden; /* Keep the main page overflow hidden */
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh; /* Use full viewport height */
             padding: 1rem;
         }
 
@@ -31,6 +31,11 @@
             border-radius: 1rem;
             box-shadow: 0 0 40px rgba(78, 78, 128, 0.2);
             backdrop-filter: blur(10px);
+            
+            /* KEY CHANGE: Limit height and allow internal scrolling */
+            max-height: 95vh;
+            overflow-y: auto;
+            /* Optional: Add custom scrollbar styling if needed, Tailwind doesn't handle this easily */
         }
 
         h1 {
@@ -124,7 +129,7 @@
         }
         
         .unlock-button:disabled {
-            background: #374151; /* Gray background for disabled */
+            background: #374151;
             box-shadow: none;
             cursor: not-allowed;
             opacity: 0.6;
@@ -152,7 +157,7 @@
         /* Custom Style for Credits */
         .credits-display {
             font-size: 1.5rem;
-            color: #f59e0b; /* Amber/Gold color */
+            color: #f59e0b;
             font-weight: bold;
             text-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
         }
@@ -201,7 +206,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, addDoc, getDocs, collection, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase global variables (Assumed to be defined externally)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -226,7 +231,7 @@
         const totalShipsCount = document.getElementById('total-ships-count');
         const progressIndicator = document.getElementById('progress-indicator');
         const userIdDisplay = document.getElementById('user-id');
-        const creditsBalanceDisplay = document.getElementById('credits-balance'); // New element
+        const creditsBalanceDisplay = document.getElementById('credits-balance');
 
         // Game Constants
         const UNLOCK_COST = 100;
@@ -245,26 +250,25 @@
 
         let unlockedShips = [];
         let userId = null;
-        let userCredits = 0; // New state variable
+        let userCredits = 0;
 
         /**
          * Renders the current credits balance and updates the button state.
          */
         const renderCredits = () => {
             creditsBalanceDisplay.textContent = userCredits.toLocaleString();
-            // Disable the button if the user cannot afford the unlock
-            if (userCredits < UNLOCK_COST) {
+            
+            const allUnlocked = unlockedShips.length === allShips.length;
+            
+            if (allUnlocked) {
+                unlockBtn.disabled = true;
+                unlockBtn.textContent = "All Ships Unlocked!";
+            } else if (userCredits < UNLOCK_COST) {
                 unlockBtn.disabled = true;
                 unlockBtn.textContent = `Need ${UNLOCK_COST - userCredits} More Credits`;
             } else {
                 unlockBtn.disabled = false;
                 unlockBtn.textContent = "Unlock Ship";
-            }
-
-            // Also check for all ships unlocked
-            if (unlockedShips.length === allShips.length) {
-                unlockBtn.disabled = true;
-                unlockBtn.textContent = "All Ships Unlocked!";
             }
         };
 
@@ -290,7 +294,7 @@
                 shipsGrid.appendChild(shipCard);
             });
             
-            renderCredits(); // Call renderCredits after rendering ships
+            renderCredits();
         };
 
         /**
@@ -310,14 +314,12 @@
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     unlockedShips = data.ships || [];
-                    // Load existing credits, defaulting to STARTING_CREDITS if not set
                     userCredits = data.credits !== undefined ? data.credits : STARTING_CREDITS;
                     console.log(`Data loaded. Ships: ${unlockedShips.length}, Credits: ${userCredits}`);
                 } else {
                     console.log("No user data found. Initializing new record.");
                     unlockedShips = [];
                     userCredits = STARTING_CREDITS;
-                    // Initialize the document with the starting credits
                     await setDoc(shipsDocRef, { ships: [], credits: STARTING_CREDITS });
                 }
                 renderShips();
@@ -335,7 +337,7 @@
                 return;
             }
             
-            // 1. Credit Check Restriction
+            // Credit Check Restriction
             if (userCredits < UNLOCK_COST) {
                 alert(`You need ${UNLOCK_COST} Credits to unlock a ship. You only have ${userCredits}.`);
                 return;
@@ -351,14 +353,14 @@
             const shipToUnlock = lockedShips[Math.floor(Math.random() * lockedShips.length)];
 
             try {
-                // 2. Deduct Cost
+                // Deduct Cost
                 userCredits -= UNLOCK_COST; 
                 unlockedShips.push(shipToUnlock);
                 console.log(`Unlocking ship: ${shipToUnlock.name}. Cost deducted: ${UNLOCK_COST} credits.`);
 
                 const shipsDocRef = doc(db, `/artifacts/${appId}/users/${userId}/data/unlocked_ships`);
                 
-                // 3. Save updated ships list AND new credit balance
+                // Save updated ships list AND new credit balance
                 await setDoc(shipsDocRef, { ships: unlockedShips, credits: userCredits });
 
                 renderShips();
@@ -374,19 +376,15 @@
             if (user) {
                 // User is signed in.
                 userId = user.uid;
-                console.log("User authenticated:", userId);
                 userIdDisplay.textContent = `User ID: ${userId}`;
                 await loadUnlockedShips();
             } else {
                 // User is signed out.
-                console.log("No user authenticated. Signing in.");
                 try {
                     if (initialAuthToken) {
                         await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("Signed in with custom token.");
                     } else {
                         await signInAnonymously(auth);
-                        console.log("Signed in anonymously.");
                     }
                 } catch (error) {
                     console.error("Authentication failed:", error);
