@@ -3,636 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fighting Game</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Skyscraper Tycoon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://justpaste.it/redirect/eb7zr/https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DInter%3Awght%40300%3B400%3B700%3B900%26amp%3Bdisplay%3Dswap" rel="nofollow">
+    
     <style>
-        /* General game styling */
+        :root {
+            --primary-color: #10b981; /* Emerald Green for Money/Success */
+            --secondary-color: #6366f1; /* Indigo for actions */
+            --background-color: #111827; /* Deep Dark Gray/Black */
+            --card-color: #1f2937; /* Slightly lighter dark background for cards */
+            --font-color: #f3f4f6; /* Near White */
+        }
+ 
         body {
-            background-color: #1a1a1a;
-            color: #fff;
+            'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--font-color);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Press Start 2P', cursive;
-            overflow: hidden;
-            user-select: none;
+            /* MODIFICATION: Set a fixed height to prevent vertical scrolling */
+            height: 100vh; 
+            0;
+            padding: 1rem;
+            /* Prevent horizontal scrolling */
+            overflow: hidden; 
         }
-
+ 
         .game-container {
-            position: relative;
-            background-color: #333;
-            border: 4px solid #fff;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-            padding: 10px;
-            width: 90vw;
-            max-width: 800px;
-            height: 70vh;
-            max-height: 600px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        canvas {
-            background-color: #000;
-            border-radius: 8px;
             width: 100%;
-            height: 100%;
-            cursor: none;
+            /* MODIFICATION: Increased max-width for better use of space */
+            max-width: 1100px; 
+            background-color: var(--card-color);
+            border-radius: 1.5rem;
+            /* Softer, modern shadow for dark theme */
+            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.4); 
+            padding: 2rem;
+            border: 1px solid #374151; /* Subtle border */
+            /* MODIFICATION: Allow game content to scroll if it exceeds screen height */
+            overflow-y: auto; 
         }
-
-        /* UI elements */
-        .ui-top {
-            position: absolute;
-            top: 20px;
-            width: calc(100% - 40px);
+ 
+        .stat-card {
+            background-color: #374151; /* Darker card background */
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+ 
+        .action-button {
+            transition: all 0.3s;
+            transform: translateY(0);
+        }
+ 
+        .action-button:hover:not(:disabled) {
+            /* Use box-shadow based on primary color (Emerald) */
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3), 0 4px 6px -2px rgba(16, 185, 129, 0.1);
+            transform: translateY(-3px);
+        }
+ 
+        .action-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.4; /* More subtle disabled state */
+        }
+ 
+        /* Custom animation for rent collection */
+        @keyframes rentPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+ 
+        #passive-income-display {
             display: flex;
-            justify-content: center;
             align-items: center;
-            z-index: 10;
-        }
-
-        .health-bar-container {
-            background-color: #555;
-            height: 30px;
-            border: 2px solid #fff;
-            border-radius: 15px;
-            overflow: hidden;
-            width: 40%;
-            transition: all 0.3s ease-in-out;
-            margin: 0 10px;
-        }
-
-        .health-bar {
-            background-color: #3366ff; /* User player is blue */
-            height: 100%;
-            transition: width 0.3s ease-in-out;
-        }
-
-        .health-bar.enemy {
-            background-color: #ff3366; /* CPU player is red */
-        }
-        
-        #timer {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            padding: 0 20px;
-        }
-
-        /* Start/End game message box */
-        #message-box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 20px 40px;
-            border-radius: 10px;
-            border: 2px solid #fff;
-            text-align: center;
-            z-index: 20;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        #message-box.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        #message-text {
             font-size: 1.5rem;
-            margin-bottom: 20px;
+            font-weight: 900;
+            color: var(--primary-color);
         }
-
-        #start-button {
-            padding: 10px 20px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 1rem;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px #2e7d32;
-            transition: all 0.2s ease-in-out;
+ 
+        #passive-income-display span {
+            animation: rentPulse 2s infinite ease-in-out;
+            0.75rem;
         }
-
-        #start-button:hover {
-            background-color: #66bb6a;
-            box-shadow: 0 2px #2e7d32;
-            transform: translateY(2px);
-        }
-
-        #start-button:active {
-            background-color: #2e7d32;
-            box-shadow: none;
-            transform: translateY(4px);
-        }
-
-        /* Boxing ring and crowd visuals */
-        .ring {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 20px;
-            background-color: #5d4037;
-            border-top: 5px solid #a1887f;
-            border-bottom: 5px solid #a1887f;
-            z-index: 5;
-        }
-
-        .crowd-line {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            height: 10px;
-            background: repeating-linear-gradient(
-                90deg,
-                #616161,
-                #616161 5px,
-                transparent 5px,
-                transparent 10px
-            );
-            z-index: 5;
+ 
+        /* Responsive adjustments */
+        @media (min-width: 640px) {
+            .grid-cols-2-sm {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
         }
     </style>
-    <script src="https://unpkg.com/tone@14.9.1/build/Tone.js"></script>
 </head>
 <body>
-    <div class="game-container">
-        <div class="ui-top">
-            <div class="health-bar-container">
-                <div id="playerHealth" class="health-bar" style="width: 100%;"></div>
-            </div>
-            <div id="timer">60</div>
-            <div class="health-bar-container">
-                <div id="enemyHealth" class="health-bar enemy" style="width: 100%;"></div>
-            </div>
+ 
+<div class="game-container">
+    <header class="text-center mb-8">
+        <h1 class="text-6xl font-black text-gray-100 tracking-tight">🏗️ SKYSCRAPER TYCOON</h1>
+        <p class="text-gray-400 mt-3 text-lg font-light">Build your empire, one unit at a time.</p>
+    </header>
+ 
+        <div class="mb-10 p-5 bg-indigo-900 border border-indigo-700 rounded-xl shadow-2xl">
+        <div class="flex justify-between text-base font-semibold mb-2">
+            <p class="text-indigo-300">
+                Current Level: <span id="level-display" class="font-black text-indigo-100 text-xl">1</span>
+            </p>
+            <p class="text-indigo-300">
+                XP Progress: <span id="xp-current-display" class="text-indigo-100">0</span> / <span id="xp-next-display" class="text-indigo-100">10</span> XP
+            </p>
         </div>
-        <canvas></canvas>
-        <div id="message-box" class="active">
-            <div id="message-text">Player: Arrow Keys, P (Attack), S (Block), O (Special)</div>
-            <button id="start-button">Start Game</button>
+        <div class="w-full bg-indigo-700 rounded-full h-3">
+            <div id="xp-bar" class="bg-indigo-400 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
-        <div class="ring"></div>
-        <div class="crowd-line"></div>
+        <p class="text-xs text-indigo-400 mt-2">Earn XP by building Apartment Units!</p>
     </div>
-
-    <script>
-        // Get the canvas and context
-        const canvas = document.querySelector('canvas');
-        const c = canvas.getContext('2d');
-
-        // Set the canvas dimensions to match the container
-        const gameContainer = document.querySelector('.game-container');
-        canvas.width = gameContainer.clientWidth;
-        canvas.height = gameContainer.clientHeight;
-
-        // Gravity constant for jumping
-        const gravity = 0.7;
-
-        // Sound effects using Tone.js
-        const punchSynth = new Tone.Synth({
-            oscillator: { type: 'sine' },
-            envelope: {
-                attack: 0.005,
-                decay: 0.1,
-                sustain: 0.0,
-                release: 0.1
-            }
-        }).toDestination();
+ 
+        <div id="stats-panel" class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                <div class="stat-card">
+            <p class="text-sm font-medium uppercase text-gray-400">Money</p>
+            <p id="money-display" class="text-4xl font-extrabold text-emerald-400">₹10,100</p>
+        </div>
+                <div class="stat-card">
+            <p class="text-sm font-medium uppercase text-gray-400">Units</p>
+            <p id="apartment-display" class="text-4xl font-extrabold text-indigo-400">0</p>
+        </div>
+                <div class="stat-card">
+            <p class="text-sm font-medium uppercase text-gray-400">Land (Blocks)</p>
+            <p id="land-display" class="text-4xl font-extrabold text-yellow-400">0</p>
+        </div>
+                <div class="stat-card">
+            <p class="text-sm font-medium uppercase text-gray-400">Rent Income (Per Tick)</p>
+            <div id="passive-income-display">
+                <p id="rent-rate-display" class="text-3xl font-bold">₹0.00</p>
+                <span id="rent-pulse"></span>
+            </div>
+        </div>
+    </div>
+ 
+        <div id="actions-panel" class="p-8 bg-gray-800 border border-gray-700 rounded-xl shadow-lg">
+        <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-3">Actions</h2>
+ 
+        <div class="grid grid-cols-1 grid-cols-2-sm lg:grid-cols-3 gap-6">
+ 
+                                    <div class="bg-blue-900/30 p-5 rounded-lg border border-blue-700 shadow-xl">
+                <h3 class="text-xl font-bold text-blue-300 mb-2">Buy Land 🗺️</h3>
+                <p class="text-sm text-gray-400 mb-3">Acquire more space for your massive skyscrapers!</p>
+                <p class="text-lg font-bold text-gray-100 mb-3">Cost: <span id="land-cost-display" class="text-blue-300">₹1,000</span></p>
+                <button id="buy-land-btn" class="action-button w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buyLand()">
+                    Buy 1 Land Block
+                </button>
+            </div>
+ 
+                        <div class="bg-emerald-900/30 p-5 rounded-lg border border-emerald-700 shadow-xl">
+                <h3 class="text-xl font-bold text-emerald-300 mb-2">Build Apartment Unit 🏢</h3>
+                <p class="text-sm text-gray-400 mb-3">Build an apartment. Requires land and generates rent. <span class="font-bold text-xs text-indigo-400">(+2 XP)</span></p>
+                <p class="text-lg font-bold text-gray-100 mb-3">
+                    Cost: <span id="apartment-cost-display" class="text-emerald-300">₹500</span> | Land: <span id="apartment-land-display">1</span>
+                </p>
+                <button id="build-apartment-btn" class="action-button w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buildApartment()">
+                    Build Unit
+                </button>
+            </div>
+ 
+                        <div class="bg-yellow-900/30 p-5 rounded-lg border border-yellow-700 shadow-xl">
+                <h3 class="text-xl font-bold text-yellow-300 mb-2">Upgrade Rent Value 📈</h3>
+                <p class="text-sm text-gray-400 mb-3">Increase rent value per apartment unit permanently.</p>
+                <p class="text-lg font-bold text-gray-100 mb-3">
+                    Cost: <span id="upgrade-cost-display" class="text-yellow-300">₹5,000</span> | Increase: <span id="upgrade-increase-display">+₹1.00</span>
+                </p>
+                <button id="upgrade-rent-btn" class="action-button w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="upgradeRentRate()">
+                    Upgrade Rental Value
+                </button>
+            </div>
+ 
+        </div>
+    </div>
+    
+        <div id="message-box" class="mt-8 p-4 bg-red-900/30 border border-red-700 text-red-300 rounded-lg hidden"></div>
+ 
+</div>
+ 
+<script>
+    // --- GAME STATE ---
+    let state = {
+        money: 10100, // Starting at 10,100 INR
+        land: 0,
+        apartments: 0,
+        rentPerUnit: 1.00,
+        landCost: 1000,
+        apartmentCost: 500,
+        rentUpgradeCost: 5000,
+        rentUpgradeIncrease: 1.00,
+        gameInterval: null,
+        gameTickMs: 1000, // Rent collected every 1000ms (1 second)
+ 
+        // New Level System State
+        level: 1,
+        xp: 0,
+        baseXPToNext: 10, 
+        xpToNextLevel: 10,
+        xpPerApartment: 2, 
+    };
+ 
+    // --- UTILITIES ---
+ 
+    /**
+     * Formats a number into a currency string (e.g., 12345.67 -> "₹12,345.67")
+     * @param {number} amount
+     */
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR', // Indian Rupee
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    }
+ 
+    /**
+     * Shows a temporary message in the message box.
+     * @param {string} message 
+     * @param {string} type 'success', 'error', 'info'
+     */
+    function showMessage(message, type = 'info') {
+        const box = document.getElementById('message-box');
+        box.textContent = message;
+        // High contrast colors for dark mode
+        const colorClass = type === 'error' ? 'bg-red-900/30 border border-red-700 text-red-300' : 
+                           type === 'success' ? 'bg-emerald-900/30 border border-emerald-700 text-emerald-300' : 
+                           'bg-blue-900/30 border border-blue-700 text-blue-300';
+ 
+        box.className = `mt-8 p-4 rounded-lg ${colorClass}`;
+        box.style.display = 'block';
+ 
+        setTimeout(() => {
+            box.style.display = 'none';
+        }, 3000);
+    }
+ 
+    // --- UI UPDATER ---
+ 
+    function updateUI() {
+        // Update Money, Apartments, Land, Rent
+        document.getElementById('money-display').textContent = formatCurrency(state.money);
+        document.getElementById('apartment-display').textContent = state.apartments.toLocaleString();
+        document.getElementById('land-display').textContent = state.land.toLocaleString();
         
-        const blockSynth = new Tone.Synth({
-            oscillator: { type: 'square' },
-            envelope: {
-                attack: 0.01,
-                decay: 0.05,
-                sustain: 0,
-                release: 0.1
-            }
-        }).toDestination();
-
-        const specialSynth = new Tone.MetalSynth({
-            frequency: 200,
-            envelope: {
-                attack: 0.001,
-                decay: 0.1,
-                sustain: 0.0,
-                release: 0.2
-            },
-            harmonicity: 3.1,
-            modulationIndex: 20,
-            resonance: 4000,
-            octaves: 1.5
-        }).toDestination();
-
-        // Fighter Class with more complex drawing logic
-        class Fighter {
-            constructor({ position, velocity, color, isFacingRight = true, isAI = false }) {
-                this.position = position;
-                this.velocity = velocity;
-                this.width = 50;
-                this.height = 100;
-                this.color = color;
-                this.isAttacking = false;
-                this.isSpecialAttacking = false;
-                this.canSpecialAttack = true;
-                this.isBlocking = false;
-                this.health = 100;
-                this.dead = false;
-                this.isFacingRight = isFacingRight;
-                this.isAI = isAI;
-                this.state = 'idle'; // New state property
-
-                // Attack box properties
-                this.attackBox = {
-                    position: { x: this.position.x, y: this.position.y },
-                    width: 70,
-                    height: 50
-                };
-            }
-
-            draw() {
-                // Determine color based on special attack and blocking state
-                let displayColor = this.color;
-                if (this.isBlocking) {
-                    displayColor = 'rgba(255, 255, 255, 0.5)';
-                } else if (this.isSpecialAttacking) {
-                    displayColor = 'rgba(255, 255, 0, 0.8)'; // Yellow flash for special attack
-                }
-
-                // Draw head
-                c.fillStyle = displayColor;
-                c.beginPath();
-                c.arc(this.position.x + this.width / 2, this.position.y + 15, 15, 0, Math.PI * 2, false);
-                c.fill();
-                c.closePath();
-
-                // Draw torso
-                c.fillRect(this.position.x + 10, this.position.y + 30, 30, 40);
-
-                // Draw legs
-                c.fillRect(this.position.x + 10, this.position.y + 70, 10, 30);
-                c.fillRect(this.position.x + 30, this.position.y + 70, 10, 30);
-
-                // Draw the punch if attacking
-                if (this.isAttacking) {
-                    c.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                    const punchX = this.isFacingRight ? this.position.x + this.width : this.position.x - this.attackBox.width;
-                    c.fillRect(punchX, this.position.y + 35, this.attackBox.width, this.attackBox.height);
-                }
-
-                // Draw the special attack effect if special attacking
-                if (this.isSpecialAttacking) {
-                    c.fillStyle = 'rgba(255, 255, 0, 0.5)';
-                    const specialPunchX = this.isFacingRight ? this.position.x + this.width : this.position.x - (this.attackBox.width + 30);
-                    c.fillRect(specialPunchX, this.position.y + 20, this.attackBox.width + 30, this.attackBox.height + 20);
-                }
-            }
-
-            update() {
-                if (this.dead) return;
-
-                // Update position
-                this.position.x += this.velocity.x;
-                this.position.y += this.velocity.y;
-
-                // Apply gravity and ground collision
-                if (this.position.y + this.height + this.velocity.y >= canvas.height) {
-                    this.velocity.y = 0;
-                    this.position.y = canvas.height - this.height; // Snap to the ground
-                } else {
-                    this.velocity.y += gravity;
-                }
-
-                this.draw();
-            }
-
-            attack() {
-                this.isAttacking = true;
-                punchSynth.triggerAttackRelease('C4', '8n');
-                setTimeout(() => {
-                    this.isAttacking = false;
-                }, 100);
-            }
-
-            specialAttack() {
-                if (!this.canSpecialAttack) return;
-                this.isSpecialAttacking = true;
-                this.canSpecialAttack = false;
-                specialSynth.triggerAttackRelease('C2', '2n');
-
-                // Reset special attack after a short duration
-                setTimeout(() => {
-                    this.isSpecialAttacking = false;
-                }, 200);
-
-                // Start cooldown timer
-                setTimeout(() => {
-                    this.canSpecialAttack = true;
-                }, 5000); // 5-second cooldown
-            }
-
-            block() {
-                this.isBlocking = true;
-            }
-
-            stopBlock() {
-                this.isBlocking = false;
-            }
-        }
-
-        // Initialize players
-        const player = new Fighter({
-            position: { x: canvas.width - 50, y: 0 },
-            velocity: { x: 0, y: 0 },
-            color: '#3366ff',
-            isFacingRight: false // Start facing left
-        });
-
-        const enemy = new Fighter({
-            position: { x: 0, y: 0 },
-            velocity: { x: 0, y: 0 },
-            color: '#ff3366',
-            isFacingRight: true,
-            isAI: true
-        });
-
-        // Key states for smooth movement
-        const keys = {
-            ArrowLeft: { pressed: false },
-            ArrowRight: { pressed: false },
-            s: { pressed: false }
-        };
-
-        // Collision detection function
-        function rectangularCollision({ rectangle1, rectangle2, special = false }) {
-            const attackBox = {
-                position: {
-                    x: rectangle1.position.x + (rectangle1.isFacingRight ? rectangle1.width : -rectangle1.attackBox.width),
-                    y: rectangle1.position.y + 35
-                },
-                width: rectangle1.attackBox.width,
-                height: rectangle1.attackBox.height
-            };
-
-            if (special) {
-                // Adjust for special attack
-                attackBox.width += 30;
-                attackBox.height += 20;
-                attackBox.position.x = rectangle1.position.x + (rectangle1.isFacingRight ? rectangle1.width : -attackBox.width);
-                attackBox.position.y = rectangle1.position.y + 20;
-            }
-
-            return (
-                attackBox.position.x + attackBox.width >= rectangle2.position.x &&
-                attackBox.position.x <= rectangle2.position.x + rectangle2.width &&
-                attackBox.position.y + attackBox.height >= rectangle2.position.y &&
-                attackBox.position.y <= rectangle2.position.y + rectangle2.height
+        const totalRent = state.apartments * state.rentPerUnit;
+        document.getElementById('rent-rate-display').textContent = formatCurrency(totalRent);
+ 
+        // Update Level UI
+        const xpRatio = state.xp / state.xpToNextLevel;
+        document.getElementById('level-display').textContent = state.level.toLocaleString();
+        document.getElementById('xp-current-display').textContent = state.xp.toLocaleString();
+        document.getElementById('xp-next-display').textContent = state.xpToNextLevel.toLocaleString();
+        // Calculate percentage for the bar, capped at 100%
+        document.getElementById('xp-bar').style.width = `${Math.min(100, xpRatio * 100)}%`; 
+ 
+        // Update Action Costs/Requirements
+        document.getElementById('land-cost-display').textContent = formatCurrency(state.landCost);
+        document.getElementById('apartment-cost-display').textContent = formatCurrency(state.apartmentCost);
+        document.getElementById('upgrade-cost-display').textContent = formatCurrency(state.rentUpgradeCost);
+        document.getElementById('upgrade-increase-display').textContent = `+${formatCurrency(state.rentUpgradeIncrease)}`;
+        
+        // Update button states (Enable/Disable)
+        const buyLandBtn = document.getElementById('buy-land-btn');
+        const buildApartmentBtn = document.getElementById('build-apartment-btn');
+        const upgradeRentBtn = document.getElementById('upgrade-rent-btn');
+ 
+        buyLandBtn.disabled = state.money < state.landCost;
+        buildApartmentBtn.disabled = state.money < state.apartmentCost || state.land < 1;
+        upgradeRentBtn.disabled = state.money < state.rentUpgradeCost;
+    }
+ 
+    // --- LEVEL SYSTEM LOGIC ---
+ 
+    /**
+     * Checks if a level up occurred and applies rewards.
+     */
+    function checkLevelUp() {
+        // Use a while loop to handle gaining multiple levels at once
+        while (state.xp >= state.xpToNextLevel) {
+            // Level Up!
+            state.xp -= state.xpToNextLevel; // Carry over excess XP
+            state.level += 1;
+            
+            // Calculate new XP required: Base * Current Level (e.g., L2 needs 10*2=20, L3 needs 10*3=30)
+            state.xpToNextLevel = state.baseXPToNext * state.level; 
+ 
+            // Rewards: Increase cash reward and rent boost with level
+            const rewardMoney = state.level * 5000;
+            const rewardRentIncrease = 0.50 + (state.level * 0.10); 
+            
+            state.money += rewardMoney;
+            state.rentPerUnit += rewardRentIncrease;
+ 
+            showMessage(
+                `LEVEL UP! You are now Level ${state.level}! Gained ${formatCurrency(rewardMoney)} and Rent per unit increased by ${formatCurrency(rewardRentIncrease)}!`, 
+                'success'
             );
         }
-
-        // Timer and game state variables
-        let timer = 60;
-        let timerId;
-        const messageBox = document.getElementById('message-box');
-        const messageText = document.getElementById('message-text');
-        const startButton = document.getElementById('start-button');
-        const playerHealthBar = document.getElementById('playerHealth');
-        const enemyHealthBar = document.getElementById('enemyHealth');
-
-        // Function to determine winner and end game
-        function determineWinner({ player, enemy, timerId }) {
-            clearTimeout(timerId);
-            messageBox.classList.add('active');
-            if (player.health === enemy.health) {
-                messageText.innerHTML = 'It\'s a Tie!';
-            } else if (player.health > enemy.health) {
-                messageText.innerHTML = 'You Win!';
-            } else {
-                messageText.innerHTML = 'CPU Wins!';
-            }
-        }
-
-        // Main animation loop
-        function animate() {
-            const animationId = window.requestAnimationFrame(animate);
-            // Clear the canvas for the next frame
-            c.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Update and draw players
-            player.update();
-            enemy.update();
-
-            // Player control logic (Blue Boxer)
-            player.velocity.x = 0;
-            if (keys.ArrowLeft.pressed) {
-                player.velocity.x = -3;
-                player.isFacingRight = false;
-            } else if (keys.ArrowRight.pressed) {
-                player.velocity.x = 3;
-                player.isFacingRight = true;
-            }
-            if (keys.s.pressed) {
-                player.block();
-            } else {
-                player.stopBlock();
-            }
-
-
-            // CPU AI control logic (Red Boxer)
-            enemy.velocity.x = 0;
-            const distance = player.position.x - enemy.position.x;
-            const attackRange = 100;
-            const specialAttackRange = 130;
-            const moveSpeed = 2;
-
-            if (enemy.position.x > player.position.x) {
-                 enemy.isFacingRight = false;
-            } else {
-                enemy.isFacingRight = true;
-            }
+        updateUI();
+    }
+ 
+ 
+    // --- GAME LOGIC ---
+ 
+    /**
+     * The main game loop function, called every second (game tick).
+     */
+    function gameLoop() {
+        const passiveIncome = state.apartments * state.rentPerUnit;
+        
+        if (passiveIncome > 0) {
+            state.money += passiveIncome;
             
-            // AI decision making
-            // Simple logic: if in special attack range, use it. If in normal range, use normal attack. Otherwise, move towards the player.
-            // Also, if player is attacking, try to block.
-            enemy.stopBlock();
-            if (player.isAttacking) {
-                // If player is attacking, AI tries to block
-                enemy.block();
-            } else if (Math.abs(distance) <= specialAttackRange && enemy.canSpecialAttack) {
-                // If in special attack range and ready, use special attack
-                enemy.specialAttack();
-            } else if (Math.abs(distance) <= attackRange) {
-                // If in normal attack range, use normal attack
-                enemy.attack();
-            } else {
-                // If out of range, move closer
-                if (distance > 0) {
-                    enemy.velocity.x = moveSpeed;
-                } else {
-                    enemy.velocity.x = -moveSpeed;
-                }
-            }
-
-
-            // Player attacks enemy
-            if (rectangularCollision({ rectangle1: player, rectangle2: enemy }) && player.isAttacking) {
-                player.isAttacking = false;
-                const damage = enemy.isBlocking ? 5 : 20;
-                enemy.health -= damage;
-                enemyHealthBar.style.width = enemy.health + '%';
-                if (enemy.isBlocking) {
-                    blockSynth.triggerAttackRelease('C5', '8n');
-                } else {
-                    punchSynth.triggerAttackRelease('C4', '8n');
-                }
-            }
-
-            // Player special attacks enemy
-            if (rectangularCollision({ rectangle1: player, rectangle2: enemy, special: true }) && player.isSpecialAttacking) {
-                const damage = enemy.isBlocking ? 10 : 50;
-                enemy.health -= damage;
-                enemyHealthBar.style.width = enemy.health + '%';
-                if (enemy.isBlocking) {
-                    blockSynth.triggerAttackRelease('C5', '8n');
-                }
-            }
-
-            // Enemy attacks player
-            if (rectangularCollision({ rectangle1: enemy, rectangle2: player }) && enemy.isAttacking) {
-                enemy.isAttacking = false;
-                const damage = player.isBlocking ? 5 : 20;
-                player.health -= damage;
-                playerHealthBar.style.width = player.health + '%';
-                if (player.isBlocking) {
-                    blockSynth.triggerAttackRelease('C5', '8n');
-                } else {
-                    punchSynth.triggerAttackRelease('C4', '8n');
-                }
-            }
-
-            // Enemy special attacks player
-            if (rectangularCollision({ rectangle1: enemy, rectangle2: player, special: true }) && enemy.isSpecialAttacking) {
-                const damage = player.isBlocking ? 10 : 50;
-                player.health -= damage;
-                playerHealthBar.style.width = player.health + '%';
-                if (player.isBlocking) {
-                    blockSynth.triggerAttackRelease('C5', '8n');
-                }
-            }
-
-            // End game based on health
-            if (enemy.health <= 0 || player.health <= 0) {
-                determineWinner({ player, enemy, timerId });
-                player.dead = true;
-                enemy.dead = true;
-                cancelAnimationFrame(animationId);
-            }
+            // Show a visual pulse on the rent display
+            const rentPulse = document.getElementById('rent-pulse');
+            rentPulse.textContent = `+${formatCurrency(passiveIncome)}`;
+            rentPulse.classList.add('animate-pulse');
+            setTimeout(() => {
+                rentPulse.textContent = '';
+                rentPulse.classList.remove('animate-pulse');
+            }, 500);
         }
-
-        // Function to decrease timer
-        function decreaseTimer() {
-            if (timer > 0) {
-                timerId = setTimeout(decreaseTimer, 1000);
-                timer--;
-                document.getElementById('timer').innerHTML = timer;
-            }
-
-            if (timer === 0) {
-                determineWinner({ player, enemy, timerId });
-            }
+ 
+        updateUI();
+    }
+ 
+    /**
+     * Action: Buys one block of land.
+     */
+    function buyLand() {
+        if (state.money >= state.landCost) {
+            const cost = state.landCost; // Store cost before modification
+            state.money -= cost;
+            state.land += 1;
+            
+            // Dynamic cost increase for land
+            state.landCost = Math.ceil(state.landCost * 1.5 / 100) * 100; // Increase by 50%, rounded to nearest 100
+            
+            showMessage(`Purchased 1 Land Block for ${formatCurrency(cost)}!`, 'info');
+            updateUI();
+        } else {
+            showMessage('Not enough money to buy land!', 'error');
         }
-
-        // Event listeners for player controls
-        window.addEventListener('keydown', (event) => {
-            if (!player.dead) {
-                switch (event.key) {
-                    case 'ArrowRight':
-                        keys.ArrowRight.pressed = true;
-                        break;
-                    case 'ArrowLeft':
-                        keys.ArrowLeft.pressed = true;
-                        break;
-                    case 'ArrowUp':
-                        // Only jump if on the ground
-                        if (player.position.y + player.height >= canvas.height - 1) {
-                            player.velocity.y = -20;
-                        }
-                        break;
-                    case 'p':
-                        player.attack();
-                        break;
-                    case 's':
-                        keys.s.pressed = true;
-                        break;
-                    case 'o':
-                        player.specialAttack();
-                        break;
-                }
-            }
-        });
-
-        window.addEventListener('keyup', (event) => {
-            switch (event.key) {
-                case 'ArrowRight':
-                    keys.ArrowRight.pressed = false;
-                    break;
-                case 'ArrowLeft':
-                    keys.ArrowLeft.pressed = false;
-                    break;
-                case 's':
-                    keys.s.pressed = false;
-                    break;
-            }
-        });
-
-        // Start game button functionality
-        startButton.addEventListener('click', () => {
-            messageBox.classList.remove('active');
-            // Reset game state
-            player.health = 10000;
-            enemy.health = 100;
-            player.dead = false;
-            enemy.dead = false;
-            playerHealthBar.style.width = '100%';
-            enemyHealthBar.style.width = '100%';
-            player.position.x = canvas.width - 50;
-            player.position.y = 0;
-            enemy.position.x = 0;
-            enemy.position.y = 0;
-            player.velocity.x = 0;
-            player.velocity.y = 0;
-            enemy.velocity.x = 0;
-            enemy.velocity.y = 0;
-
-            timer = 60;
-            document.getElementById('timer').innerHTML = timer;
-            decreaseTimer();
-            animate();
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            canvas.width = gameContainer.clientWidth;
-            canvas.height = gameContainer.clientHeight;
-            player.position.x = canvas.width - 50;
-            player.position.y = 0;
-            enemy.position.x = 0;
-            enemy.position.y = 0;
-        });
-    </script>
+    }
+ 
+    /**
+     * Action: Builds one apartment unit.
+     */
+    function buildApartment() {
+        if (state.money >= state.apartmentCost && state.land >= 1) {
+            const cost = state.apartmentCost; // Store cost before modification
+            
+            state.money -= cost;
+            state.land -= 1;
+            state.apartments += 1;
+            
+            // XP Gain and Level Check
+            state.xp += state.xpPerApartment;
+            checkLevelUp();
+            
+            // Dynamic cost increase for apartments
+            state.apartmentCost = Math.ceil(state.apartmentCost * 1.25 / 100) * 100; // Increase by 25%, rounded to nearest 100
+            
+            showMessage(`Built 1 Apartment Unit for ${formatCurrency(cost)}! Gained ${state.xpPerApartment} XP.`, 'success');
+            updateUI();
+        } else if (state.land < 1) {
+            showMessage('Not enough land! Buy more land first.', 'error');
+        } else {
+            showMessage('Not enough money to build an apartment!', 'error');
+        }
+    }
+ 
+    /**
+     * Action: Upgrades the rent rate for all apartments.
+     */
+    function upgradeRentRate() {
+        if (state.money >= state.rentUpgradeCost) {
+            const cost = state.rentUpgradeCost; // Store cost before modification
+            
+            state.money -= cost;
+            state.rentPerUnit += state.rentUpgradeIncrease;
+            
+            // Dynamic cost and increase for upgrades
+            state.rentUpgradeCost = Math.ceil(state.rentUpgradeCost * 1.8 / 1000) * 1000; // Increase cost by 80%, rounded to nearest 1000
+            state.rentUpgradeIncrease += 1.00; // Increase subsequent rent boost by $1.00
+            
+            showMessage(`Rent rate upgraded for ${formatCurrency(cost)}! Each unit now earns ${formatCurrency(state.rentPerUnit)} per tick.`, 'info');
+            updateUI();
+        } else {
+            showMessage('Not enough money for the rent upgrade!', 'error');
+        }
+    }
+ 
+    // --- INITIALIZATION ---
+ 
+    function initGame() {
+        updateUI(); // Set initial UI values
+        
+        // Start the game loop
+        state.gameInterval = setInterval(gameLoop, state.gameTickMs);
+        
+        // Initial encouragement message
+        showMessage("Welcome to Skyscraper Tycoon! Start by buying land and building to gain XP and Level Up!", 'info');
+    }
+ 
+    window.onload = initGame;
+</script>
+ 
 </body>
 </html>
+
