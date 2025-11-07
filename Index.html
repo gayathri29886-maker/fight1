@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skyscraper Tycoon</title>
     <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://justpaste.it/redirect/eb7zr/https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DInter%3Awght%40300%3B400%3B700%3B900%26amp%3Bdisplay%3Dswap" rel="nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&amp;display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -15,66 +15,74 @@
             --card-color: #1f2937; /* Slightly lighter dark background for cards */
             --font-color: #f3f4f6; /* Near White */
         }
- 
+
         body {
-            'Inter', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--background-color);
             color: var(--font-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            /* MODIFICATION: Set a fixed height to prevent vertical scrolling */
-            height: 100vh; 
-            0;
+            
+            /* MODIFICATION: Enforce Full Screen Height */
+            height: 100vh;
+            margin: 0; 
             padding: 1rem;
-            /* Prevent horizontal scrolling */
-            overflow: hidden; 
+            /* Prevent both horizontal and vertical scrolling on the main window */
+            overflow: hidden; 
         }
- 
+
         .game-container {
             width: 100%;
-            /* MODIFICATION: Increased max-width for better use of space */
-            max-width: 1100px; 
+            max-width: 1100px;
             background-color: var(--card-color);
             border-radius: 1.5rem;
-            /* Softer, modern shadow for dark theme */
-            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.4); 
+            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.4);
             padding: 2rem;
             border: 1px solid #374151; /* Subtle border */
-            /* MODIFICATION: Allow game content to scroll if it exceeds screen height */
-            overflow-y: auto; 
+            
+            /* MODIFICATION: Use flex column to stack content vertically */
+            display: flex;
+            flex-direction: column;
+            
+            /* MODIFICATION: Use fixed max-height relative to viewport height */
+            /* 100vh minus the 1rem top and 1rem bottom padding on the body */
+            max-height: calc(100vh - 2rem); 
+            
+            /* MODIFICATION: NO SCROLLING on the container itself */
+            overflow-y: hidden; 
         }
- 
+
         .stat-card {
             background-color: #374151; /* Darker card background */
             padding: 1.25rem;
             border-radius: 0.75rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
- 
+
         .action-button {
             transition: all 0.3s;
             transform: translateY(0);
         }
- 
+
         .action-button:hover:not(:disabled) {
             /* Use box-shadow based on primary color (Emerald) */
             box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3), 0 4px 6px -2px rgba(16, 185, 129, 0.1);
             transform: translateY(-3px);
         }
- 
+
         .action-button:disabled {
             cursor: not-allowed;
             opacity: 0.4; /* More subtle disabled state */
         }
- 
+
         /* Custom animation for rent collection */
         @keyframes rentPulse {
             0% { transform: scale(1); opacity: 0.8; }
             50% { transform: scale(1.03); opacity: 1; }
             100% { transform: scale(1); opacity: 0.8; }
         }
- 
+
         #passive-income-display {
             display: flex;
             align-items: center;
@@ -82,12 +90,12 @@
             font-weight: 900;
             color: var(--primary-color);
         }
- 
+
         #passive-income-display span {
             animation: rentPulse 2s infinite ease-in-out;
-            0.75rem;
+            margin-left: 0.75rem;
         }
- 
+
         /* Responsive adjustments */
         @media (min-width: 640px) {
             .grid-cols-2-sm {
@@ -97,93 +105,95 @@
     </style>
 </head>
 <body>
- 
+
 <div class="game-container">
-    <header class="text-center mb-8">
+    <header class="text-center mb-8 flex-shrink-0">
         <h1 class="text-6xl font-black text-gray-100 tracking-tight">🏗️ SKYSCRAPER TYCOON</h1>
         <p class="text-gray-400 mt-3 text-lg font-light">Build your empire, one unit at a time.</p>
     </header>
- 
-        <div class="mb-10 p-5 bg-indigo-900 border border-indigo-700 rounded-xl shadow-2xl">
-        <div class="flex justify-between text-base font-semibold mb-2">
-            <p class="text-indigo-300">
-                Current Level: <span id="level-display" class="font-black text-indigo-100 text-xl">1</span>
-            </p>
-            <p class="text-indigo-300">
-                XP Progress: <span id="xp-current-display" class="text-indigo-100">0</span> / <span id="xp-next-display" class="text-indigo-100">10</span> XP
-            </p>
+
+    <div class="flex-grow overflow-y-auto pr-2"> 
+        
+        <div class="mb-10 p-5 bg-indigo-900 border border-indigo-700 rounded-xl shadow-2xl flex-shrink-0">
+            <div class="flex justify-between text-base font-semibold mb-2">
+                <p class="text-indigo-300">
+                    Current Level: <span id="level-display" class="font-black text-indigo-100 text-xl">1</span>
+                </p>
+                <p class="text-indigo-300">
+                    XP Progress: <span id="xp-current-display" class="text-indigo-100">0</span> / <span id="xp-next-display" class="text-indigo-100">10</span> XP
+                </p>
+            </div>
+            <div class="w-full bg-indigo-700 rounded-full h-3">
+                <div id="xp-bar" class="bg-indigo-400 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p class="text-xs text-indigo-400 mt-2">Earn XP by building Apartment Units!</p>
         </div>
-        <div class="w-full bg-indigo-700 rounded-full h-3">
-            <div id="xp-bar" class="bg-indigo-400 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
-        </div>
-        <p class="text-xs text-indigo-400 mt-2">Earn XP by building Apartment Units!</p>
-    </div>
- 
-        <div id="stats-panel" class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-                <div class="stat-card">
-            <p class="text-sm font-medium uppercase text-gray-400">Money</p>
-            <p id="money-display" class="text-4xl font-extrabold text-emerald-400">₹10,100</p>
-        </div>
-                <div class="stat-card">
-            <p class="text-sm font-medium uppercase text-gray-400">Units</p>
-            <p id="apartment-display" class="text-4xl font-extrabold text-indigo-400">0</p>
-        </div>
-                <div class="stat-card">
-            <p class="text-sm font-medium uppercase text-gray-400">Land (Blocks)</p>
-            <p id="land-display" class="text-4xl font-extrabold text-yellow-400">0</p>
-        </div>
-                <div class="stat-card">
-            <p class="text-sm font-medium uppercase text-gray-400">Rent Income (Per Tick)</p>
-            <div id="passive-income-display">
-                <p id="rent-rate-display" class="text-3xl font-bold">₹0.00</p>
-                <span id="rent-pulse"></span>
+
+        <div id="stats-panel" class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 flex-shrink-0">
+            <div class="stat-card">
+                <p class="text-sm font-medium uppercase text-gray-400">Money</p>
+                <p id="money-display" class="text-4xl font-extrabold text-emerald-400">₹10,100</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-sm font-medium uppercase text-gray-400">Units</p>
+                <p id="apartment-display" class="text-4xl font-extrabold text-indigo-400">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-sm font-medium uppercase text-gray-400">Land (Blocks)</p>
+                <p id="land-display" class="text-4xl font-extrabold text-yellow-400">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-sm font-medium uppercase text-gray-400">Rent Income (Per Tick)</p>
+                <div id="passive-income-display">
+                    <p id="rent-rate-display" class="text-3xl font-bold">₹0.00</p>
+                    <span id="rent-pulse"></span>
+                </div>
             </div>
         </div>
-    </div>
- 
+
         <div id="actions-panel" class="p-8 bg-gray-800 border border-gray-700 rounded-xl shadow-lg">
-        <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-3">Actions</h2>
- 
-        <div class="grid grid-cols-1 grid-cols-2-sm lg:grid-cols-3 gap-6">
- 
-                                    <div class="bg-blue-900/30 p-5 rounded-lg border border-blue-700 shadow-xl">
-                <h3 class="text-xl font-bold text-blue-300 mb-2">Buy Land 🗺️</h3>
-                <p class="text-sm text-gray-400 mb-3">Acquire more space for your massive skyscrapers!</p>
-                <p class="text-lg font-bold text-gray-100 mb-3">Cost: <span id="land-cost-display" class="text-blue-300">₹1,000</span></p>
-                <button id="buy-land-btn" class="action-button w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buyLand()">
-                    Buy 1 Land Block
-                </button>
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-3">Actions</h2>
+
+            <div class="grid grid-cols-1 grid-cols-2-sm lg:grid-cols-3 gap-6">
+
+                <div class="bg-blue-900/30 p-5 rounded-lg border border-blue-700 shadow-xl">
+                    <h3 class="text-xl font-bold text-blue-300 mb-2">Buy Land 🗺️</h3>
+                    <p class="text-sm text-gray-400 mb-3">Acquire more space for your massive skyscrapers!</p>
+                    <p class="text-lg font-bold text-gray-100 mb-3">Cost: <span id="land-cost-display" class="text-blue-300">₹1,000</span></p>
+                    <button id="buy-land-btn" class="action-button w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buyLand()">
+                        Buy 1 Land Block
+                    </button>
+                </div>
+
+                <div class="bg-emerald-900/30 p-5 rounded-lg border border-emerald-700 shadow-xl">
+                    <h3 class="text-xl font-bold text-emerald-300 mb-2">Build Apartment Unit 🏢</h3>
+                    <p class="text-sm text-gray-400 mb-3">Build an apartment. Requires land and generates rent. <span class="font-bold text-xs text-indigo-400">(+2 XP)</span></p>
+                    <p class="text-lg font-bold text-gray-100 mb-3">
+                        Cost: <span id="apartment-cost-display" class="text-emerald-300">₹500</span> | Land: <span id="apartment-land-display">1</span>
+                    </p>
+                    <button id="build-apartment-btn" class="action-button w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buildApartment()">
+                        Build Unit
+                    </button>
+                </div>
+
+                <div class="bg-yellow-900/30 p-5 rounded-lg border border-yellow-700 shadow-xl">
+                    <h3 class="text-xl font-bold text-yellow-300 mb-2">Upgrade Rent Value 📈</h3>
+                    <p class="text-sm text-gray-400 mb-3">Increase rent value per apartment unit permanently.</p>
+                    <p class="text-lg font-bold text-gray-100 mb-3">
+                        Cost: <span id="upgrade-cost-display" class="text-yellow-300">₹5,000</span> | Increase: <span id="upgrade-increase-display">+₹1.00</span>
+                    </p>
+                    <button id="upgrade-rent-btn" class="action-button w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="upgradeRentRate()">
+                        Upgrade Rental Value
+                    </button>
+                </div>
+
             </div>
- 
-                        <div class="bg-emerald-900/30 p-5 rounded-lg border border-emerald-700 shadow-xl">
-                <h3 class="text-xl font-bold text-emerald-300 mb-2">Build Apartment Unit 🏢</h3>
-                <p class="text-sm text-gray-400 mb-3">Build an apartment. Requires land and generates rent. <span class="font-bold text-xs text-indigo-400">(+2 XP)</span></p>
-                <p class="text-lg font-bold text-gray-100 mb-3">
-                    Cost: <span id="apartment-cost-display" class="text-emerald-300">₹500</span> | Land: <span id="apartment-land-display">1</span>
-                </p>
-                <button id="build-apartment-btn" class="action-button w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buildApartment()">
-                    Build Unit
-                </button>
-            </div>
- 
-                        <div class="bg-yellow-900/30 p-5 rounded-lg border border-yellow-700 shadow-xl">
-                <h3 class="text-xl font-bold text-yellow-300 mb-2">Upgrade Rent Value 📈</h3>
-                <p class="text-sm text-gray-400 mb-3">Increase rent value per apartment unit permanently.</p>
-                <p class="text-lg font-bold text-gray-100 mb-3">
-                    Cost: <span id="upgrade-cost-display" class="text-yellow-300">₹5,000</span> | Increase: <span id="upgrade-increase-display">+₹1.00</span>
-                </p>
-                <button id="upgrade-rent-btn" class="action-button w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="upgradeRentRate()">
-                    Upgrade Rental Value
-                </button>
-            </div>
- 
         </div>
-    </div>
-    
-        <div id="message-box" class="mt-8 p-4 bg-red-900/30 border border-red-700 text-red-300 rounded-lg hidden"></div>
- 
-</div>
- 
+        
+        <div id="message-box" class="mt-8 p-4 bg-red-900/30 border border-red-700 text-red-300 rounded-lg hidden flex-shrink-0"></div>
+
+    </div> </div>
+
 <script>
     // --- GAME STATE ---
     let state = {
@@ -197,17 +207,17 @@
         rentUpgradeIncrease: 1.00,
         gameInterval: null,
         gameTickMs: 1000, // Rent collected every 1000ms (1 second)
- 
-        // New Level System State
+
+        // Level System State
         level: 1,
         xp: 0,
-        baseXPToNext: 10, 
+        baseXPToNext: 10, 
         xpToNextLevel: 10,
-        xpPerApartment: 2, 
+        xpPerApartment: 2, 
     };
- 
+
     // --- UTILITIES ---
- 
+
     /**
      * Formats a number into a currency string (e.g., 12345.67 -> "₹12,345.67")
      * @param {number} amount
@@ -220,30 +230,30 @@
             maximumFractionDigits: 2
         }).format(amount);
     }
- 
+
     /**
      * Shows a temporary message in the message box.
-     * @param {string} message 
+     * @param {string} message 
      * @param {string} type 'success', 'error', 'info'
      */
     function showMessage(message, type = 'info') {
         const box = document.getElementById('message-box');
         box.textContent = message;
         // High contrast colors for dark mode
-        const colorClass = type === 'error' ? 'bg-red-900/30 border border-red-700 text-red-300' : 
-                           type === 'success' ? 'bg-emerald-900/30 border border-emerald-700 text-emerald-300' : 
+        const colorClass = type === 'error' ? 'bg-red-900/30 border border-red-700 text-red-300' : 
+                           type === 'success' ? 'bg-emerald-900/30 border border-emerald-700 text-emerald-300' : 
                            'bg-blue-900/30 border border-blue-700 text-blue-300';
- 
+
         box.className = `mt-8 p-4 rounded-lg ${colorClass}`;
         box.style.display = 'block';
- 
+
         setTimeout(() => {
             box.style.display = 'none';
         }, 3000);
     }
- 
+
     // --- UI UPDATER ---
- 
+
     function updateUI() {
         // Update Money, Apartments, Land, Rent
         document.getElementById('money-display').textContent = formatCurrency(state.money);
@@ -252,15 +262,15 @@
         
         const totalRent = state.apartments * state.rentPerUnit;
         document.getElementById('rent-rate-display').textContent = formatCurrency(totalRent);
- 
+
         // Update Level UI
         const xpRatio = state.xp / state.xpToNextLevel;
         document.getElementById('level-display').textContent = state.level.toLocaleString();
         document.getElementById('xp-current-display').textContent = state.xp.toLocaleString();
         document.getElementById('xp-next-display').textContent = state.xpToNextLevel.toLocaleString();
         // Calculate percentage for the bar, capped at 100%
-        document.getElementById('xp-bar').style.width = `${Math.min(100, xpRatio * 100)}%`; 
- 
+        document.getElementById('xp-bar').style.width = `${Math.min(100, xpRatio * 100)}%`; 
+
         // Update Action Costs/Requirements
         document.getElementById('land-cost-display').textContent = formatCurrency(state.landCost);
         document.getElementById('apartment-cost-display').textContent = formatCurrency(state.apartmentCost);
@@ -271,14 +281,14 @@
         const buyLandBtn = document.getElementById('buy-land-btn');
         const buildApartmentBtn = document.getElementById('build-apartment-btn');
         const upgradeRentBtn = document.getElementById('upgrade-rent-btn');
- 
+
         buyLandBtn.disabled = state.money < state.landCost;
         buildApartmentBtn.disabled = state.money < state.apartmentCost || state.land < 1;
         upgradeRentBtn.disabled = state.money < state.rentUpgradeCost;
     }
- 
+
     // --- LEVEL SYSTEM LOGIC ---
- 
+
     /**
      * Checks if a level up occurred and applies rewards.
      */
@@ -290,26 +300,26 @@
             state.level += 1;
             
             // Calculate new XP required: Base * Current Level (e.g., L2 needs 10*2=20, L3 needs 10*3=30)
-            state.xpToNextLevel = state.baseXPToNext * state.level; 
- 
+            state.xpToNextLevel = state.baseXPToNext * state.level; 
+
             // Rewards: Increase cash reward and rent boost with level
             const rewardMoney = state.level * 5000;
-            const rewardRentIncrease = 0.50 + (state.level * 0.10); 
+            const rewardRentIncrease = 0.50 + (state.level * 0.10); 
             
             state.money += rewardMoney;
             state.rentPerUnit += rewardRentIncrease;
- 
+
             showMessage(
-                `LEVEL UP! You are now Level ${state.level}! Gained ${formatCurrency(rewardMoney)} and Rent per unit increased by ${formatCurrency(rewardRentIncrease)}!`, 
+                `LEVEL UP! You are now Level ${state.level}! Gained ${formatCurrency(rewardMoney)} and Rent per unit increased by ${formatCurrency(rewardRentIncrease)}!`, 
                 'success'
             );
         }
         updateUI();
     }
- 
- 
+
+
     // --- GAME LOGIC ---
- 
+
     /**
      * The main game loop function, called every second (game tick).
      */
@@ -328,10 +338,10 @@
                 rentPulse.classList.remove('animate-pulse');
             }, 500);
         }
- 
+
         updateUI();
     }
- 
+
     /**
      * Action: Buys one block of land.
      */
@@ -350,7 +360,7 @@
             showMessage('Not enough money to buy land!', 'error');
         }
     }
- 
+
     /**
      * Action: Builds one apartment unit.
      */
@@ -377,7 +387,7 @@
             showMessage('Not enough money to build an apartment!', 'error');
         }
     }
- 
+
     /**
      * Action: Upgrades the rent rate for all apartments.
      */
@@ -398,9 +408,9 @@
             showMessage('Not enough money for the rent upgrade!', 'error');
         }
     }
- 
+
     // --- INITIALIZATION ---
- 
+
     function initGame() {
         updateUI(); // Set initial UI values
         
@@ -410,10 +420,14 @@
         // Initial encouragement message
         showMessage("Welcome to Skyscraper Tycoon! Start by buying land and building to gain XP and Level Up!", 'info');
     }
- 
+
+    // Expose functions to the global scope for HTML onclick attributes
+    window.buyLand = buyLand;
+    window.buildApartment = buildApartment;
+    window.upgradeRentRate = upgradeRentRate;
+    
     window.onload = initGame;
 </script>
- 
+
 </body>
 </html>
-
