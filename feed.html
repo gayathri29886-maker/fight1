@@ -131,6 +131,11 @@
     <div class="game-container">
         <header class="text-center mb-8 relative">
             <h1 class="text-5xl font-extrabold text-white">Skyscraper Tycoon</h1>
+            
+            <p id="win-hint" class="text-xl font-bold text-yellow-400 mt-2 tracking-wider">
+                **Goal:** Get to Level 100 to Win!
+            </p>
+            
             <button onclick="openSettingsModal()" class="action-button absolute top-0 right-0 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg text-sm transition duration-150 shadow-md">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.496 14.288a3.978 3.978 0 11-2.992-2.992 3.978 3.978 0 012.992 2.992zm-.592 1.545a.75.75 0 01-.75-1.5 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5-.75 3.978 3.978 0 011.858-1.858.75.75 0 011.5-.75 2.478 2.478 0 001.858-1.858.75.75 0 011.5-.75 3.978 3.978 0 011.858 1.858.75.75 0 011.5.75 2.478 2.478 0 001.858 1.858.75.75 0 011.5.75 3.978 3.978 0 01-1.858 1.858.75.75 0 01-1.5-.75 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5.75 3.978 3.978 0 01-1.858 1.858z" clip-rule="evenodd" /></svg>
             </button>
@@ -562,14 +567,14 @@
             // Set up Intervals
             updateGameSpeed(state.gameTickMs); // Initializes slider/display and starts the Rent interval
             
-            // NEW: Start the separate Bill Accrual interval (fixed at 5000ms)
+            // Start the separate Bill Accrual interval (fixed at 5000ms)
             clearInterval(state.billInterval);
             state.billInterval = setInterval(billAccrualLoop, state.billTickMs);
 
             updateUI(); // Set initial UI values
 
-            // Initial encouragement message
-            showMessage("Welcome to Skyscraper Tycoon! Rent collects every 1 second, but bills only accrue every 5 seconds. Use the Settings button to adjust the rent speed! **Hint: Get to level 100 to win.**", 'info');
+            // Initial encouragement message (without the permanent hint)
+            showMessage("Welcome to Skyscraper Tycoon! Rent collects every 1 second, but bills only accrue every 5 seconds. Use the Settings button to adjust the rent speed!", 'info');
 
             // Final check for victory condition on load
             if (state.level >= 100) {
