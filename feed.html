@@ -1,3 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyscraper Tycoon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #6ee7b7; /* Bright green for income */
+            --secondary-color: #818cf8; /* Light indigo/violet for progress */
+            --background-color: #1f2937; /* Dark Grey background */
+            --card-color: #374151; /* Slightly lighter card base */
+            --font-color: #f9fafb; /* Off-white text */
+        }
+
+        /* --- LIGHT MODE OVERRIDES --- */
+        body.light-mode {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        body.light-mode .game-container {
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        }
+        body.light-mode .stat-card {
+            background-color: #e5e7eb;
+        }
+        body.light-mode #start-screen {
+            background-color: #ffffff;
+        }
+        /* ... (rest of light mode styles omitted for brevity but they are in the full code) ... */
+        body.light-mode .bg-indigo-900\/30 { background-color: #e0e7ff; border-color: #a5b4fc; }
+        /* --- END LIGHT MODE OVERRIDES --- */
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--font-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 1024px;
+            background-color: var(--card-color);
+            border-radius: 1.5rem;
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        /* --- START SCREEN STYLES --- */
+        #start-screen {
+            background-color: var(--card-color);
+            width: 100%;
+            max-width: 600px;
+            padding: 3rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7);
+        }
+
+        #stats-panel {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            #stats-panel {
+                grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 columns now */
+            }
+        }
+
+        .stat-card {
+            background-color: #4b5563;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .action-button {
+            transition: all 0.2s;
+            transform: translateY(0);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+            border: none;
+        }
+        .action-button:hover:not(:disabled) {
+            box-shadow: 0 12px 25px -5px rgba(110, 231, 183, 0.4), 0 6px 12px -3px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+        }
+        .action-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        @keyframes rentPulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        #passive-income-display {
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        #passive-income-display span {
+            animation: rentPulse 2s infinite ease-in-out;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
 <body>
     <div id="start-screen">
         <h1 class="text-6xl font-extrabold text-white mb-4">Skyscraper Tycoon</h1>
@@ -5,18 +127,18 @@
             Build your empire. Reach Level 100.
         </p>
         
-        <div class="p-6 bg-gray-600/50 rounded-xl mb-8">
+        <div class="p-6 bg-gray-800 border border-gray-700 rounded-xl mb-8">
             <label for="loan-slider" class="text-xl font-medium block mb-2 text-white">
                 Select Starting Loan Amount
             </label>
             <div class="flex items-center space-x-4">
                 <input type="range" id="loan-slider" min="10000" max="15000" step="500"
                     oninput="updateLoanDisplay(this.value)"
-                    class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer range-lg">
-                <span id="loan-amount-display" class="w-32 text-right font-bold text-green-400 text-2xl">₹10,000</span>
+                    class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer range-lg">
+                <span id="loan-amount-display" class="w-32 text-right font-bold text-green-400 text-2xl">₹10,000.00</span>
             </div>
             <p class="text-xs text-gray-400 mt-2">
-                The loan must be paid every **360 seconds** (6 minutes) or interest will accrue!
+                The loan must be paid every **360 seconds** (6 minutes) or **5% interest** will accrue!
             </p>
         </div>
 
@@ -75,7 +197,7 @@
 
             <div id="actions-panel" class="p-6 bg-gray-800 border-2 border-gray-700 rounded-xl">
                 <h2 class="text-2xl font-bold mb-4 text-white">Build & Expand</h2>
-                <div class="grid grid-cols-1 grid-cols-2-sm lg:grid-cols-5 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
 
                     <div class="bg-blue-900/30 p-4 rounded-lg border border-blue-700 shadow-xl">
                         <h3 class="text-xl font-semibold text-blue-400 mb-2">Buy Land</h3>
@@ -87,8 +209,8 @@
 
                     <div class="bg-green-900/30 p-4 rounded-lg border border-green-700 shadow-xl">
                         <h3 class="text-xl font-semibold text-green-400 mb-2">Build Apartment Unit</h3>
-                        <p class="text-sm text-gray-400 mb-3">Build an apartment. Requires land and generates variable rent. <span class="font-bold text-xs text-indigo-400">(+2 XP)</span></p>
-                        <p class="text-lg font-bold text-white mb-3">Cost: <span id="apartment-cost-display">₹500.00</span> | Land Required: <span id="apartment-land-display">1</span></p>
+                        <p class="text-sm text-gray-400 mb-3">Requires land. <span class="font-bold text-xs text-indigo-400">(+2 XP)</span></p>
+                        <p class="text-lg font-bold text-white mb-3">Cost: <span id="apartment-cost-display">₹500.00</span> | Land: <span id="apartment-land-display">1</span></p>
                         <button id="build-apartment-btn" class="action-button w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buildApartment()">Build Unit</button>
                     </div>
 
@@ -101,7 +223,7 @@
 
                     <div class="bg-red-900/30 p-4 rounded-lg border border-red-700 shadow-xl">
                         <h3 class="text-xl font-semibold text-red-400 mb-2">Pay Maintenance & Tax</h3>
-                        <p class="text-sm text-gray-400 mb-3">Settle accrued utility and tax costs. **Mandatory** to maintain positive cash flow.</p>
+                        <p class="text-sm text-gray-400 mb-3">Settle accrued utility and tax costs. **Mandatory**.</p>
                         <p class="text-4xl font-bold text-red-400 mb-3">Due: <span id="bill-cost-display">₹0.00</span></p>
                         <button id="pay-bills-btn" class="action-button w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="payBills()">Pay Bills</button>
                     </div>
@@ -166,30 +288,30 @@
             money: 10000,
             land: 0,
             apartments: 0,
-            rentPerUnit: 25.00, // Initial rent per apartment unit (Rupees)
+            rentPerUnit: 25.00,
             landCost: 1000,
             apartmentCost: 500,
             rentUpgradeCost: 5000,
-            rentUpgradeIncrease: 5.00, // Rent increase per upgrade (Rupees)
+            rentUpgradeIncrease: 5.00,
             
             // BILLS/MAINTENANCE STATE
-            maintenancePerApartment: 2.00, // Upkeep cost accrued per apartment unit per tick
-            accruedBills: 0, // Total unpaid maintenance, utilities, and tax
+            maintenancePerApartment: 2.00,
+            accruedBills: 0,
 
-            // NEW LOAN STATE
-            loanAmount: 10000, // Principal amount of the loan
-            loanDue: 0,       // Total amount currently owed (Principal + Interest)
-            loanInterestRate: 0.05, // 5% interest applied every period if not paid
-            loanPaymentIntervalMs: 360000, // 360 seconds (6 minutes)
-            loanInterval: null, // Interval for loan payment check
-            loanTimer: 360,     // Timer countdown (in seconds)
-            timerInterval: null, // Interval for timer display update
+            // LOAN STATE
+            loanAmount: 10000,
+            loanDue: 0,
+            loanInterestRate: 0.05, // 5%
+            loanPaymentIntervalMs: 360000, // 6 minutes
+            loanInterval: null,
+            loanTimer: 360,
+            timerInterval: null,
 
             // Intervals and Speeds
-            gameInterval: null, // Interval for rent collection
-            billInterval: null, // Interval for bill accrual
-            gameTickMs: 1000, // Rent collected every 1000ms (1 second)
-            billTickMs: 5000, // Bills accrue every 5000ms (5 seconds)
+            gameInterval: null,
+            billInterval: null,
+            gameTickMs: 1000,
+            billTickMs: 5000,
 
             // Level System State
             level: 1,
@@ -200,19 +322,15 @@
 
             // Settings State
             settings: {
-                theme: 'dark', // 'dark' or 'light'
-                fontSizeBase: 100, // Percentage (e.g., 100, 110, 90)
-                rentVolatility: 0.1, // Random variance ±10%
+                theme: 'dark',
+                fontSizeBase: 100,
+                rentVolatility: 0.1,
             }
         };
 
         // --- UTILITIES ---
 
-        /*** Formats a number into an Indian Rupees currency string (e.g., 12345.67 -> "₹12,345.67")
-         * @param {number} amount
-         */
         function formatCurrency(amount) {
-            // Ensure the amount is treated as a number
             const numAmount = parseFloat(amount);
             return new Intl.NumberFormat('en-IN', {
                 style: 'currency',
@@ -222,15 +340,10 @@
             }).format(numAmount);
         }
 
-        /*** Shows a temporary message in the message box.
-         * @param {string} message
-         * @param {string} type 'success', 'error', 'info'
-         */
         function showMessage(message, type = 'info') {
             const box = document.getElementById('message-box');
             box.textContent = message;
 
-            // Use different colors for error and success
             const colorClass = type === 'error' ? 'bg-red-800 text-red-200' :
                                type === 'success' ? 'bg-green-800 text-green-200' :
                                'bg-blue-800 text-blue-200';
@@ -240,7 +353,7 @@
 
             setTimeout(() => {
                 box.style.display = 'none';
-            }, 5000); // Increased visibility time
+            }, 5000);
         }
 
         // --- UI UPDATER ---
@@ -252,7 +365,10 @@
         }
         
         function updateLoanTimerDisplay() {
-            document.getElementById('loan-timer-display').textContent = formatTime(state.loanTimer);
+            const timerDisplay = document.getElementById('loan-timer-display');
+            if (timerDisplay) {
+                timerDisplay.textContent = formatTime(state.loanTimer);
+            }
         }
         
         function updateUI() {
@@ -263,8 +379,10 @@
 
             // Update Financial obligations
             document.getElementById('bill-cost-display').textContent = formatCurrency(state.accruedBills);
-            document.getElementById('loan-due-display').textContent = formatCurrency(state.loanDue);
-            document.getElementById('pay-loan-cost-display').textContent = formatCurrency(state.loanDue);
+            const loanDueDisplay = document.getElementById('loan-due-display');
+            if (loanDueDisplay) loanDueDisplay.textContent = formatCurrency(state.loanDue);
+            const payLoanCostDisplay = document.getElementById('pay-loan-cost-display');
+            if (payLoanCostDisplay) payLoanCostDisplay.textContent = formatCurrency(state.loanDue);
 
             // Update Land/Actions
             document.getElementById('land-count-in-action').textContent = state.land.toLocaleString();
@@ -292,36 +410,38 @@
             upgradeRentBtn.disabled = state.money < state.rentUpgradeCost;
             payBillsBtn.disabled = state.accruedBills <= 0 || state.money < state.accruedBills;
             
-            // Loan can only be paid if something is due AND player has the money
-            payLoanBtn.disabled = state.loanDue <= 0 || state.money < state.loanDue;
+            if (payLoanBtn) payLoanBtn.disabled = state.loanDue <= 0 || state.money < state.loanDue;
             
-            // Only show the loan panel if there's an outstanding balance
-            const loanCard = document.getElementById('loan-due-display').closest('.stat-card');
-            if (state.loanAmount > 0) {
-                 loanCard.classList.remove('hidden');
-                 payLoanBtn.closest('.bg-indigo-900\/30').classList.remove('hidden');
-            } else {
-                 loanCard.classList.add('hidden');
-                 payLoanBtn.closest('.bg-indigo-900\/30').classList.add('hidden');
+            // Toggle visibility of loan elements
+            const loanCard = document.getElementById('loan-due-display')?.closest('.stat-card');
+            const payLoanDiv = document.getElementById('pay-loan-btn')?.closest('.bg-indigo-900\/30');
+            
+            if (loanCard && payLoanDiv) {
+                if (state.loanAmount > 0) {
+                     loanCard.classList.remove('hidden');
+                     payLoanDiv.classList.remove('hidden');
+                } else {
+                     loanCard.classList.add('hidden');
+                     payLoanDiv.classList.add('hidden');
+                }
             }
         }
         
-        // NEW: Function to update loan display on start screen
         function updateLoanDisplay(value) {
             state.loanAmount = parseInt(value, 10);
-            document.getElementById('loan-amount-display').textContent = formatCurrency(state.loanAmount);
+            const display = document.getElementById('loan-amount-display');
+            if(display) display.textContent = formatCurrency(state.loanAmount);
         }
 
 
-        // --- SETTINGS LOGIC (Unchanged, omitted for brevity) ---
+        // --- SETTINGS LOGIC ---
         function applyTheme(theme) {
             state.settings.theme = theme;
+            const body = document.body;
             if (theme === 'light') {
-                document.body.classList.add('light-mode');
-                document.getElementById('start-screen').classList.remove('bg-gray-700'); // Ensure start screen looks right
+                body.classList.add('light-mode');
             } else {
-                document.body.classList.remove('light-mode');
-                document.getElementById('start-screen').classList.add('bg-gray-700');
+                body.classList.remove('light-mode');
             }
             const themeToggle = document.getElementById('theme-toggle');
             if (themeToggle) themeToggle.checked = (theme === 'light');
@@ -363,7 +483,7 @@
             document.getElementById('settings-modal').classList.add('hidden');
         }
 
-        // --- LEVEL SYSTEM LOGIC (Unchanged) ---
+        // --- LEVEL SYSTEM LOGIC ---
         function checkLevelUp() {
             while (state.xp >= state.xpToNextLevel) {
                 state.xp -= state.xpToNextLevel;
@@ -383,7 +503,7 @@
                 showMessage("CONGRATULATIONS! You have reached Level 100 and won Skyscraper Tycoon! 🎉", "success");
                 clearInterval(state.gameInterval);
                 clearInterval(state.billInterval);
-                clearInterval(state.loanInterval); // Stop loan check too
+                clearInterval(state.loanInterval);
                 clearInterval(state.timerInterval);
             }
             updateUI();
@@ -391,7 +511,6 @@
 
         // --- GAME LOOPS ---
 
-        // Loop for Rent Collection
         function gameLoop() {
             if (state.level >= 100) return;
 
@@ -408,17 +527,18 @@
             if (collectedIncome > 0) {
                 state.money += collectedIncome;
                 const rentPulse = document.getElementById('rent-pulse');
-                rentPulse.textContent = `+${formatCurrency(collectedIncome)}`;
-                rentPulse.classList.add('animate-pulse');
-                setTimeout(() => {
-                    rentPulse.textContent = '';
-                    rentPulse.classList.remove('animate-pulse');
-                }, 500);
+                if (rentPulse) {
+                    rentPulse.textContent = `+${formatCurrency(collectedIncome)}`;
+                    rentPulse.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        rentPulse.textContent = '';
+                        rentPulse.classList.remove('animate-pulse');
+                    }, 500);
+                }
             }
             updateUI();
         }
 
-        // Loop for Bill Accrual
         function billAccrualLoop() {
             if (state.level >= 100) return;
 
@@ -430,7 +550,7 @@
             updateUI();
         }
 
-        // NEW: Loop for Loan Payment Check (Every 360 seconds)
+        // Loop for Loan Payment Check (Every 360 seconds)
         function loanLoop() {
             if (state.loanDue > 0) {
                 // The payment interval has passed and the loan is still due. Apply interest.
@@ -441,19 +561,15 @@
                 // Reset the timer for the next check/payment period
                 state.loanTimer = state.loanPaymentIntervalMs / 1000;
             }
-            // If loanDue is 0, the interval still runs but does nothing (except resetting the timer if the loan was just paid in the loop above)
-            
             updateUI();
         }
         
-        // NEW: Timer Loop (Runs every second to update the display)
+        // Timer Loop (Runs every second to update the display)
         function timerLoop() {
             if (state.loanDue > 0 && state.loanTimer > 0) {
                 state.loanTimer -= 1;
             } else if (state.loanDue > 0 && state.loanTimer <= 0) {
-                // This state should ideally not be reached if loanLoop is running correctly,
-                // but acts as a safety to prevent negative time display
-                state.loanTimer = 0;
+                state.loanTimer = 0; // Display 0:00 until loanLoop applies interest and resets
             }
             updateLoanTimerDisplay();
         }
@@ -477,16 +593,14 @@
             updateUI();
         }
         
-        // NEW: Action to pay off the full loan
         function payLoan() {
             if (state.loanDue > 0) {
                 if (state.money >= state.loanDue) {
                     const paidAmount = state.loanDue;
                     state.money -= paidAmount;
-                    state.loanAmount = 0; // Principal is gone
-                    state.loanDue = 0;   // Debt is zero
+                    state.loanAmount = 0;
+                    state.loanDue = 0;
                     
-                    // Stop the loan check and timer intervals since the debt is paid
                     clearInterval(state.loanInterval);
                     clearInterval(state.timerInterval);
                     
@@ -564,16 +678,16 @@
             // 4. Start the game logic loops
             updateGameSpeed(state.gameTickMs); 
             
-            // Start the Bill Accrual interval
             clearInterval(state.billInterval);
             state.billInterval = setInterval(billAccrualLoop, state.billTickMs);
             
-            // NEW: Start the Loan Check interval (360 seconds)
+            // Start the Loan Check interval (360 seconds)
             clearInterval(state.loanInterval);
             state.loanInterval = setInterval(loanLoop, state.loanPaymentIntervalMs);
             
-            // NEW: Start the one-second Timer interval
+            // Start the one-second Timer interval
             clearInterval(state.timerInterval);
+            state.loanTimer = state.loanPaymentIntervalMs / 1000; // Reset timer value
             state.timerInterval = setInterval(timerLoop, 1000);
 
             updateUI(); // Initial UI refresh with new money/loan
@@ -581,7 +695,6 @@
             showMessage(`Welcome! You successfully took a loan of ${formatCurrency(state.loanAmount)}. Your starting capital is now ${formatCurrency(state.money)}.`, 'info');
 
             if (state.level >= 100) {
-                showMessage("CONGRATULATIONS! You have reached Level 100 and won Skyscraper Tycoon! 🎉", "success");
                 clearInterval(state.gameInterval);
                 clearInterval(state.billInterval);
                 clearInterval(state.loanInterval);
@@ -598,10 +711,11 @@
             // Set the initial loan display value
             updateLoanDisplay(state.loanAmount);
             
-            // Hide the loan payment options until the game starts and a loan is taken
-            const loanCard = document.getElementById('loan-due-display').closest('.stat-card');
-            loanCard.classList.add('hidden');
-            document.getElementById('pay-loan-btn').closest('.bg-indigo-900\/30').classList.add('hidden');
+            // Initialize the loan amount slider to the current state value
+            const loanSlider = document.getElementById('loan-slider');
+            if (loanSlider) loanSlider.value = state.loanAmount;
+            
+            // The loan card/button will be made visible in startGame()
         }
 
         window.onload = initGame;
