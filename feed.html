@@ -421,6 +421,7 @@
         function updateGameSpeed(ms) {
             state.gameTickMs = parseInt(ms, 10);
             clearInterval(state.gameInterval);
+            // This line starts the game loop when called from startGame
             state.gameInterval = setInterval(gameLoop, state.gameTickMs);
             const seconds = (state.gameTickMs / 1000).toFixed(1);
             document.getElementById('game-speed-value').textContent = `${seconds}s`;
@@ -429,7 +430,9 @@
 
         function openSettingsModal() {
             changeFontSize(state.settings.fontSizeBase);
-            updateGameSpeed(state.gameTickMs); 
+            // Only update the slider UI, don't restart interval if already running
+            document.getElementById('game-speed-slider').value = state.gameTickMs; 
+            document.getElementById('game-speed-value').textContent = `${(state.gameTickMs / 1000).toFixed(1)}s`;
             document.getElementById('theme-toggle').checked = (state.settings.theme === 'light');
             document.getElementById('settings-modal').classList.remove('hidden');
         }
@@ -551,17 +554,18 @@
         // --- INITIALIZATION AND START GAME LOGIC ---
 
         function initGameUIAndLoop() {
-            // Apply theme/font settings
+            // 1. Apply theme/font settings
             applyTheme(state.settings.theme);
             changeFontSize(state.settings.fontSizeBase);
             
-            // Start the game loop and initialize the game speed slider
+            // 2. Start the game loop and initialize the game speed slider
+            // NOTE: updateGameSpeed handles starting the interval
             updateGameSpeed(state.gameTickMs); 
             
-            // Set initial UI values
+            // 3. Set initial UI values and check button states
             updateUI(); 
 
-            // Initial message
+            // 4. Initial message
             showMessage("Welcome to Skyscraper Tycoon! Start by buying land.", 'info');
         }
 
@@ -569,22 +573,25 @@
             const startScreen = document.getElementById('start-screen');
             const gameContainer = document.getElementById('main-game-container');
 
-            // 1. Hide the Start Screen
+            // 1. Hide the Start Screen (Fade out)
             startScreen.style.opacity = '0';
+            
+            // 2. Wait for fade out, then hide it fully and show the game
             setTimeout(() => {
                 startScreen.classList.add('hidden');
-                // 2. Show the Main Game Container
                 gameContainer.classList.remove('hidden'); 
+                
+                // 3. IMPORTANT: Initialize all game components after they are visible
                 initGameUIAndLoop();
-            }, 500); // Wait for fade out
+            }, 500); 
         }
 
         function initApp() {
-            // Nothing happens on load except showing the start screen.
-            // All other initialization moves to startGame() -> initGameUIAndLoop()
+            // Initial setup can go here if needed, but for now, just apply the theme so the start screen looks right.
+            applyTheme(state.settings.theme);
         }
 
         window.onload = initApp;
     </script>
 </body>
-</html>s
+</html>
