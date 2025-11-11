@@ -1,4 +1,559 @@
-// --- INITIALIZATION ---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyscraper Tycoon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #6ee7b7; /* Bright green for income */
+            --secondary-color: #818cf8; /* Light indigo/violet for progress */
+            --background-color: #1f2937; /* Dark Grey background */
+            --card-color: #374151; /* Slightly lighter card base */
+            --font-color: #f9fafb; /* Off-white text */
+        }
+
+        /* --- LIGHT MODE OVERRIDES --- */
+        body.light-mode {
+            background-color: #f3f4f6; /* Light Grey background */
+            color: #1f2937; /* Dark text */
+        }
+        body.light-mode .game-container {
+            background-color: #ffffff; /* White card base */
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        }
+        body.light-mode .stat-card {
+            background-color: #e5e7eb; /* Lighter card background */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        /* Text colors in light mode */
+        body.light-mode .stat-card p { color: #4b5563; }
+        body.light-mode #money-display { color: #059669; }
+        body.light-mode #apartment-display { color: #4f46e5; }
+        body.light-mode #passive-income-display { color: #059669; }
+        /* Actions panel and XP bar background in light mode */
+        body.light-mode #actions-panel {
+            background-color: #e5e7eb;
+            border-color: #d1d5db;
+        }
+        body.light-mode .bg-indigo-900\/30 {
+            background-color: #e0e7ff;
+            border-color: #a5b4fc;
+        }
+        body.light-mode .text-indigo-300 { color: #3b82f6; }
+        body.light-mode .text-indigo-500 { color: #60a5fa; }
+        body.light-mode .bg-indigo-900 { background-color: #bfdbfe; }
+        /* --- END LIGHT MODE OVERRIDES --- */
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--font-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem; /* Increased padding */
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 1024px;
+            background-color: var(--card-color);
+            border-radius: 1.5rem;
+            /* Deeper, softer shadow for a floating effect */
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        /* Stats Panel Layout: 1 column on mobile, 3 columns on tablet/desktop */
+        #stats-panel {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            #stats-panel {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .stat-card {
+            background-color: #4b5563; /* Darker card background */
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .action-button {
+            transition: all 0.2s;
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+            border: none;
+        }
+        /* Adjust hover effect for dark theme */
+        .action-button:hover:not(:disabled) {
+            /* Vibrant shadow using primary color */
+            box-shadow: 0 12px 25px -5px rgba(110, 231, 183, 0.4), 0 6px 12px -3px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+        }
+        .action-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        /* Custom animation for rent collection */
+        @keyframes rentPulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        #passive-income-display {
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        #passive-income-display span {
+            animation: rentPulse 2s infinite ease-in-out;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header class="text-center mb-8 relative">
+            <h1 class="text-5xl font-extrabold text-white">Skyscraper Tycoon</h1>
+            <button onclick="openSettingsModal()" class="action-button absolute top-0 right-0 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg text-sm transition duration-150 shadow-md">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.496 14.288a3.978 3.978 0 11-2.992-2.992 3.978 3.978 0 012.992 2.992zm-.592 1.545a.75.75 0 01-.75-1.5 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5-.75 3.978 3.978 0 011.858-1.858.75.75 0 011.5-.75 2.478 2.478 0 001.858-1.858.75.75 0 011.5-.75 3.978 3.978 0 011.858 1.858.75.75 0 011.5.75 2.478 2.478 0 001.858 1.858.75.75 0 011.5.75 3.978 3.978 0 01-1.858 1.858.75.75 0 01-1.5-.75 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5.75 3.978 3.978 0 01-1.858 1.858z" clip-rule="evenodd" /></svg>
+            </button>
+        </header>
+
+        <div class="mb-8 p-4 bg-indigo-900/30 border border-indigo-700 rounded-xl shadow-inner">
+            <div class="flex justify-between text-sm font-semibold mb-1">
+                <p class="text-indigo-300">Current Level: <span id="level-display" class="font-black text-lg">1</span></p>
+                <p class="text-indigo-300">XP Progress: <span id="xp-current-display">0</span> / <span id="xp-next-display">10</span> XP</p>
+            </div>
+            <div class="w-full bg-indigo-900 rounded-full h-3">
+                <div id="xp-bar" class="bg-indigo-400 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p class="text-xs text-indigo-500 mt-1">Earn XP by building Apartment Units!</p>
+        </div>
+
+        <div id="stats-panel" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="stat-card">
+                <p class="text-sm font-semibold uppercase text-gray-300">Money (₹)</p>
+                <p id="money-display" class="text-3xl font-bold text-green-400">₹10,000.00</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-sm font-semibold uppercase text-gray-300">Apartments (Units)</p>
+                <p id="apartment-display" class="text-3xl font-bold text-indigo-400">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-sm font-semibold uppercase text-gray-300">Expected Rent (Total/Tick)</p>
+                <div id="passive-income-display">
+                    <p id="rent-rate-display" class="text-3xl font-bold">₹0.00</p>
+                    <span id="rent-pulse"></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="actions-panel" class="p-6 bg-gray-800 border-2 border-gray-700 rounded-xl">
+            <h2 class="text-2xl font-bold mb-4 text-white">Build & Expand</h2>
+            <div class="grid grid-cols-1 grid-cols-2-sm lg:grid-cols-4 gap-6">
+
+                <div class="bg-blue-900/30 p-4 rounded-lg border border-blue-700 shadow-xl">
+                    <h3 class="text-xl font-semibold text-blue-400 mb-2">Buy Land</h3>
+                    <p class="text-3xl font-bold text-yellow-400 mb-3">Blocks Owned: <span id="land-count-in-action">0</span></p>
+                    <p class="text-sm text-gray-400 mb-3">Acquire more space to build massive skyscrapers!</p>
+                    <p class="text-lg font-bold text-white mb-3">Cost: <span id="land-cost-display">₹1,000.00</span></p>
+                    <button id="buy-land-btn" class="action-button w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buyLand()">Buy 1 Land Block</button>
+                </div>
+
+                <div class="bg-green-900/30 p-4 rounded-lg border border-green-700 shadow-xl">
+                    <h3 class="text-xl font-semibold text-green-400 mb-2">Build Apartment Unit</h3>
+                    <p class="text-sm text-gray-400 mb-3">Build an apartment. Requires land and generates variable rent. <span class="font-bold text-xs text-indigo-400">(+2 XP)</span></p>
+                    <p class="text-lg font-bold text-white mb-3">Cost: <span id="apartment-cost-display">₹500.00</span> | Land Required: <span id="apartment-land-display">1</span></p>
+                    <button id="build-apartment-btn" class="action-button w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buildApartment()">Build Unit</button>
+                </div>
+
+                <div class="bg-yellow-900/30 p-4 rounded-lg border border-yellow-700 shadow-xl">
+                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Upgrade Rent Value</h3>
+                    <p class="text-sm text-gray-400 mb-3">Increase the average rent value per apartment unit.</p>
+                    <p class="text-lg font-bold text-white mb-3">Cost: <span id="upgrade-cost-display">₹5,000.00</span> | Increase: <span id="upgrade-increase-display">₹5.00</span></p>
+                    <button id="upgrade-rent-btn" class="action-button w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="upgradeRentRate()">Upgrade Rental Value</button>
+                </div>
+
+                <div class="bg-red-900/30 p-4 rounded-lg border border-red-700 shadow-xl">
+                    <h3 class="text-xl font-semibold text-red-400 mb-2">Pay Maintenance & Tax</h3>
+                    <p class="text-sm text-gray-400 mb-3">Settle accrued utility and tax costs. **Mandatory** to maintain positive cash flow.</p>
+                    <p class="text-4xl font-bold text-red-400 mb-3">Due: <span id="bill-cost-display">₹0.00</span></p>
+                    <button id="pay-bills-btn" class="action-button w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="payBills()">Pay Bills</button>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="message-box" class="mt-6 p-4 bg-red-800 text-red-200 rounded-lg hidden"></div>
+        
+        <footer class="mt-8 pt-4 text-center text-sm text-gray-500 border-t border-gray-700">
+            Developed by **Sukesh(G7A)**
+        </footer>
+
+    </div><div id="settings-modal" class="hidden fixed inset-0 z-50 bg-gray-900 bg-opacity-75 flex items-center justify-center transition-opacity duration-300">
+        <div class="bg-gray-700 light-mode:bg-white p-8 rounded-xl w-full max-w-md shadow-2xl transition-all duration-300 transform scale-100">
+            <h2 class="text-3xl font-bold mb-6 text-white light-mode:text-gray-900">Game Settings</h2>
+            <div class="space-y-6">
+                <div class="flex justify-between items-center p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
+                    <label for="theme-toggle" class="text-lg font-medium">Dark Mode / Light Mode</label>
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" name="theme-toggle" id="theme-toggle" onchange="toggleTheme(this.checked)" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition duration-300 ease-in-out checked:bg-indigo-600 checked:right-0">
+                        <label for="theme-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
+                    <label for="font-size-slider" class="text-lg font-medium block mb-2">Font Size Adjustment</label>
+                    <div class="flex items-center space-x-4">
+                        <input type="range" id="font-size-slider" min="80" max="150" step="10"
+                            oninput="changeFontSize(this.value)"
+                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                        <span id="font-size-value" class="w-12 text-right font-bold text-indigo-400">100%</span>
+                    </div>
+                    <p class="text-xs text-gray-400 light-mode:text-gray-600 mt-1">Adjusts the base size of all text.</p>
+                </div>
+
+                <div class="p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
+                    <label for="game-speed-slider" class="text-lg font-medium block mb-2">Rent Tick Speed (Seconds)</label>
+                    <div class="flex items-center space-x-4">
+                        <input type="range" id="game-speed-slider" min="100" max="2000" step="100"
+                            oninput="updateGameSpeed(this.value)"
+                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                        <span id="game-speed-value" class="w-16 text-right font-bold text-indigo-400">1.0s</span>
+                    </div>
+                    <p class="text-xs text-gray-400 light-mode:text-gray-600 mt-1">Lower value means faster rent collection.</p>
+                </div>
+            </div>
+
+            <button onclick="closeSettingsModal()" class="action-button w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg">Close Settings</button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME STATE ---
+        let state = {
+            money: 10000,
+            land: 0,
+            apartments: 0,
+            rentPerUnit: 25.00, // Initial rent per apartment unit (Rupees)
+            landCost: 1000,
+            apartmentCost: 500,
+            rentUpgradeCost: 5000,
+            rentUpgradeIncrease: 5.00, // Rent increase per upgrade (Rupees)
+            
+            // NEW BILLS/MAINTENANCE STATE
+            maintenancePerApartment: 2.00, // Upkeep cost accrued per apartment unit per tick
+            accruedBills: 0, // Total unpaid maintenance, utilities, and tax
+
+            // Intervals and Speeds
+            gameInterval: null, // Interval for rent collection
+            billInterval: null, // NEW: Interval for bill accrual
+            gameTickMs: 1000, // Rent collected every 1000ms (1 second)
+            billTickMs: 5000, // NEW: Bills accrue every 5000ms (5 seconds)
+
+            // Level System State
+            level: 1,
+            xp: 0,
+            baseXPToNext: 10,
+            xpToNextLevel: 10,
+            xpPerApartment: 2,
+
+            // Settings State
+            settings: {
+                theme: 'dark', // 'dark' or 'light'
+                fontSizeBase: 100, // Percentage (e.g., 100, 110, 90)
+                rentVolatility: 0.1, // Random variance ±10%
+            }
+        };
+
+        // --- UTILITIES ---
+
+        /*** Formats a number into an Indian Rupees currency string (e.g., 12345.67 -> "₹12,345.67")
+         * @param {number} amount
+         */
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        /*** Shows a temporary message in the message box.
+         * @param {string} message
+         * @param {string} type 'success', 'error', 'info'
+         */
+        function showMessage(message, type = 'info') {
+            const box = document.getElementById('message-box');
+            box.textContent = message;
+
+            // Use different colors for error and success
+            const colorClass = type === 'error' ? 'bg-red-800 text-red-200' :
+                               type === 'success' ? 'bg-green-800 text-green-200' :
+                               'bg-blue-800 text-blue-200';
+            
+            box.className = `mt-6 p-4 rounded-lg ${colorClass}`;
+            box.style.display = 'block';
+
+            setTimeout(() => {
+                box.style.display = 'none';
+            }, 5000); // Increased visibility time
+        }
+
+        // --- UI UPDATER ---
+        function updateUI() {
+            // Update core stats (Money, Apartments)
+            document.getElementById('money-display').textContent = formatCurrency(state.money);
+            document.getElementById('apartment-display').textContent = state.apartments.toLocaleString();
+
+            // Update Bills in the action card
+            document.getElementById('bill-cost-display').textContent = formatCurrency(state.accruedBills);
+
+            // Update Land count in the action card (NEW ID: land-count-in-action)
+            document.getElementById('land-count-in-action').textContent = state.land.toLocaleString();
+
+            // Display the total EXPECTED rent
+            const totalExpectedRent = state.apartments * state.rentPerUnit;
+            document.getElementById('rent-rate-display').textContent = formatCurrency(totalExpectedRent);
+
+            // Update Level UI
+            const xpRatio = state.xp / state.xpToNextLevel;
+            document.getElementById('level-display').textContent = state.level.toLocaleString();
+            document.getElementById('xp-current-display').textContent = state.xp.toLocaleString();
+            document.getElementById('xp-next-display').textContent = state.xpToNextLevel.toLocaleString();
+            document.getElementById('xp-bar').style.width = `${Math.min(100, xpRatio * 100)}%`;
+
+            // Update Action Costs/Requirements
+            document.getElementById('land-cost-display').textContent = formatCurrency(state.landCost);
+            document.getElementById('apartment-cost-display').textContent = formatCurrency(state.apartmentCost);
+            document.getElementById('upgrade-cost-display').textContent = formatCurrency(state.rentUpgradeCost);
+            document.getElementById('upgrade-increase-display').textContent = `+${formatCurrency(state.rentUpgradeIncrease)}`;
+
+            // Update button states (Enable/Disable)
+            const buyLandBtn = document.getElementById('buy-land-btn');
+            const buildApartmentBtn = document.getElementById('build-apartment-btn');
+            const upgradeRentBtn = document.getElementById('upgrade-rent-btn');
+            const payBillsBtn = document.getElementById('pay-bills-btn');
+
+            buyLandBtn.disabled = state.money < state.landCost;
+            buildApartmentBtn.disabled = state.money < state.apartmentCost || state.land < 1;
+            upgradeRentBtn.disabled = state.money < state.rentUpgradeCost;
+            // Bills can only be paid if something is due AND you have the money
+            payBillsBtn.disabled = state.accruedBills <= 0 || state.money < state.accruedBills;
+        }
+
+        // --- SETTINGS LOGIC ---
+
+        function applyTheme(theme) {
+            state.settings.theme = theme;
+            if (theme === 'light') {
+                document.body.classList.add('light-mode');
+            } else {
+                document.body.classList.remove('light-mode');
+            }
+            // Sync the checkbox
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) themeToggle.checked = (theme === 'light');
+        }
+
+        function toggleTheme(isChecked) {
+            applyTheme(isChecked ? 'light' : 'dark');
+        }
+
+        function changeFontSize(size) {
+            state.settings.fontSizeBase = parseInt(size, 10);
+            // Apply font size to the body using 'em' relative to the browser's default font size
+            document.body.style.fontSize = `${state.settings.fontSizeBase / 100}em`;
+            // Update the display value
+            document.getElementById('font-size-value').textContent = `${state.settings.fontSizeBase}%`;
+            // Sync the slider
+            document.getElementById('font-size-slider').value = state.settings.fontSizeBase;
+        }
+
+        function updateGameSpeed(ms) {
+            state.gameTickMs = parseInt(ms, 10);
+            
+            // Clear and restart the game interval (Only rent interval is affected by slider)
+            clearInterval(state.gameInterval);
+            state.gameInterval = setInterval(gameLoop, state.gameTickMs);
+
+            // Update the display value
+            const seconds = (state.gameTickMs / 1000).toFixed(1);
+            document.getElementById('game-speed-value').textContent = `${seconds}s`;
+            document.getElementById('game-speed-slider').value = state.gameTickMs;
+        }
+
+        function openSettingsModal() {
+            // Initialize controls with current settings
+            changeFontSize(state.settings.fontSizeBase);
+            updateGameSpeed(state.gameTickMs); // Initialize game speed slider
+            document.getElementById('theme-toggle').checked = (state.settings.theme === 'light');
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        // --- LEVEL SYSTEM LOGIC ---
+        function checkLevelUp() {
+            while (state.xp >= state.xpToNextLevel) {
+                state.xp -= state.xpToNextLevel;
+                state.level += 1;
+                state.xpToNextLevel = state.baseXPToNext * state.level;
+                
+                const rewardMoney = state.level * 10000;
+                const rewardRentIncrease = 5.00 + (state.level * 1.00);
+                
+                state.money += rewardMoney;
+                state.rentPerUnit += rewardRentIncrease;
+
+                showMessage(`LEVEL UP! You are now Level ${state.level}! Gained ${formatCurrency(rewardMoney)} and Rent per unit increased by ${formatCurrency(rewardRentIncrease)}!`,
+                    'success');
+            }
+            // Check for victory condition every time level updates
+            if (state.level >= 100) {
+                showMessage("CONGRATULATIONS! You have reached Level 100 and won Skyscraper Tycoon! 🎉", "success");
+                // Stop the game intervals
+                clearInterval(state.gameInterval);
+                clearInterval(state.billInterval);
+            }
+            updateUI();
+        }
+
+        // --- GAME LOOPS ---
+
+        // Loop for Rent Collection (Runs on gameTickMs, default 1s)
+        function gameLoop() {
+            const baseIncomePerUnit = state.rentPerUnit;
+            let collectedIncome = 0;
+            const volatility = state.settings.rentVolatility; // Using the volatility setting
+
+            // 1. COLLECT RENT
+            // Calculate collected rent with random variance for each apartment
+            for (let i = 0; i < state.apartments; i++) {
+                // Random variation: ±volatility of the base rent per unit
+                const variance = (Math.random() * (2 * volatility) - volatility);
+                const unitIncome = baseIncomePerUnit * (1 + variance);
+                collectedIncome += unitIncome;
+            }
+
+            if (collectedIncome > 0) {
+                state.money += collectedIncome;
+                // Show a visual pulse on the rent display
+                const rentPulse = document.getElementById('rent-pulse');
+                rentPulse.textContent = `+${formatCurrency(collectedIncome)}`;
+                rentPulse.classList.add('animate-pulse');
+                setTimeout(() => {
+                    rentPulse.textContent = '';
+                    rentPulse.classList.remove('animate-pulse');
+                }, 500);
+            }
+            updateUI();
+        }
+
+        // NEW: Loop for Bill Accrual (Runs on billTickMs, fixed at 5s)
+        function billAccrualLoop() {
+            // 2. ACCRUE BILLS (Maintenance/Upkeep)
+            if (state.apartments > 0) {
+                const upkeepCost = state.apartments * state.maintenancePerApartment * (state.billTickMs / 1000); // Scale cost by interval
+                state.accruedBills += upkeepCost;
+                showMessage(`Maintenance and Tax accrued: +${formatCurrency(upkeepCost)}. Total due is now ${formatCurrency(state.accruedBills)}.`, 'info');
+            }
+            updateUI();
+        }
+
+
+        // --- GAME ACTIONS ---
+
+        function payBills() {
+            if (state.accruedBills > 0) {
+                if (state.money >= state.accruedBills) {
+                    const paidAmount = state.accruedBills;
+                    state.money -= paidAmount;
+                    state.accruedBills = 0;
+                    showMessage(`Paid bills for ${formatCurrency(paidAmount)}. Your accounts are settled!`, 'success');
+                } else {
+                    showMessage(`You need ${formatCurrency(state.accruedBills)} to pay the bills! Pay soon to avoid penalties (Not implemented yet)!`, 'error');
+                }
+            } else {
+                showMessage("No bills currently due.", 'info');
+            }
+            updateUI();
+        }
+
+        function buyLand() {
+            if (state.money >= state.landCost) {
+                const cost = state.landCost;
+                state.money -= cost;
+                state.land += 1;
+                // Increase cost by ~50% and round up to the nearest 100 for clean numbers
+                state.landCost = Math.ceil(state.landCost * 1.5 / 100) * 100;
+                showMessage(`Purchased 1 Land Block for ${formatCurrency(cost)}!`, 'info');
+                updateUI();
+            } else {
+                showMessage('Not enough money to buy land!', 'error');
+            }
+        }
+
+        function buildApartment() {
+            if (state.money >= state.apartmentCost && state.land >= 1) {
+                const cost = state.apartmentCost;
+                state.money -= cost;
+                state.land -= 1;
+                state.apartments += 1;
+                state.xp += state.xpPerApartment;
+
+                checkLevelUp();
+
+                // Increase cost by ~25% and round up to the nearest 100
+                state.apartmentCost = Math.ceil(state.apartmentCost * 1.25 / 100) * 100;
+                showMessage(`Built 1 Apartment Unit for ${formatCurrency(cost)}! Gained ${state.xpPerApartment} XP.`, 'success');
+                updateUI();
+            } else if (state.land < 1) {
+                showMessage('Not enough land! Buy more land first.', 'error');
+            } else {
+                showMessage('Not enough money to build an apartment!', 'error');
+            }
+        }
+
+        function upgradeRentRate() {
+            if (state.money >= state.rentUpgradeCost) {
+                const cost = state.rentUpgradeCost;
+                state.money -= cost;
+                state.rentPerUnit += state.rentUpgradeIncrease;
+                
+                // Increase cost by ~80% and round up to the nearest 1000
+                state.rentUpgradeCost = Math.ceil(state.rentUpgradeCost * 1.8 / 1000) * 1000;
+                // Increase the future bonus
+                state.rentUpgradeIncrease += 5.00;
+
+                showMessage(`Rent rate upgraded for ${formatCurrency(cost)}! Each unit now has an average income of ${formatCurrency(state.rentPerUnit)} per tick.`, 'info');
+                updateUI();
+            } else {
+                showMessage('Not enough money for the rent upgrade!', 'error');
+            }
+        }
+
+        // --- INITIALIZATION ---
         function initGame() {
             // Apply saved or default settings before updating UI
             applyTheme(state.settings.theme);
@@ -15,12 +570,17 @@
 
             // Initial encouragement message
             showMessage("Welcome to Skyscraper Tycoon! Rent collects every 1 second, but bills only accrue every 5 seconds. Use the Settings button to adjust the rent speed! **Hint: Get to level 100 to win.**", 'info');
-            
-            // NEW: Add a check for the winning condition
+
+            // Final check for victory condition on load
             if (state.level >= 100) {
-                showMessage("CONGRATULATIONS! You have reached Level 100 and won Skyscraper Tycoon!", "success");
+                showMessage("CONGRATULATIONS! You have reached Level 100 and won Skyscraper Tycoon! 🎉", "success");
                 // Stop the game intervals
                 clearInterval(state.gameInterval);
                 clearInterval(state.billInterval);
             }
         }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
