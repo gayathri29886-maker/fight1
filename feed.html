@@ -16,68 +16,18 @@
         }
 
         /* --- LIGHT MODE OVERRIDES --- */
-        body.light-mode {
-            background-color: #f3f4f6; /* Light Grey background */
-            color: #1f2937; /* Dark text */
-        }
-
-        body.light-mode .game-container {
-            background-color: #ffffff; /* White card base */
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        body.light-mode .stat-card {
-            background-color: #e5e7eb; /* Lighter card background */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Text colors in light mode */
-        body.light-mode .stat-card p {
-            color: #4b5563;
-        }
-
-        body.light-mode #money-display {
-            color: #059669;
-        }
-
-        body.light-mode #apartment-display {
-            color: #4f46e5;
-        }
-
-        body.light-mode #passive-income-display {
-            color: #059669;
-        }
-
-        /* Actions panel and XP bar background in light mode */
-        body.light-mode #actions-panel {
-            background-color: #e5e7eb;
-            border-color: #d1d5db;
-        }
-
-        body.light-mode .bg-indigo-900\/30 {
-            background-color: #e0e7ff;
-            border-color: #a5b4fc;
-        }
-
-        body.light-mode .text-indigo-300 {
-            color: #3b82f6;
-        }
-
-        body.light-mode .text-indigo-500 {
-            color: #60a5fa;
-        }
-
-        body.light-mode .bg-indigo-900 {
-            background-color: #bfdbfe;
-        }
-
-        body.light-mode footer p {
-            color: #6b7280; 
-        }
-        
-        body.light-mode footer {
-            border-color: #e5e7eb; 
-        }
+        body.light-mode { background-color: #f3f4f6; color: #1f2937; }
+        body.light-mode .game-container { background-color: #ffffff; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1); }
+        body.light-mode .stat-card { background-color: #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        body.light-mode .stat-card p { color: #4b5563; }
+        body.light-mode #money-display { color: #059669; }
+        body.light-mode #apartment-display { color: #4f46e5; }
+        body.light-mode #passive-income-display { color: #059669; }
+        body.light-mode #actions-panel { background-color: #e5e7eb; border-color: #d1d5db; }
+        body.light-mode .bg-indigo-900\/30 { background-color: #e0e7ff; border-color: #a5b4fc; }
+        body.light-mode .bg-indigo-900 { background-color: #bfdbfe; }
+        body.light-mode footer p { color: #6b7280; }
+        body.light-mode footer { border-color: #e5e7eb; }
         /* --- END LIGHT MODE OVERRIDES --- */
 
         body {
@@ -101,37 +51,42 @@
             box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.5);
             padding: 2rem;
             transition: background-color 0.3s, box-shadow 0.3s;
+            /* Added min-height to help with layout consistency */
+            min-height: 80vh; 
         }
 
-        /* Stats Panel Layout: 1 column on mobile, 3 columns on tablet/desktop */
+        /* Stats Panel Layout */
         #stats-panel {
+            display: grid;
             grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1rem;
         }
-
-        @media (min-width: 640px) { /* sm breakpoint */
+        @media (min-width: 640px) {
             #stats-panel {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
             }
         }
 
         .stat-card {
-            background-color: #4b5563; /* Darker card background */
+            background-color: #4b5563;
             padding: 1.25rem;
             border-radius: 0.75rem;
             box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s;
         }
 
+        /* BUTTON STYLING */
         .action-button {
             transition: all 0.2s;
             transform: translateY(0);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             font-weight: 700;
             border: none;
-            /* Added margin for button spacing */
-            margin-bottom: 0.75rem; 
-            width: 100%; /* Make them full width for visibility */
-            text-align: left; /* Align text inside button */
+            margin-bottom: 1rem;
+            width: 100%; 
+            text-align: left;
+            padding: 1rem;
+            border-radius: 0.75rem;
         }
 
         .action-button:hover:not(:disabled) {
@@ -142,24 +97,15 @@
         .action-button:disabled {
             cursor: not-allowed;
             opacity: 0.4;
+            box-shadow: none;
         }
-
-        /* Custom animation for rent collection */
+        
+        /* Passive income animation */
         @keyframes rentPulse {
-            0% {
-                transform: scale(1);
-                opacity: 0.7;
-            }
-            50% {
-                transform: scale(1.05);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1);
-                opacity: 0.7;
-            }
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
         }
-
         #passive-income-display {
             display: flex;
             align-items: center;
@@ -167,16 +113,49 @@
             font-weight: 700;
             color: var(--primary-color);
         }
-
         #passive-income-display span {
             animation: rentPulse 2s infinite ease-in-out;
             margin-left: 0.5rem;
+        }
+        
+        /* SKYSCRAPER VISUAL STYLING */
+        #skyscraper-view {
+            width: 100%;
+            height: 400px; /* Gives the view some height */
+            background-color: #27303d; /* Dark background for city view */
+            border-radius: 0.75rem;
+            border: 2px solid #4b5563;
+            overflow: hidden; /* Important for containing building elements */
+            position: relative;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .floor {
+            height: 50px;
+            background-color: #4b5563;
+            margin-top: 1px;
+            border-bottom: 1px solid #1f2937;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d1d5db;
+            font-size: 0.875rem;
+        }
+        .base {
+            height: 100px;
+            background-color: #6b7280;
+            border-bottom: 5px solid #1f2937;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
         }
     </style>
 </head>
 <body>
     
     <div class="game-container" id="main-game-container">
+        
         <header class="text-center mb-8 relative">
             <h1 class="text-5xl font-extrabold text-white">Skyscraper Tycoon</h1>
             <button onclick="openSettingsModal()" class="action-button absolute top-0 right-0 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg text-sm transition duration-150 shadow-md">
@@ -197,7 +176,7 @@
             <p class="text-xs text-indigo-500 mt-1">Earn XP by building Apartment Units!</p>
         </div>
 
-        <div id="stats-panel" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div id="stats-panel" class="grid gap-4 mb-8">
             <div class="stat-card">
                 <p class="text-sm font-semibold uppercase text-gray-300">Money (₹)</p>
                 <p id="money-display" class="text-3xl font-bold text-green-400">₹10,000.00</p>
@@ -215,43 +194,80 @@
             </div>
         </div>
         
+        <div id="skyscraper-view" class="mb-8">
+            <div id="building-container" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/3 min-w-[150px] flex flex-col justify-end h-full">
+                <div class="floor bg-green-700/80">COMMERCIAL FLOOR (x1)</div>
+                <div class="floor bg-indigo-700/80">APARTMENT FLOOR (x4)</div>
+                <div class="floor bg-indigo-700/80">APARTMENT FLOOR (x4)</div>
+                <div class="floor bg-indigo-700/80">APARTMENT FLOOR (x4)</div>
+                <div class="floor bg-indigo-700/80">APARTMENT FLOOR (x4)</div>
+                <div class="base">BASEMENT & FOUNDATION</div>
+            </div>
+        </div>
+
         <div id="actions-panel" class="p-6 bg-gray-700/50 border border-gray-600 rounded-xl shadow-inner mb-8">
             <h2 class="text-2xl font-extrabold mb-4 text-white border-b border-gray-600 pb-2">🏗️ Actions & Upgrades</h2>
             
-            <button id="build-apartment-btn" class="action-button bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg flex justify-between items-center" onclick="buildApartment()">
-                <span>**Build Apartment Unit** (Adds +1 Unit, +₹5/sec)</span>
-                <span class="text-lg font-black">Cost: ₹5,000</span>
+            <h3 class="text-xl font-bold text-green-400 mt-6 mb-2">Apartment Construction</h3>
+            
+            <button id="build-apartment-btn-1" class="action-button bg-green-600 hover:bg-green-700 text-white flex justify-between items-center" onclick="buildApartment(1)">
+                <span>**Build Standard Unit** (Adds +1 Unit, +₹5/sec)</span>
+                <span class="text-xl font-black">Cost: ₹5,000</span>
             </button>
             
-            <button id="upgrade-land-btn" class="action-button bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-lg flex justify-between items-center" onclick="upgradeLand()" disabled>
-                <span>**Upgrade Land** (Allows higher level construction)</span>
-                <span class="text-lg font-black">Cost: ₹50,000</span>
+            <button id="build-apartment-btn-10" class="action-button bg-green-600 hover:bg-green-700 text-white flex justify-between items-center" onclick="buildApartment(10)">
+                <span>**Build 10 Units** (Bulk Discount)</span>
+                <span class="text-xl font-black">Cost: ₹45,000</span>
             </button>
             
+            <h3 class="text-xl font-bold text-indigo-400 mt-6 mb-2">Infrastructure & Land</h3>
+
+            <button id="upgrade-land-btn" class="action-button bg-indigo-600 hover:bg-indigo-700 text-white flex justify-between items-center" onclick="upgradeLand()" disabled>
+                <span>**Upgrade Land Tier 2** (Unlock floors 20-40)</span>
+                <span class="text-xl font-black">Cost: ₹50,000</span>
+            </button>
+            
+            <button id="upgrade-elevator-btn" class="action-button bg-indigo-600 hover:bg-indigo-700 text-white flex justify-between items-center" onclick="upgradeElevator()">
+                <span>**Upgrade Elevator Speed** (2x passive rent)</span>
+                <span class="text-xl font-black">Cost: ₹25,000</span>
+            </button>
+
+            <h3 class="text-xl font-bold text-yellow-400 mt-6 mb-2">Marketing & Finance</h3>
+
+            <button id="marketing-btn" class="action-button bg-yellow-600 hover:bg-yellow-700 text-white flex justify-between items-center" onclick="startMarketing()">
+                <span>**Start Marketing Campaign** (+10% Rent/sec)</span>
+                <span class="text-xl font-black">Cost: ₹15,000</span>
+            </button>
+
             <p class="text-sm text-gray-400 mt-4">More upgrades will unlock as your Level increases.</p>
         </div>
 
         <footer class="text-center mt-8 pt-6 border-t border-gray-700/50">
             <p class="text-sm text-gray-500">
-                Developed by Sukesh(G7A)
+                Developed by **Sukesh(G7A)**
             </p>
         </footer>
 
     </div> <script>
-        // Placeholder functions for the buttons (logic needs to be added here)
+        // Placeholder functions for the buttons 
         function openSettingsModal() {
             console.log("Settings opened.");
-            // Actual code to display a modal would go here
         }
 
-        function buildApartment() {
-            console.log("Apartment built.");
-            // Logic to subtract money, add apartment count, and update passive income
+        function buildApartment(count) {
+            console.log(`Building ${count} Apartments.`);
         }
 
         function upgradeLand() {
             console.log("Land upgraded.");
-            // Logic to subtract money and potentially increase max level/size
+        }
+
+        function upgradeElevator() {
+            console.log("Elevator upgraded.");
+        }
+
+        function startMarketing() {
+            console.log("Marketing started.");
         }
     </script>
 </body>
