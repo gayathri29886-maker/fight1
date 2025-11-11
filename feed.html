@@ -128,6 +128,10 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             font-weight: 700;
             border: none;
+            /* Added margin for button spacing */
+            margin-bottom: 0.75rem; 
+            width: 100%; /* Make them full width for visibility */
+            text-align: left; /* Align text inside button */
         }
 
         .action-button:hover:not(:disabled) {
@@ -211,11 +215,20 @@
             </div>
         </div>
         
-        <div id="actions-panel" class="p-4 bg-gray-700/50 border border-gray-600 rounded-xl shadow-inner mb-8">
-            <h2 class="text-xl font-bold mb-4 text-white">Actions & Upgrades</h2>
-            <button id="build-apartment-btn" class="action-button bg-indigo-500 hover:bg-indigo-600 text-white p-3 rounded-lg shadow-lg" onclick="buildApartment()">
-                Build Apartment Unit (Cost: ₹5,000)
+        <div id="actions-panel" class="p-6 bg-gray-700/50 border border-gray-600 rounded-xl shadow-inner mb-8">
+            <h2 class="text-2xl font-extrabold mb-4 text-white border-b border-gray-600 pb-2">🏗️ Actions & Upgrades</h2>
+            
+            <button id="build-apartment-btn" class="action-button bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg flex justify-between items-center" onclick="buildApartment()">
+                <span>**Build Apartment Unit** (Adds +1 Unit, +₹5/sec)</span>
+                <span class="text-lg font-black">Cost: ₹5,000</span>
             </button>
+            
+            <button id="upgrade-land-btn" class="action-button bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-lg flex justify-between items-center" onclick="upgradeLand()" disabled>
+                <span>**Upgrade Land** (Allows higher level construction)</span>
+                <span class="text-lg font-black">Cost: ₹50,000</span>
+            </button>
+            
+            <p class="text-sm text-gray-400 mt-4">More upgrades will unlock as your Level increases.</p>
         </div>
 
         <footer class="text-center mt-8 pt-6 border-t border-gray-700/50">
@@ -225,13 +238,20 @@
         </footer>
 
     </div> <script>
-        // Placeholder functions for the buttons to work without errors
+        // Placeholder functions for the buttons (logic needs to be added here)
         function openSettingsModal() {
-            alert("Settings functionality not yet implemented!");
+            console.log("Settings opened.");
+            // Actual code to display a modal would go here
         }
 
         function buildApartment() {
-            alert("Build Apartment logic not yet implemented!");
+            console.log("Apartment built.");
+            // Logic to subtract money, add apartment count, and update passive income
+        }
+
+        function upgradeLand() {
+            console.log("Land upgraded.");
+            // Logic to subtract money and potentially increase max level/size
         }
     </script>
 </body>
