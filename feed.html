@@ -164,10 +164,38 @@
             animation: rentPulse 2s infinite ease-in-out;
             margin-left: 0.5rem;
         }
+        
+        /* Ensure the start screen takes up the full viewport */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Added transition for smoother hiding */
+            transition: opacity 0.5s ease; 
+        }
     </style>
 </head>
 <body>
-    <div class="game-container">
+    
+    <div id="start-screen" class="p-8">
+        <div class="text-center bg-gray-800 p-10 rounded-2xl shadow-2xl max-w-lg mx-auto border-4 border-indigo-500">
+            <h1 class="text-6xl font-extrabold text-white mb-6">Skyscraper Tycoon</h1>
+            <p class="text-lg text-gray-300 mb-8">Build your empire, one floor at a time. Manage land, apartments, and finances to reach the top!</p>
+            <button id="start-game-btn" class="action-button bg-green-500 hover:bg-green-600 text-white text-2xl py-4 px-8 rounded-xl shadow-lg" onclick="startGame()">
+                Start New Game
+            </button>
+            <p class="text-xs text-gray-500 mt-6">A game of vertical expansion.</p>
+        </div>
+    </div>
+    
+    <div class="game-container hidden" id="main-game-container"> 
         <header class="text-center mb-8 relative">
             <h1 class="text-5xl font-extrabold text-white">Skyscraper Tycoon</h1>
             <button onclick="openSettingsModal()" class="action-button absolute top-0 right-0 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg text-sm transition duration-150 shadow-md">
@@ -244,9 +272,7 @@
         <div id="message-box" class="mt-6 p-4 bg-red-800 text-red-200 rounded-lg hidden"></div>
         
         <footer class="mt-8 pt-4 border-t border-gray-700 text-center text-sm text-gray-500">
-            <p>Skyscraper Tycoon Game &copy; 2024</p>
-            <p class="mt-1">Built with HTML, Tailwind CSS, and Vanilla JavaScript.</p>
-            <p class="mt-1 text-xs">Remember to save your progress (feature coming soon!).</p>
+            <p>Developed by Sukesh</p>
         </footer>
 
     </div>
@@ -296,39 +322,28 @@
             money: 10000,
             land: 0,
             apartments: 0,
-            rentPerUnit: 25.00, // Initial rent per apartment unit (Rupees)
+            rentPerUnit: 25.00, 
             landCost: 1000,
             apartmentCost: 500,
             rentUpgradeCost: 5000,
-            rentUpgradeIncrease: 5.00, // Rent increase per upgrade (Rupees)
-
-            // NEW BILLS/MAINTENANCE STATE
-            maintenancePerApartment: 2.00, // Upkeep cost accrued per apartment unit per tick
-            accruedBills: 0, // Total unpaid maintenance, utilities, and tax
-
+            rentUpgradeIncrease: 5.00, 
+            maintenancePerApartment: 2.00, 
+            accruedBills: 0, 
             gameInterval: null,
-            gameTickMs: 1000, // Rent collected every 1000ms (1 second)
-
-            // Level System State
+            gameTickMs: 1000, 
             level: 1,
             xp: 0,
             baseXPToNext: 10,
             xpToNextLevel: 10,
             xpPerApartment: 2,
-
-            // Settings State
             settings: {
-                theme: 'dark', // 'dark' or 'light'
-                fontSizeBase: 100, // Percentage (e.g., 100, 110, 90)
-                rentVolatility: 0.1, // Random variance ±10%
+                theme: 'dark', 
+                fontSizeBase: 100, 
+                rentVolatility: 0.1, 
             }
         };
 
         // --- UTILITIES ---
-
-        /*** Formats a number into an Indian Rupees currency string (e.g., 12345.67 -> "₹12,345.67")
-         * @param {number} amount
-         */
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-IN', {
                 style: 'currency',
@@ -338,22 +353,14 @@
             }).format(amount);
         }
 
-        /*** Shows a temporary message in the message box.
-         * @param {string} message
-         * @param {string} type 'success', 'error', 'info'
-         */
         function showMessage(message, type = 'info') {
             const box = document.getElementById('message-box');
             box.textContent = message;
-
-            // Use different colors for error and success
             const colorClass = type === 'error' ? 'bg-red-800 text-red-200' :
                 type === 'success' ? 'bg-green-800 text-green-200' :
                 'bg-blue-800 text-blue-200';
-
             box.className = `mt-6 p-4 rounded-lg ${colorClass}`;
             box.style.display = 'block';
-
             setTimeout(() => {
                 box.style.display = 'none';
             }, 3000);
@@ -361,34 +368,22 @@
 
         // --- UI UPDATER ---
         function updateUI() {
-            // Update core stats (Money, Apartments)
             document.getElementById('money-display').textContent = formatCurrency(state.money);
             document.getElementById('apartment-display').textContent = state.apartments.toLocaleString();
-
-            // Update Bills in the action card
             document.getElementById('bill-cost-display').textContent = formatCurrency(state.accruedBills);
-
-            // Update Land count in the action card (NEW ID: land-count-in-action)
             document.getElementById('land-count-in-action').textContent = state.land.toLocaleString();
-
-            // Display the total EXPECTED rent
             const totalExpectedRent = state.apartments * state.rentPerUnit;
             document.getElementById('rent-rate-display').textContent = formatCurrency(totalExpectedRent);
-
-            // Update Level UI
             const xpRatio = state.xp / state.xpToNextLevel;
             document.getElementById('level-display').textContent = state.level.toLocaleString();
             document.getElementById('xp-current-display').textContent = state.xp.toLocaleString();
             document.getElementById('xp-next-display').textContent = state.xpToNextLevel.toLocaleString();
             document.getElementById('xp-bar').style.width = `${Math.min(100, xpRatio * 100)}%`;
-
-            // Update Action Costs/Requirements
             document.getElementById('land-cost-display').textContent = formatCurrency(state.landCost);
             document.getElementById('apartment-cost-display').textContent = formatCurrency(state.apartmentCost);
             document.getElementById('upgrade-cost-display').textContent = formatCurrency(state.rentUpgradeCost);
             document.getElementById('upgrade-increase-display').textContent = `+${formatCurrency(state.rentUpgradeIncrease)}`;
 
-            // Update button states (Enable/Disable)
             const buyLandBtn = document.getElementById('buy-land-btn');
             const buildApartmentBtn = document.getElementById('build-apartment-btn');
             const upgradeRentBtn = document.getElementById('upgrade-rent-btn');
@@ -397,8 +392,6 @@
             buyLandBtn.disabled = state.money < state.landCost;
             buildApartmentBtn.disabled = state.money < state.apartmentCost || state.land < 1;
             upgradeRentBtn.disabled = state.money < state.rentUpgradeCost;
-
-            // Bills can only be paid if something is due AND you have the money
             payBillsBtn.disabled = state.accruedBills <= 0 || state.money < state.accruedBills;
         }
 
@@ -410,7 +403,6 @@
             } else {
                 document.body.classList.remove('light-mode');
             }
-            // Sync the checkbox
             const themeToggle = document.getElementById('theme-toggle');
             if (themeToggle) themeToggle.checked = (theme === 'light');
         }
@@ -421,30 +413,23 @@
 
         function changeFontSize(size) {
             state.settings.fontSizeBase = parseInt(size, 10);
-            // Apply font size to the body using 'em' relative to the browser's default font size
             document.body.style.fontSize = `${state.settings.fontSizeBase / 100}em`;
-            // Update the display value
             document.getElementById('font-size-value').textContent = `${state.settings.fontSizeBase}%`;
-            // Sync the slider
             document.getElementById('font-size-slider').value = state.settings.fontSizeBase;
         }
 
         function updateGameSpeed(ms) {
             state.gameTickMs = parseInt(ms, 10);
-            // Clear and restart the game interval
             clearInterval(state.gameInterval);
             state.gameInterval = setInterval(gameLoop, state.gameTickMs);
-
-            // Update the display value
             const seconds = (state.gameTickMs / 1000).toFixed(1);
             document.getElementById('game-speed-value').textContent = `${seconds}s`;
             document.getElementById('game-speed-slider').value = state.gameTickMs;
         }
 
         function openSettingsModal() {
-            // Initialize controls with current settings
             changeFontSize(state.settings.fontSizeBase);
-            updateGameSpeed(state.gameTickMs); // Initialize game speed slider
+            updateGameSpeed(state.gameTickMs); 
             document.getElementById('theme-toggle').checked = (state.settings.theme === 'light');
             document.getElementById('settings-modal').classList.remove('hidden');
         }
@@ -459,13 +444,10 @@
                 state.xp -= state.xpToNextLevel;
                 state.level += 1;
                 state.xpToNextLevel = state.baseXPToNext * state.level;
-
                 const rewardMoney = state.level * 10000;
                 const rewardRentIncrease = 5.00 + (state.level * 1.00);
-
                 state.money += rewardMoney;
                 state.rentPerUnit += rewardRentIncrease;
-
                 showMessage(`LEVEL UP! You are now Level ${state.level}! Gained ${formatCurrency(rewardMoney)} and Rent per unit increased by ${formatCurrency(rewardRentIncrease)}!`, 'success');
             }
             updateUI();
@@ -475,12 +457,10 @@
         function gameLoop() {
             const baseIncomePerUnit = state.rentPerUnit;
             let collectedIncome = 0;
-            const volatility = state.settings.rentVolatility; // Using the volatility setting
+            const volatility = state.settings.rentVolatility; 
 
             // 1. COLLECT RENT
-            // Calculate collected rent with random variance for each apartment
             for (let i = 0; i < state.apartments; i++) {
-                // Random variation: ±volatility of the base rent per unit
                 const variance = (Math.random() * (2 * volatility) - volatility);
                 const unitIncome = baseIncomePerUnit * (1 + variance);
                 collectedIncome += unitIncome;
@@ -488,7 +468,6 @@
 
             if (collectedIncome > 0) {
                 state.money += collectedIncome;
-                // Show a visual pulse on the rent display
                 const rentPulse = document.getElementById('rent-pulse');
                 rentPulse.textContent = `+${formatCurrency(collectedIncome)}`;
                 rentPulse.classList.add('animate-pulse');
@@ -529,7 +508,6 @@
                 const cost = state.landCost;
                 state.money -= cost;
                 state.land += 1;
-                // Cost scaling: ~50% increase, rounded up to nearest 100
                 state.landCost = Math.ceil(state.landCost * 1.5 / 100) * 100;
                 showMessage(`Purchased 1 Land Block for ${formatCurrency(cost)}!`, 'info');
                 updateUI();
@@ -545,9 +523,7 @@
                 state.land -= 1;
                 state.apartments += 1;
                 state.xp += state.xpPerApartment;
-                checkLevelUp(); // Check for level up after gaining XP
-
-                // Cost scaling: ~25% increase, rounded up to nearest 100
+                checkLevelUp(); 
                 state.apartmentCost = Math.ceil(state.apartmentCost * 1.25 / 100) * 100;
                 showMessage(`Built 1 Apartment Unit for ${formatCurrency(cost)}! Gained ${state.xpPerApartment} XP.`, 'success');
                 updateUI();
@@ -563,11 +539,8 @@
                 const cost = state.rentUpgradeCost;
                 state.money -= cost;
                 state.rentPerUnit += state.rentUpgradeIncrease;
-
-                // Cost scaling: ~80% increase, rounded up to nearest 1000
                 state.rentUpgradeCost = Math.ceil(state.rentUpgradeCost * 1.8 / 1000) * 1000;
-                state.rentUpgradeIncrease += 5.00; // Increase the future increase amount
-
+                state.rentUpgradeIncrease += 5.00; 
                 showMessage(`Rent rate upgraded for ${formatCurrency(cost)}! Each unit now has an average income of ${formatCurrency(state.rentPerUnit)} per tick.`, 'info');
                 updateUI();
             } else {
@@ -575,19 +548,43 @@
             }
         }
 
-        // --- INITIALIZATION ---
-        function initGame() {
-            // Apply saved or default settings before updating UI
+        // --- INITIALIZATION AND START GAME LOGIC ---
+
+        function initGameUIAndLoop() {
+            // Apply theme/font settings
             applyTheme(state.settings.theme);
             changeFontSize(state.settings.fontSizeBase);
-            updateGameSpeed(state.gameTickMs); // Initializes slider/display and starts interval
-            updateUI(); // Set initial UI values
+            
+            // Start the game loop and initialize the game speed slider
+            updateGameSpeed(state.gameTickMs); 
+            
+            // Set initial UI values
+            updateUI(); 
 
-            // Initial encouragement message
-            showMessage("Welcome to Skyscraper Tycoon! Use the Settings button to adjust the game speed and theme! Start by buying land.", 'info');
+            // Initial message
+            showMessage("Welcome to Skyscraper Tycoon! Start by buying land.", 'info');
         }
 
-        window.onload = initGame;
+        function startGame() {
+            const startScreen = document.getElementById('start-screen');
+            const gameContainer = document.getElementById('main-game-container');
+
+            // 1. Hide the Start Screen
+            startScreen.style.opacity = '0';
+            setTimeout(() => {
+                startScreen.classList.add('hidden');
+                // 2. Show the Main Game Container
+                gameContainer.classList.remove('hidden'); 
+                initGameUIAndLoop();
+            }, 500); // Wait for fade out
+        }
+
+        function initApp() {
+            // Nothing happens on load except showing the start screen.
+            // All other initialization moves to startGame() -> initGameUIAndLoop()
+        }
+
+        window.onload = initApp;
     </script>
 </body>
 </html>
