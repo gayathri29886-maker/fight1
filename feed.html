@@ -159,7 +159,7 @@
         #passive-income-display {
             display: flex;
             align-items: center;
-            font-size: 1.25rem; /* Made this smaller to fit the card */
+            font-size: 1.25rem; 
             font-weight: 700;
             color: var(--primary-color);
         }
@@ -168,9 +168,6 @@
             animation: rentPulse 2s infinite ease-in-out;
             margin-left: 0.5rem;
         }
-        
-        /* Removed #start-screen CSS */
-
     </style>
 </head>
 <body>
@@ -213,6 +210,13 @@
                 </p>
             </div>
         </div>
+        
+        <div id="actions-panel" class="p-4 bg-gray-700/50 border border-gray-600 rounded-xl shadow-inner mb-8">
+            <h2 class="text-xl font-bold mb-4 text-white">Actions & Upgrades</h2>
+            <button id="build-apartment-btn" class="action-button bg-indigo-500 hover:bg-indigo-600 text-white p-3 rounded-lg shadow-lg" onclick="buildApartment()">
+                Build Apartment Unit (Cost: ₹5,000)
+            </button>
+        </div>
 
         <footer class="text-center mt-8 pt-6 border-t border-gray-700/50">
             <p class="text-sm text-gray-500">
@@ -220,5 +224,15 @@
             </p>
         </footer>
 
-    </div> </body>
-</html>s
+    </div> <script>
+        // Placeholder functions for the buttons to work without errors
+        function openSettingsModal() {
+            alert("Settings functionality not yet implemented!");
+        }
+
+        function buildApartment() {
+            alert("Build Apartment logic not yet implemented!");
+        }
+    </script>
+</body>
+</html>
