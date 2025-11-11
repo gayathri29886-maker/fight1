@@ -401,7 +401,7 @@
         function openSettingsModal() {
             // Initialize controls with current settings
             changeFontSize(state.settings.fontSizeBase);
-            updateGameSpeed(state.gameTickMs); // Initialize game speed slider
+            updateGameSpeed(state.gameTickMs); // Initializes slider/display and starts interval
             document.getElementById('theme-toggle').checked = (state.settings.theme === 'light');
             document.getElementById('settings-modal').classList.remove('hidden');
         }
