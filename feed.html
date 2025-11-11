@@ -231,7 +231,7 @@
                 </div>
 
                 <div class="p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
-                    <label for="game-speed-slider" class="text-lg font-medium block mb-2">Game Speed (Rent Tick)</label>
+                    <label for="game-speed-slider" class="text-lg font-medium block mb-2">Rent Tick Speed (Seconds)</label>
                     <div class="flex items-center space-x-4">
                         <input type="range" id="game-speed-slider" min="100" max="2000" step="100"
                             oninput="updateGameSpeed(this.value)"
@@ -262,8 +262,11 @@
             maintenancePerApartment: 2.00, // Upkeep cost accrued per apartment unit per tick
             accruedBills: 0, // Total unpaid maintenance, utilities, and tax
 
-            gameInterval: null,
+            // Intervals and Speeds
+            gameInterval: null, // Interval for rent collection
+            billInterval: null, // NEW: Interval for bill accrual
             gameTickMs: 1000, // Rent collected every 1000ms (1 second)
+            billTickMs: 5000, // NEW: Bills accrue every 5000ms (5 seconds)
 
             // Level System State
             level: 1,
@@ -388,7 +391,7 @@
         function updateGameSpeed(ms) {
             state.gameTickMs = parseInt(ms, 10);
             
-            // Clear and restart the game interval
+            // Clear and restart the game interval (Only rent interval is affected by slider)
             clearInterval(state.gameInterval);
             state.gameInterval = setInterval(gameLoop, state.gameTickMs);
 
@@ -401,7 +404,7 @@
         function openSettingsModal() {
             // Initialize controls with current settings
             changeFontSize(state.settings.fontSizeBase);
-            updateGameSpeed(state.gameTickMs); // Initializes slider/display and starts interval
+            updateGameSpeed(state.gameTickMs); // Initialize game speed slider
             document.getElementById('theme-toggle').checked = (state.settings.theme === 'light');
             document.getElementById('settings-modal').classList.remove('hidden');
         }
@@ -429,7 +432,9 @@
             updateUI();
         }
 
-        // --- GAME LOOP ---
+        // --- GAME LOOPS ---
+
+        // Loop for Rent Collection (Runs on gameTickMs, default 1s)
         function gameLoop() {
             const baseIncomePerUnit = state.rentPerUnit;
             let collectedIncome = 0;
@@ -455,13 +460,17 @@
                     rentPulse.classList.remove('animate-pulse');
                 }, 500);
             }
+            updateUI();
+        }
 
+        // NEW: Loop for Bill Accrual (Runs on billTickMs, fixed at 5s)
+        function billAccrualLoop() {
             // 2. ACCRUE BILLS (Maintenance/Upkeep)
             if (state.apartments > 0) {
-                const upkeepCost = state.apartments * state.maintenancePerApartment;
+                const upkeepCost = state.apartments * state.maintenancePerApartment * (state.billTickMs / 1000); // Scale cost by interval
                 state.accruedBills += upkeepCost;
+                showMessage(`Maintenance and Tax accrued: +${formatCurrency(upkeepCost)}. Total due is now ${formatCurrency(state.accruedBills)}.`, 'info');
             }
-
             updateUI();
         }
 
@@ -542,11 +551,18 @@
             // Apply saved or default settings before updating UI
             applyTheme(state.settings.theme);
             changeFontSize(state.settings.fontSizeBase);
-            updateGameSpeed(state.gameTickMs); // Initializes slider/display and starts interval
+
+            // Set up Intervals
+            updateGameSpeed(state.gameTickMs); // Initializes slider/display and starts the Rent interval
+            
+            // NEW: Start the separate Bill Accrual interval (fixed at 5000ms)
+            clearInterval(state.billInterval);
+            state.billInterval = setInterval(billAccrualLoop, state.billTickMs);
+
             updateUI(); // Set initial UI values
 
             // Initial encouragement message
-            showMessage("Welcome to Skyscraper Tycoon! Use the Settings button to adjust the game speed and theme! Start by buying land.", 'info');
+            showMessage("Welcome to Skyscraper Tycoon! Rent collects every 1 second, but bills only accrue every 5 seconds. Use the Settings button to adjust the rent speed!", 'info');
         }
 
         window.onload = initGame;
