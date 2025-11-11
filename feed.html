@@ -72,6 +72,21 @@
             transition: background-color 0.3s, box-shadow 0.3s;
         }
 
+        /* --- NEW START SCREEN STYLES --- */
+        #start-screen {
+            background-color: var(--card-color);
+            width: 100%;
+            max-width: 600px;
+            padding: 3rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7);
+            /* Centering using Flexbox/Body styles */
+        }
+        .light-mode #start-screen {
+            background-color: #ffffff;
+        }
+
         /* Stats Panel Layout: 1 column on mobile, 3 columns on tablet/desktop */
         #stats-panel {
             grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -128,130 +143,144 @@
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <header class="text-center mb-8 relative">
-            <h1 class="text-5xl font-extrabold text-white">Skyscraper Tycoon</h1>
-            
-            <p id="win-hint" class="text-xl font-bold text-yellow-400 mt-2 tracking-wider">
-                **Goal:** Get to Level 100 to Win!
-            </p>
-            
-            <button onclick="openSettingsModal()" class="action-button absolute top-0 right-0 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg text-sm transition duration-150 shadow-md">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.496 14.288a3.978 3.978 0 11-2.992-2.992 3.978 3.978 0 012.992 2.992zm-.592 1.545a.75.75 0 01-.75-1.5 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5-.75 3.978 3.978 0 011.858-1.858.75.75 0 011.5-.75 2.478 2.478 0 001.858-1.858.75.75 0 011.5-.75 3.978 3.978 0 011.858 1.858.75.75 0 011.5.75 2.478 2.478 0 001.858 1.858.75.75 0 011.5.75 3.978 3.978 0 01-1.858 1.858.75.75 0 01-1.5-.75 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5.75 3.978 3.978 0 01-1.858 1.858z" clip-rule="evenodd" /></svg>
-            </button>
-        </header>
-
-        <div class="mb-8 p-4 bg-indigo-900/30 border border-indigo-700 rounded-xl shadow-inner">
-            <div class="flex justify-between text-sm font-semibold mb-1">
-                <p class="text-indigo-300">Current Level: <span id="level-display" class="font-black text-lg">1</span></p>
-                <p class="text-indigo-300">XP Progress: <span id="xp-current-display">0</span> / <span id="xp-next-display">10</span> XP</p>
-            </div>
-            <div class="w-full bg-indigo-900 rounded-full h-3">
-                <div id="xp-bar" class="bg-indigo-400 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-            <p class="text-xs text-indigo-500 mt-1">Earn XP by building Apartment Units!</p>
-        </div>
-
-        <div id="stats-panel" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div class="stat-card">
-                <p class="text-sm font-semibold uppercase text-gray-300">Money (₹)</p>
-                <p id="money-display" class="text-3xl font-bold text-green-400">₹10,000.00</p>
-            </div>
-            <div class="stat-card">
-                <p class="text-sm font-semibold uppercase text-gray-300">Apartments (Units)</p>
-                <p id="apartment-display" class="text-3xl font-bold text-indigo-400">0</p>
-            </div>
-            <div class="stat-card">
-                <p class="text-sm font-semibold uppercase text-gray-300">Expected Rent (Total/Tick)</p>
-                <div id="passive-income-display">
-                    <p id="rent-rate-display" class="text-3xl font-bold">₹0.00</p>
-                    <span id="rent-pulse"></span>
-                </div>
-            </div>
-        </div>
-
-        <div id="actions-panel" class="p-6 bg-gray-800 border-2 border-gray-700 rounded-xl">
-            <h2 class="text-2xl font-bold mb-4 text-white">Build & Expand</h2>
-            <div class="grid grid-cols-1 grid-cols-2-sm lg:grid-cols-4 gap-6">
-
-                <div class="bg-blue-900/30 p-4 rounded-lg border border-blue-700 shadow-xl">
-                    <h3 class="text-xl font-semibold text-blue-400 mb-2">Buy Land</h3>
-                    <p class="text-3xl font-bold text-yellow-400 mb-3">Blocks Owned: <span id="land-count-in-action">0</span></p>
-                    <p class="text-sm text-gray-400 mb-3">Acquire more space to build massive skyscrapers!</p>
-                    <p class="text-lg font-bold text-white mb-3">Cost: <span id="land-cost-display">₹1,000.00</span></p>
-                    <button id="buy-land-btn" class="action-button w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buyLand()">Buy 1 Land Block</button>
-                </div>
-
-                <div class="bg-green-900/30 p-4 rounded-lg border border-green-700 shadow-xl">
-                    <h3 class="text-xl font-semibold text-green-400 mb-2">Build Apartment Unit</h3>
-                    <p class="text-sm text-gray-400 mb-3">Build an apartment. Requires land and generates variable rent. <span class="font-bold text-xs text-indigo-400">(+2 XP)</span></p>
-                    <p class="text-lg font-bold text-white mb-3">Cost: <span id="apartment-cost-display">₹500.00</span> | Land Required: <span id="apartment-land-display">1</span></p>
-                    <button id="build-apartment-btn" class="action-button w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buildApartment()">Build Unit</button>
-                </div>
-
-                <div class="bg-yellow-900/30 p-4 rounded-lg border border-yellow-700 shadow-xl">
-                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Upgrade Rent Value</h3>
-                    <p class="text-sm text-gray-400 mb-3">Increase the average rent value per apartment unit.</p>
-                    <p class="text-lg font-bold text-white mb-3">Cost: <span id="upgrade-cost-display">₹5,000.00</span> | Increase: <span id="upgrade-increase-display">₹5.00</span></p>
-                    <button id="upgrade-rent-btn" class="action-button w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="upgradeRentRate()">Upgrade Rental Value</button>
-                </div>
-
-                <div class="bg-red-900/30 p-4 rounded-lg border border-red-700 shadow-xl">
-                    <h3 class="text-xl font-semibold text-red-400 mb-2">Pay Maintenance & Tax</h3>
-                    <p class="text-sm text-gray-400 mb-3">Settle accrued utility and tax costs. **Mandatory** to maintain positive cash flow.</p>
-                    <p class="text-4xl font-bold text-red-400 mb-3">Due: <span id="bill-cost-display">₹0.00</span></p>
-                    <button id="pay-bills-btn" class="action-button w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="payBills()">Pay Bills</button>
-                </div>
-
-            </div>
-        </div>
-
-        <div id="message-box" class="mt-6 p-4 bg-red-800 text-red-200 rounded-lg hidden"></div>
-        
-        <footer class="mt-8 pt-4 text-center text-sm text-gray-500 border-t border-gray-700">
-            Developed by **Sukesh(G7A)**
-        </footer>
-
-    </div><div id="settings-modal" class="hidden fixed inset-0 z-50 bg-gray-900 bg-opacity-75 flex items-center justify-center transition-opacity duration-300">
-        <div class="bg-gray-700 light-mode:bg-white p-8 rounded-xl w-full max-w-md shadow-2xl transition-all duration-300 transform scale-100">
-            <h2 class="text-3xl font-bold mb-6 text-white light-mode:text-gray-900">Game Settings</h2>
-            <div class="space-y-6">
-                <div class="flex justify-between items-center p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
-                    <label for="theme-toggle" class="text-lg font-medium">Dark Mode / Light Mode</label>
-                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                        <input type="checkbox" name="theme-toggle" id="theme-toggle" onchange="toggleTheme(this.checked)" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition duration-300 ease-in-out checked:bg-indigo-600 checked:right-0">
-                        <label for="theme-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                    </div>
-                </div>
-
-                <div class="p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
-                    <label for="font-size-slider" class="text-lg font-medium block mb-2">Font Size Adjustment</label>
-                    <div class="flex items-center space-x-4">
-                        <input type="range" id="font-size-slider" min="80" max="150" step="10"
-                            oninput="changeFontSize(this.value)"
-                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
-                        <span id="font-size-value" class="w-12 text-right font-bold text-indigo-400">100%</span>
-                    </div>
-                    <p class="text-xs text-gray-400 light-mode:text-gray-600 mt-1">Adjusts the base size of all text.</p>
-                </div>
-
-                <div class="p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
-                    <label for="game-speed-slider" class="text-lg font-medium block mb-2">Rent Tick Speed (Seconds)</label>
-                    <div class="flex items-center space-x-4">
-                        <input type="range" id="game-speed-slider" min="100" max="2000" step="100"
-                            oninput="updateGameSpeed(this.value)"
-                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
-                        <span id="game-speed-value" class="w-16 text-right font-bold text-indigo-400">1.0s</span>
-                    </div>
-                    <p class="text-xs text-gray-400 light-mode:text-gray-600 mt-1">Lower value means faster rent collection.</p>
-                </div>
-            </div>
-
-            <button onclick="closeSettingsModal()" class="action-button w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg">Close Settings</button>
-        </div>
+    <div id="start-screen">
+        <h1 class="text-6xl font-extrabold text-white mb-4">Skyscraper Tycoon</h1>
+        <p class="text-yellow-400 text-2xl font-bold mb-8">
+            Build your empire. Reach Level 100.
+        </p>
+        <p class="text-gray-300 mb-8">
+            Manage land acquisition, apartment construction, rent upgrades, and maintenance bills. 
+            Rent is collected every **1 second**, but bills only accrue every **5 seconds**.
+        </p>
+        <button onclick="startGame()" class="action-button bg-green-500 hover:bg-green-600 text-white text-2xl font-bold py-4 px-12 rounded-xl shadow-lg">
+            Start Game
+        </button>
     </div>
 
-    <script>
+    <div id="game-page-content" class="hidden">
+        <div class="game-container">
+            <header class="text-center mb-8 relative">
+                <h1 class="text-5xl font-extrabold text-white">Skyscraper Tycoon</h1>
+                
+                <p id="win-hint" class="text-xl font-bold text-yellow-400 mt-2 tracking-wider">
+                    **Goal:** Get to Level 100 to Win!
+                </p>
+                
+                <button onclick="openSettingsModal()" class="action-button absolute top-0 right-0 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg text-sm transition duration-150 shadow-md">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.496 14.288a3.978 3.978 0 11-2.992-2.992 3.978 3.978 0 012.992 2.992zm-.592 1.545a.75.75 0 01-.75-1.5 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5-.75 3.978 3.978 0 011.858-1.858.75.75 0 011.5-.75 2.478 2.478 0 001.858-1.858.75.75 0 011.5-.75 3.978 3.978 0 011.858 1.858.75.75 0 011.5.75 2.478 2.478 0 001.858 1.858.75.75 0 011.5.75 3.978 3.978 0 01-1.858 1.858.75.75 0 01-1.5-.75 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5.75 3.978 3.978 0 01-1.858 1.858z" clip-rule="evenodd" /></svg>
+                </button>
+            </header>
+
+            <div class="mb-8 p-4 bg-indigo-900/30 border border-indigo-700 rounded-xl shadow-inner">
+                <div class="flex justify-between text-sm font-semibold mb-1">
+                    <p class="text-indigo-300">Current Level: <span id="level-display" class="font-black text-lg">1</span></p>
+                    <p class="text-indigo-300">XP Progress: <span id="xp-current-display">0</span> / <span id="xp-next-display">10</span> XP</p>
+                </div>
+                <div class="w-full bg-indigo-900 rounded-full h-3">
+                    <div id="xp-bar" class="bg-indigo-400 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p class="text-xs text-indigo-500 mt-1">Earn XP by building Apartment Units!</p>
+            </div>
+
+            <div id="stats-panel" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="stat-card">
+                    <p class="text-sm font-semibold uppercase text-gray-300">Money (₹)</p>
+                    <p id="money-display" class="text-3xl font-bold text-green-400">₹10,000.00</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-sm font-semibold uppercase text-gray-300">Apartments (Units)</p>
+                    <p id="apartment-display" class="text-3xl font-bold text-indigo-400">0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-sm font-semibold uppercase text-gray-300">Expected Rent (Total/Tick)</p>
+                    <div id="passive-income-display">
+                        <p id="rent-rate-display" class="text-3xl font-bold">₹0.00</p>
+                        <span id="rent-pulse"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="actions-panel" class="p-6 bg-gray-800 border-2 border-gray-700 rounded-xl">
+                <h2 class="text-2xl font-bold mb-4 text-white">Build & Expand</h2>
+                <div class="grid grid-cols-1 grid-cols-2-sm lg:grid-cols-4 gap-6">
+
+                    <div class="bg-blue-900/30 p-4 rounded-lg border border-blue-700 shadow-xl">
+                        <h3 class="text-xl font-semibold text-blue-400 mb-2">Buy Land</h3>
+                        <p class="text-3xl font-bold text-yellow-400 mb-3">Blocks Owned: <span id="land-count-in-action">0</span></p>
+                        <p class="text-sm text-gray-400 mb-3">Acquire more space to build massive skyscrapers!</p>
+                        <p class="text-lg font-bold text-white mb-3">Cost: <span id="land-cost-display">₹1,000.00</span></p>
+                        <button id="buy-land-btn" class="action-button w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buyLand()">Buy 1 Land Block</button>
+                    </div>
+
+                    <div class="bg-green-900/30 p-4 rounded-lg border border-green-700 shadow-xl">
+                        <h3 class="text-xl font-semibold text-green-400 mb-2">Build Apartment Unit</h3>
+                        <p class="text-sm text-gray-400 mb-3">Build an apartment. Requires land and generates variable rent. <span class="font-bold text-xs text-indigo-400">(+2 XP)</span></p>
+                        <p class="text-lg font-bold text-white mb-3">Cost: <span id="apartment-cost-display">₹500.00</span> | Land Required: <span id="apartment-land-display">1</span></p>
+                        <button id="build-apartment-btn" class="action-button w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="buildApartment()">Build Unit</button>
+                    </div>
+
+                    <div class="bg-yellow-900/30 p-4 rounded-lg border border-yellow-700 shadow-xl">
+                        <h3 class="text-xl font-semibold text-yellow-400 mb-2">Upgrade Rent Value</h3>
+                        <p class="text-sm text-gray-400 mb-3">Increase the average rent value per apartment unit.</p>
+                        <p class="text-lg font-bold text-white mb-3">Cost: <span id="upgrade-cost-display">₹5,000.00</span> | Increase: <span id="upgrade-increase-display">₹5.00</span></p>
+                        <button id="upgrade-rent-btn" class="action-button w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="upgradeRentRate()">Upgrade Rental Value</button>
+                    </div>
+
+                    <div class="bg-red-900/30 p-4 rounded-lg border border-red-700 shadow-xl">
+                        <h3 class="text-xl font-semibold text-red-400 mb-2">Pay Maintenance & Tax</h3>
+                        <p class="text-sm text-gray-400 mb-3">Settle accrued utility and tax costs. **Mandatory** to maintain positive cash flow.</p>
+                        <p class="text-4xl font-bold text-red-400 mb-3">Due: <span id="bill-cost-display">₹0.00</span></p>
+                        <button id="pay-bills-btn" class="action-button w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg" onclick="payBills()">Pay Bills</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="message-box" class="mt-6 p-4 bg-red-800 text-red-200 rounded-lg hidden"></div>
+            
+            <footer class="mt-8 pt-4 text-center text-sm text-gray-500 border-t border-gray-700">
+                Developed by **Sukesh(G7A)**
+            </footer>
+
+        </div><div id="settings-modal" class="hidden fixed inset-0 z-50 bg-gray-900 bg-opacity-75 flex items-center justify-center transition-opacity duration-300">
+            <div class="bg-gray-700 light-mode:bg-white p-8 rounded-xl w-full max-w-md shadow-2xl transition-all duration-300 transform scale-100">
+                <h2 class="text-3xl font-bold mb-6 text-white light-mode:text-gray-900">Game Settings</h2>
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
+                        <label for="theme-toggle" class="text-lg font-medium">Dark Mode / Light Mode</label>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="theme-toggle" id="theme-toggle" onchange="toggleTheme(this.checked)" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition duration-300 ease-in-out checked:bg-indigo-600 checked:right-0">
+                            <label for="theme-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
+                        <label for="font-size-slider" class="text-lg font-medium block mb-2">Font Size Adjustment</label>
+                        <div class="flex items-center space-x-4">
+                            <input type="range" id="font-size-slider" min="80" max="150" step="10"
+                                oninput="changeFontSize(this.value)"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                            <span id="font-size-value" class="w-12 text-right font-bold text-indigo-400">100%</span>
+                        </div>
+                        <p class="text-xs text-gray-400 light-mode:text-gray-600 mt-1">Adjusts the base size of all text.</p>
+                    </div>
+
+                    <div class="p-3 bg-gray-600/50 light-mode:bg-gray-100 rounded-lg">
+                        <label for="game-speed-slider" class="text-lg font-medium block mb-2">Rent Tick Speed (Seconds)</label>
+                        <div class="flex items-center space-x-4">
+                            <input type="range" id="game-speed-slider" min="100" max="2000" step="100"
+                                oninput="updateGameSpeed(this.value)"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                            <span id="game-speed-value" class="w-16 text-right font-bold text-indigo-400">1.0s</span>
+                        </div>
+                        <p class="text-xs text-gray-400 light-mode:text-gray-600 mt-1">Lower value means faster rent collection.</p>
+                    </div>
+                </div>
+
+                <button onclick="closeSettingsModal()" class="action-button w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg">Close Settings</button>
+            </div>
+        </div>
+    </div> <script>
         // --- GAME STATE ---
         let state = {
             money: 10000,
@@ -448,6 +477,9 @@
 
         // Loop for Rent Collection (Runs on gameTickMs, default 1s)
         function gameLoop() {
+            // Check if game is won, if so, stop loop execution
+            if (state.level >= 100) return;
+
             const baseIncomePerUnit = state.rentPerUnit;
             let collectedIncome = 0;
             const volatility = state.settings.rentVolatility; // Using the volatility setting
@@ -477,6 +509,9 @@
 
         // NEW: Loop for Bill Accrual (Runs on billTickMs, fixed at 5s)
         function billAccrualLoop() {
+            // Check if game is won, if so, stop loop execution
+            if (state.level >= 100) return;
+
             // 2. ACCRUE BILLS (Maintenance/Upkeep)
             if (state.apartments > 0) {
                 const upkeepCost = state.apartments * state.maintenancePerApartment * (state.billTickMs / 1000); // Scale cost by interval
@@ -558,12 +593,15 @@
             }
         }
 
-        // --- INITIALIZATION ---
-        function initGame() {
-            // Apply saved or default settings before updating UI
-            applyTheme(state.settings.theme);
-            changeFontSize(state.settings.fontSizeBase);
+        // --- GAME FLOW CONTROL ---
 
+        function startGame() {
+            // 1. Hide the start screen
+            document.getElementById('start-screen').classList.add('hidden');
+            // 2. Show the main game content
+            document.getElementById('game-page-content').classList.remove('hidden');
+            
+            // 3. Start the game logic loops
             // Set up Intervals
             updateGameSpeed(state.gameTickMs); // Initializes slider/display and starts the Rent interval
             
@@ -571,18 +609,24 @@
             clearInterval(state.billInterval);
             state.billInterval = setInterval(billAccrualLoop, state.billTickMs);
 
-            updateUI(); // Set initial UI values
+            updateUI(); // Initial UI refresh
 
-            // Initial encouragement message (without the permanent hint)
-            showMessage("Welcome to Skyscraper Tycoon! Rent collects every 1 second, but bills only accrue every 5 seconds. Use the Settings button to adjust the rent speed!", 'info');
-
-            // Final check for victory condition on load
+            // Check for immediate win condition (e.g., if a saved game loaded state.level >= 100)
             if (state.level >= 100) {
                 showMessage("CONGRATULATIONS! You have reached Level 100 and won Skyscraper Tycoon! 🎉", "success");
-                // Stop the game intervals
                 clearInterval(state.gameInterval);
                 clearInterval(state.billInterval);
             }
+        }
+
+        // --- INITIALIZATION (Runs on page load) ---
+        function initGame() {
+            // Apply saved or default settings before updating UI
+            applyTheme(state.settings.theme);
+            changeFontSize(state.settings.fontSizeBase);
+            
+            // Note: Intervals are NOT started here. They are started in startGame().
+            // We just ensure the UI is ready to update the values when the game starts.
         }
 
         window.onload = initGame;
