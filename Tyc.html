@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Tycoon: Expanded Development</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        
+        :root {
+            /* Default Light Mode Colors */
+            --primary-color: #007bff; 
+            --secondary-color: #28a745; 
+            --planner-color: #17a2b8; 
+            --danger-color: #dc3545; 
+            --accent-color: #ffc107; 
+            --game-blue-dark: #003366; 
+            --game-blue-light: #0077c2; 
+            --game-gold: #ffc72c; 
+            --game-orange: #ff9900; 
+            --game-orange-dark: #cc7a00; 
+
+            --background-color: #f8f9fa; 
+            --card-background: #ffffff; 
+            --text-color: #343a40;
+            --border-color: #e9ecef;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --construction-color: #6c757d;
+
+            /* Base Font Size Variable (Controlled by Settings) */
+            --base-font-scale: 1.0; 
+        }
+
+        /* Dark Mode Colors (Activated by body class) */
+        body.dark-mode {
+            --primary-color: #4da6ff;
+            --secondary-color: #72f08e; 
+            --planner-color: #5bc0de;
+            --danger-color: #ff6b6b;
+            --accent-color: #ffd859;
+            --game-blue-dark: #1e293b;
+            --game-blue-light: #3b82f6;
+
+            --background-color: #1e293b; 
+            --card-background: #334155; 
+            --text-color: #e2e8f0; 
+            --border-color: #475569;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --construction-color: #94a3b8;
+        }
+
+        /* Enforce full height and remove global scrolling */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; 
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+            padding: 10px; 
+            /* Base font size scales with the custom property */
+            font-size: calc(16px * var(--base-font-scale));
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 1100px;
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            padding: 20px; 
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px; 
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 900;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 10px; 
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--border-color);
+            padding: 12px; 
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+            box-shadow: 0 2px 5px var(--shadow-color);
+            transition: background 0.3s, border-left-color 0.3s;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--text-color);
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--secondary-color);
+            transition: color 0.3s;
+        }
+        
+        /* Highlight for active income (Cash) */
+        #stat-cash {
+            animation: pulse-green 1s infinite alternate;
+        }
+        @keyframes pulse-green {
+            from { color: var(--secondary-color); }
+            to { color: var(--primary-color); transform: scale(1.02); }
+        }
+
+        .control-panel {
+            background: var(--border-color);
+            padding: 15px; 
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            transition: background 0.3s, border-color 0.3s;
+        }
+        
+        h2 {
+            color: var(--text-color);
+            border-bottom: 2px solid var(--construction-color);
+            padding-bottom: 5px;
+            margin-top: 0;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+        h2 .icon {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
+        .development-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px; 
+            margin-top: 15px;
+        }
+
+        .building-card {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--card-background);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        }
+        .building-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+        
+        .building-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1em;
+            transition: color 0.3s;
+        }
+        .building-card p {
+            font-size: 0.85em;
+            margin-bottom: 6px;
+        }
+
+        button {
+            padding: 8px 12px; 
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            text-transform: uppercase;
+            font-size: 0.85em;
+            margin-top: 8px;
+        }
+
+        .btn-build {
+            background-color: var(--primary-color);
+            color: white;
+            width: 100%;
+        }
+        .btn-build:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+        .btn-build:disabled {
+            background-color: var(--construction-color);
+            cursor: not-allowed;
+            color: #ccc;
+        }
+
+        .property-item, .construction-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            padding: 8px; 
+            border-radius: 6px;
+            font-size: 0.85em;
+            align-items: center;
+            transition: background-color 0.3s, border-left-color 0.3s;
+        }
+        
+        .property-item {
+            background-color: var(--card-background); 
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .construction-item {
+            background-color: var(--card-background); 
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--construction-color);
+        }
+        
+        .list-header {
+            font-weight: 700;
+            color: var(--text-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .income-text { color: var(--secondary-color); font-weight: 700; }
+        .cost-text { color: var(--danger-color); font-weight: 700; }
+        
+        /* --- Modal Styling General (for Planner/Queue/Settings) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 95%;
+            width: 800px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto; 
+            transition: background-color 0.3s;
+        }
+        
+        /* --- Redeem Code Box - Inline Styling --- */
+        .redeem-box-container {
+            background-color: var(--game-blue-dark); 
+            padding: 0; 
+            border: 8px solid var(--game-blue-light); 
+            box-shadow: 0 0 0 4px var(--game-gold), 0 5px 20px rgba(0, 0, 0, 0.5); 
+            border-radius: 10px;
+            margin-bottom: 20px; 
+            overflow: hidden; 
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+        .reward-header {
+            background: linear-gradient(180deg, var(--game-blue-light) 0%, #004d99 100%);
+            padding: 10px 10px;
+            text-align: center;
+            border-bottom: 5px solid var(--game-gold);
+            transition: background 0.3s;
+        }
+        #reward-code-title {
+            color: var(--game-gold);
+            font-size: 1.5em; 
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+        .redeem-body {
+            padding: 15px; 
+            text-align: center;
+        }
+        .instruction-text {
+            color: white;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            padding: 5px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        .redeem-body input[type="text"] {
+            background-color: var(--game-blue-light); 
+            color: white; 
+            border: 3px solid var(--game-gold); 
+            border-radius: 8px;
+            padding: 10px 8px;
+            font-size: 1.2em; 
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            box-sizing: border-box; 
+            text-align: center;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .redeem-body input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .redeem-body .btn-redeem {
+            background: var(--game-orange);
+            color: var(--text-color); 
+            font-size: 1.3em;
+            padding: 10px 20px;
+            border: 3px solid var(--game-gold);
+            border-radius: 12px;
+            font-weight: 900;
+            text-shadow: 1px 1px 2px white;
+            box-shadow: 0 4px 0 var(--game-orange-dark), 0 0 10px rgba(255, 255, 0, 0.8);
+            width: 100%; 
+            margin-top: 0; 
+        }
+        
+        /* --- Settings Panel Styling --- */
+        .settings-group {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .settings-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+
+        .settings-group input[type="range"] {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .range-value {
+            font-weight: 700;
+            margin-left: 10px;
+            color: var(--secondary-color);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--secondary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .game-container {
+                grid-template-columns: 3fr 1fr;
+                gap: 25px;
+            }
+            .sidebar {
+                grid-column: 2;
+                grid-row: 1 / 4;
+            }
+            .main-content {
+                grid-column: 1;
+            }
+        }
+        
+        /* Icons */
+        .icon { margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- Message Box for Alerts and Notifications -->
+        <div id="message-box" class="message-box"></div>
+
+        <div class="main-content">
+            <h1>City Tycoon: Real-Time Management</h1>
+
+            <!-- Stats Dashboard -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label"><span class="icon">💰</span>Cash (Income per logical tick)</div>
+                    <div class="stat-value" id="stat-cash">$100,000</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label"><span class="icon">📈</span>Net Worth</div>
+                    <div class="stat-value" id="stat-net-worth">$100,000</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label"><span class="icon">🏗️</span>Total Land Units</div>
+                    <div class="stat-value" id="stat-land">10</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label"><span class="icon">📅</span>Game Day (Speed: <span id="current-speed-display">1.0x</span>)</div>
+                    <div class="stat-value" id="stat-day">1</div>
+                </div>
+            </div>
+
+            <!-- Development Planner Button -->
+            <div class="control-panel">
+                <h2 style="justify-content: space-between; align-items: center;">
+                    <span><span class="icon">🧱</span>Development Planner (Sorted by Cost)</span>
+                    <button class="btn-build" style="width: auto; margin: 0; padding: 6px 10px; background-color: var(--planner-color);" onclick="openPlannerModal()">
+                        View Planner
+                    </button>
+                </h2>
+            </div>
+            
+            <!-- Construction Queue Button -->
+            <div class="control-panel" style="margin-top: 20px;">
+                <h2 style="justify-content: space-between; align-items: center;">
+                    <span><span class="icon">⏳</span>Construction Queue</span>
+                    <button class="btn-build" style="width: auto; margin: 0; padding: 6px 10px; background-color: var(--construction-color);" onclick="openConstructionModal()">
+                        View Queue (<span id="queue-count">0</span>)
+                    </button>
+                </h2>
+            </div>
+
+            <!-- Property Portfolio -->
+            <div class="control-panel" style="margin-top: 20px;">
+                <h2><span class="icon">🏙️</span>Property Portfolio (Completed)</h2>
+                <div class="portfolio-list">
+                    <div id="portfolio-list-header" class="property-item list-header" style="background-color: transparent; border-left: none; grid-template-columns: 2fr 1fr 1fr 1fr;">
+                        <span>Property</span>
+                        <span>Market Value</span>
+                        <span>Income/Tick</span>
+                        <span>Action</span>
+                    </div>
+                    <div id="property-portfolio">
+                        <p style="text-align: center; color: var(--construction-color);">No completed buildings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar and Controls -->
+        <div class="sidebar" id="sidebar">
+            
+            <!-- REDEEM CODE BOX - INLINE -->
+            <div class="redeem-box-container">
+                <div class="reward-header">
+                    <h2 id="reward-code-title">♦️ Reward Codes ♦️</h2>
+                </div>
+                <div class="redeem-body">
+                    <p class="instruction-text">Enter gift codes here for special bonuses!</p>
+                    <input type="text" id="redeem-input" placeholder="ENTER CODE HERE" maxlength="15" onkeypress="handleRedeemKey(event)">
+                    <button class="btn-redeem" onclick="attemptRedeem()">
+                        Redeem!
+                    </button>
+                </div>
+            </div>
+            <!-- END REDEEM CODE BOX -->
+
+            <!-- Settings Button -->
+            <button class="btn-build" style="width: 100%; margin-top: 10px; background-color: var(--planner-color);" onclick="openSettingsModal()">
+                <span class="icon">⚙️</span>Game Settings
+            </button>
+            
+            <!-- Placeholder for the dynamically created Buy Land button -->
+            <div id="land-button-container"></div>
+            
+            <button id="btn-reset" class="btn-danger" style="margin-top: 10px; width: 100%; background-color: var(--danger-color); color: white;">
+                <span class="icon">💣</span>Reset Game
+            </button>
+        </div>
+    </div>
+    
+    <!-- Development Planner Modal -->
+    <div id="planner-modal" class="modal-overlay" onclick="closeModal(event, 'planner-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 style="color: var(--planner-color); border-bottom: 2px solid var(--planner-color); justify-content: space-between;">
+                <span><span class="icon">🧱</span> Development Planner - Sorted by Cost</span>
+            </h2>
+             <div class="development-options" id="modal-development-options">
+                <!-- Cards will be dynamically inserted here -->
+            </div>
+            <button class="btn-build" style="margin-top: 20px; background-color: var(--planner-color);" onclick="closeModal(null, 'planner-modal')">Close Planner</button>
+        </div>
+    </div>
+
+    <!-- Construction Queue Modal -->
+    <div id="construction-modal" class="modal-overlay" onclick="closeModal(event, 'construction-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 style="color: var(--construction-color); border-bottom: 2px solid var(--construction-color); justify-content: space-between;">
+                <span><span class="icon">🏗️</span> Active Construction Projects</span>
+                <span style="font-size: 0.8em; color: var(--construction-color); margin-right: 10px;">Progresses Every Second</span>
+            </h2>
+            <div class="construction-list" id="modal-construction-queue">
+                <!-- Detailed queue items will be rendered here -->
+            </div>
+            <button class="btn-build" style="margin-top: 20px; background-color: var(--construction-color);" onclick="closeModal(null, 'construction-modal')">Close View</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" onclick="closeModal(event, 'settings-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()" style="width: 500px;">
+            <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); justify-content: space-between;">
+                <span><span class="icon">⚙️</span> Game Settings</span>
+            </h2>
+
+            <div class="settings-group">
+                <label>Theme Mode: <span id="theme-status">Light Mode</span></label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="settings-group">
+                <label>Font Size Scale: <span id="font-size-value" class="range-value">100%</span></label>
+                <input type="range" id="font-size-slider" min="0.8" max="1.5" step="0.1" value="1.0" oninput="adjustFontSize(this.value)">
+                <p style="font-size: 0.8em; color: var(--construction-color);">Adjust the overall size of the text elements.</p>
+            </div>
+
+            <div class="settings-group">
+                <label>Timing Speed (TICK_RATE): <span id="speed-value" class="range-value">1.0x (1000ms)</span></label>
+                <input type="range" id="speed-slider" min="50" max="2000" step="50" value="1000" oninput="adjustGameSpeed(this.value)">
+                <p style="font-size: 0.8em; color: var(--construction-color);">Lower milliseconds = Faster UI refresh. **Simulation speed is constant.**</p>
+            </div>
+
+            <button class="btn-build" style="margin-top: 20px; background-color: var(--primary-color);" onclick="closeModal(null, 'settings-modal')">Apply & Close</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Constants ---
+        const TICKS_PER_DAY = 5; // 5 logical ticks (seconds) per game day
+        const LOGICAL_TICK_RATE = 1000; // 1 logical tick = 1000ms (1 second)
+        
+        const WIN_GOAL = 5000000;
+        const INITIAL_CASH = 100000;
+        const INITIAL_LAND = 10;
+        let LAND_COST = 5000; 
+        
+        // This is the actual setInterval delay, which is now user-adjustable for refresh speed
+        let TICK_RATE = 1000; 
+
+        // Define redeemable codes
+        const REDEEM_CODES = {
+            'SAMBAR': { reward: 25000, message: 'Code accepted! Enjoy your $25,000 bonus.' },
+            'ROBBERY': { reward: 50000, message: 'Code accepted! Enjoy your $50,000 bonus.' },
+            'GOLDENAGE': { reward: 100000, message: 'Code accepted! A new era begins with $100,000!' }
+        };
+
+        const PROPERTY_DEFINITIONS = {
+            'starting_business': { 
+                name: 'Starting Business', icon: '🏪', description: 'Your first guaranteed income source.', 
+                cost: 0, land: 0, buildTimeDays: 0, rentDaily: 500, volatility: 0.01, isStarter: true
+            },
+            'small_home': { 
+                name: 'Small Home', icon: '🏡', description: 'Steady, low income per tick.', 
+                cost: 25000, land: 1, buildTimeDays: 5, rentDaily: 200, volatility: 0.05 
+            },
+            'local_farm': {
+                name: 'Local Farm', icon: '🥕', description: 'Low land volatility, provides basic sustenance income.',
+                cost: 50000, land: 4, buildTimeDays: 6, rentDaily: 400, volatility: 0.03
+            },
+            'community_park': { 
+                name: 'Community Park', icon: '🌳', description: 'No income, but boosts land value.', 
+                cost: 50000, land: 2, buildTimeDays: 8, rentDaily: 0, volatility: 0.02, isPublic: true
+            },
+            'tech_startup': { 
+                name: 'Tech Startup', icon: '💻', description: 'High risk, high reward. Volatile income.', 
+                cost: 100000, land: 2, buildTimeDays: 7, rentDaily: 1000, volatility: 0.20 
+            },
+            'office_tower': { 
+                name: 'Office Tower', icon: '🏢', description: 'High cost, high variable income.', 
+                cost: 150000, land: 3, buildTimeDays: 10, rentDaily: 1500, volatility: 0.15 
+            },
+            'solar_array': { 
+                name: 'Solar Array', icon: '☀️', description: 'Sustainable power generation. Low income, high land use.', 
+                cost: 200000, land: 6, buildTimeDays: 12, rentDaily: 500, volatility: 0.05 
+            },
+            'shopping_center': { 
+                name: 'Shopping Center', icon: '🛍️', description: 'A large hub for commerce and high consumer spending.', 
+                cost: 300000, land: 5, buildTimeDays: 15, rentDaily: 3000, volatility: 0.08 
+            },
+            'research_lab': { 
+                name: 'Research Lab', icon: '🔬', description: 'Accelerates future construction projects.', 
+                cost: 600000, land: 4, buildTimeDays: 20, rentDaily: 0, volatility: 0.01, isPublic: true, researchBonus: 0.05
+            },
+            'skyway_station': { 
+                name: 'Skyway Station', icon: '🚟', description: 'Improves city stability, reducing market volatility for all properties.', 
+                cost: 750000, land: 3, buildTimeDays: 25, rentDaily: 0, volatility: 0.00, isPublic: true, volatilityReducer: 0.01
+            },
+            'luxury_apartments': { 
+                name: 'Luxury Apartments', icon: '🏨', description: 'High-end residential that guarantees very high, stable returns.', 
+                cost: 800000, land: 8, buildTimeDays: 25, rentDaily: 6000, volatility: 0.05 
+            },
+            'megaplex': { 
+                name: 'Mega-Plex', icon: '🏟️', description: 'A massive entertainment and retail complex. Huge investment.', 
+                cost: 1500000, land: 10, buildTimeDays: 30, rentDaily: 10000, volatility: 0.10 
+            }
+        };
+
+        let gameState = {
+            cash: INITIAL_CASH,
+            landUnits: INITIAL_LAND,
+            day: 1,
+            tickCounter: 0, 
+            portfolio: [], 
+            constructionQueue: [],
+            redeemedCodes: new Set(), 
+            researchLabs: 0, 
+            globalBuildTimeModifier: 1.0, 
+            globalVolatilityReducer: 0.0, // New state for volatility reduction
+        };
+        
+        let gameInterval = null;
+        let isDarkMode = false;
+        let currentFontScale = 1.0;
+
+        // --- DOM Elements Cache ---
+        const $ = (id) => document.getElementById(id);
+        let statCash, statNetWorth, statLand, statDay, queueCountEl, 
+            modalDevelopmentOptionsEl, plannerModalEl,
+            modalConstructionQueueEl, constructionModalEl, propertyPortfolioEl, messageBox,
+            redeemInputEl, settingsModalEl, currentSpeedDisplayEl,
+            darkModeToggleEl, themeStatusEl, fontSizeSliderEl, fontSizeValueEl, speedSliderEl, speedValueEl; 
+
+        function getDOMElements() {
+            statCash = $('stat-cash');
+            statNetWorth = $('stat-net-worth');
+            statLand = $('stat-land');
+            statDay = $('stat-day');
+            propertyPortfolioEl = $('property-portfolio');
+            messageBox = $('message-box');
+            queueCountEl = $('queue-count');
+            modalConstructionQueueEl = $('modal-construction-queue');
+            constructionModalEl = $('construction-modal');
+            modalDevelopmentOptionsEl = $('modal-development-options'); 
+            plannerModalEl = $('planner-modal');
+            redeemInputEl = $('redeem-input');
+            
+            // Settings Elements
+            settingsModalEl = $('settings-modal');
+            currentSpeedDisplayEl = $('current-speed-display');
+            darkModeToggleEl = $('dark-mode-toggle');
+            themeStatusEl = $('theme-status');
+            fontSizeSliderEl = $('font-size-slider');
+            fontSizeValueEl = $('font-size-value');
+            speedSliderEl = $('speed-slider');
+            speedValueEl = $('speed-value');
+        }
+        
+        // --- Utility Functions ---
+
+        /** Formats a number as a currency string. */
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+        }
+
+        /** Reads a CSS variable value. */
+        function getCssVar(varName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        }
+
+        /** Displays a temporary notification message. */
+        function showMessage(message, type = 'info') {
+            if (!messageBox) return; 
+            messageBox.textContent = message;
+            messageBox.className = 'message-box active';
+            
+            let bgColor = getCssVar('--accent-color');
+            let color = getCssVar('--text-color');
+            
+            if (type === 'success') {
+                bgColor = getCssVar('--secondary-color');
+                color = getCssVar('--card-background');
+            } else if (type === 'error') {
+                bgColor = getCssVar('--danger-color');
+                color = getCssVar('--card-background');
+            }
+            
+            messageBox.style.backgroundColor = bgColor;
+            messageBox.style.color = color;
+            
+            setTimeout(() => {
+                messageBox.classList.remove('active');
+            }, 3000);
+        }
+
+        /** Calculates the total net worth. */
+        function calculateNetWorth() {
+            let totalPropertyValue = gameState.portfolio.reduce((sum, p) => sum + p.currentMarketValue, 0);
+            let landValue = gameState.landUnits * LAND_COST; 
+            let constructionValue = gameState.constructionQueue.reduce((sum, p) => sum + p.totalCost, 0);
+            return gameState.cash + landValue + totalPropertyValue + constructionValue;
+        }
+
+        // --- Settings Control Functions ---
+
+        /** Toggles the dark/light mode for the entire application. */
+        function toggleDarkMode() {
+            isDarkMode = darkModeToggleEl.checked;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            themeStatusEl.textContent = isDarkMode ? 'Dark Mode' : 'Light Mode';
+        }
+
+        /** Adjusts the global font size scale. */
+        function adjustFontSize(scale) {
+            currentFontScale = parseFloat(scale);
+            document.documentElement.style.setProperty('--base-font-scale', currentFontScale);
+            fontSizeValueEl.textContent = `${Math.round(currentFontScale * 100)}%`;
+        }
+
+        /** Adjusts the UI refresh speed, but keeps simulation rate constant. */
+        function adjustGameSpeed(newRate) {
+            const oldRate = TICK_RATE;
+            TICK_RATE = parseInt(newRate);
+            
+            // Calculate speed multiplier (e.g., 1000ms / 500ms = 2x)
+            // Note: This only affects the UI update frequency, not game logic.
+            const speedMultiplier = (LOGICAL_TICK_RATE / TICK_RATE);
+            speedValueEl.textContent = `${speedMultiplier.toFixed(1)}x (${TICK_RATE}ms)`;
+            currentSpeedDisplayEl.textContent = `${speedMultiplier.toFixed(1)}x`;
+
+            // Restart the game loop if the rate changed significantly
+            if (gameInterval && Math.abs(oldRate - TICK_RATE) > 10) {
+                clearInterval(gameInterval);
+                gameInterval = setInterval(gameTick, TICK_RATE);
+                showMessage(`UI Refresh Rate set to ${TICK_RATE}ms.`, 'info');
+            }
+        }
+        
+        // --- Modal Control Functions ---
+
+        function openPlannerModal() {
+            renderDevelopmentOptions(); 
+            plannerModalEl.style.display = 'flex';
+        }
+
+        function openConstructionModal() {
+            renderConstructionQueue(); 
+            constructionModalEl.style.display = 'flex';
+        }
+
+        function openSettingsModal() {
+            // Ensure settings controls reflect current state before opening
+            darkModeToggleEl.checked = isDarkMode;
+            themeStatusEl.textContent = isDarkMode ? 'Dark Mode' : 'Light Mode';
+            fontSizeSliderEl.value = currentFontScale;
+            adjustFontSize(currentFontScale); // To refresh the display value
+            speedSliderEl.value = TICK_RATE;
+            adjustGameSpeed(TICK_RATE); // To refresh the display value
+
+            settingsModalEl.style.display = 'flex';
+        }
+
+        /** Closes a specific modal (used for all modals). */
+        function closeModal(event, modalId) {
+            const modalEl = $(modalId);
+            if (!modalEl) return;
+
+            // Only close if click is on the overlay (not the content) or if event is null (called by button)
+            if (event === null || event.target === modalEl) {
+                modalEl.style.display = 'none';
+            }
+        }
+        
+        // --- Redeem Code Logic ---
+        
+        /** Handles the Enter key press in the redeem input. */
+        function handleRedeemKey(event) {
+            if (event.key === 'Enter') {
+                attemptRedeem();
+            }
+        }
+        
+        /** Logic for attempting to redeem a code. */
+        function attemptRedeem() {
+            if (!redeemInputEl) return;
+            
+            const rawCode = redeemInputEl.value.trim().toUpperCase();
+            redeemInputEl.value = ''; // Clear input immediately
+            
+            if (rawCode.length === 0) {
+                showMessage('Please enter a code.', 'error');
+                return;
+            }
+
+            if (gameState.redeemedCodes.has(rawCode)) {
+                showMessage(`Code "${rawCode}" has already been redeemed!`, 'error');
+                return;
+            }
+
+            const codeInfo = REDEEM_CODES[rawCode];
+
+            if (codeInfo) {
+                gameState.cash += codeInfo.reward;
+                gameState.redeemedCodes.add(rawCode);
+                showMessage(codeInfo.message, 'success');
+                renderStats();
+            } else {
+                showMessage(`Code "${rawCode}" is invalid. Try again.`, 'error');
+            }
+        }
+
+        // --- Core Game Logic & Rendering ---
+
+        function renderStats() {
+            if (!statCash) return; 
+
+            gameState.cash = Math.round(gameState.cash);
+            
+            statCash.textContent = formatCurrency(gameState.cash);
+            statNetWorth.textContent = formatCurrency(calculateNetWorth());
+            statLand.textContent = gameState.landUnits;
+            statDay.textContent = gameState.day;
+            
+            if (queueCountEl) {
+                queueCountEl.textContent = gameState.constructionQueue.length;
+            }
+            
+            // Update land cost display on the button
+            const landButton = $('btn-buy-land');
+            if (landButton) {
+                landButton.textContent = `Buy 1 Land Unit (${formatCurrency(LAND_COST)})`;
+                landButton.disabled = gameState.cash < LAND_COST;
+            }
+        }
+
+        function renderDevelopmentOptions() {
+            if (!modalDevelopmentOptionsEl) return;
+
+            modalDevelopmentOptionsEl.innerHTML = '';
+            
+            // 1. Convert definitions map to an array
+            let propertiesArray = Object.keys(PROPERTY_DEFINITIONS)
+                .map(key => ({ ...PROPERTY_DEFINITIONS[key], id: key }))
+                .filter(def => !def.isStarter);
+
+            // 2. Sort the array by cost (lowest to highest)
+            propertiesArray.sort((a, b) => a.cost - b.cost);
+
+            // 3. Render the sorted cards
+            propertiesArray.forEach(def => {
+                const canBuild = gameState.cash >= def.cost && gameState.landUnits >= def.land;
+                const buttonText = canBuild ? `Build (${formatCurrency(def.cost)})` : `Lacks: ${gameState.cash < def.cost ? 'Cash' : 'Land'}`;
+                const rentPerLogicalTick = Math.round(def.rentDaily / TICKS_PER_DAY);
+                const totalTicks = def.buildTimeDays * TICKS_PER_DAY;
+                const timeModifierDisplay = (gameState.globalBuildTimeModifier * 100).toFixed(0);
+
+                let specialEffectText = '';
+                if (def.name === 'Community Park') {
+                    specialEffectText = 'Community Boost (Increases Land Value)';
+                } else if (def.name === 'Research Lab') {
+                    const currentBonus = (1.0 - gameState.globalBuildTimeModifier) * 100;
+                    specialEffectText = `Speeds Construction (Current: ${currentBonus.toFixed(0)}% faster)`;
+                } else if (def.name === 'Skyway Station') {
+                    const currentReduction = gameState.globalVolatilityReducer * 100;
+                    specialEffectText = `Reduces Volatility (Current: ${currentReduction.toFixed(1)}% market stability)`;
+                } else {
+                    specialEffectText = 'N/A';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'building-card';
+                card.innerHTML = `
+                    <h3>${def.icon} ${def.name}</h3>
+                    <p><strong>Description:</strong> ${def.description}</p>
+                    <p><strong>Cost:</strong> <span class="${canBuild ? 'cost-text' : 'danger-color'}">${formatCurrency(def.cost)}</span></p>
+                    <p><strong>Land Used:</strong> ${def.land} units</p>
+                    <p><strong>Build Time:</strong> ${def.buildTimeDays} days (${totalTicks} ticks)</p>
+                    ${gameState.globalBuildTimeModifier < 1.0 ? `<p style="color: var(--secondary-color);">* Modified Time: ${(def.buildTimeDays * gameState.globalBuildTimeModifier).toFixed(1)} days</p>` : ''}
+                    ${def.rentDaily > 0 ? `<p><strong>Income/Tick:</strong> <span class="income-text">${formatCurrency(rentPerLogicalTick)}</span></p>` : `<p><strong>Effect:</strong> ${specialEffectText}</p>`}
+                    <button class="btn-build" ${canBuild ? `onclick="buildProperty('${def.id}')"` : 'disabled'}>
+                        ${buttonText}
+                    </button>
+                `;
+                modalDevelopmentOptionsEl.appendChild(card);
+            });
+        }
+
+        function renderConstructionQueue() {
+            if (!modalConstructionQueueEl) return;
+
+            modalConstructionQueueEl.innerHTML = '';
+
+            if (gameState.constructionQueue.length === 0) {
+                modalConstructionQueueEl.innerHTML = '<p style="text-align: center; color: var(--construction-color);">No projects currently underway.</p>';
+                return;
+            }
+
+             const header = document.createElement('div');
+             header.className = 'property-item list-header';
+             header.style.backgroundColor = 'transparent';
+             header.style.borderLeft = 'none';
+             header.innerHTML = `
+                 <span>Project Name</span>
+                 <span>Ticks Left</span>
+                 <span>Total Cost</span>
+                 <span>Land Used</span>
+             `;
+             modalConstructionQueueEl.appendChild(header);
+
+
+            gameState.constructionQueue.forEach(project => {
+                const def = PROPERTY_DEFINITIONS[project.typeId];
+                const item = document.createElement('div');
+                item.className = 'construction-item';
+                item.innerHTML = `
+                    <span>${def.icon} ${def.name}</span>
+                    <span style="font-weight: 700;">${project.ticksLeft.toFixed(1)} ticks</span>
+                    <span>${formatCurrency(project.totalCost)}</span>
+                    <span>${project.landUsed} units</span>
+                `;
+                modalConstructionQueueEl.appendChild(item);
+            });
+        }
+
+        function renderPortfolio() {
+            if (!propertyPortfolioEl) return;
+
+            propertyPortfolioEl.innerHTML = '';
+
+            if (gameState.portfolio.length === 0) {
+                propertyPortfolioEl.innerHTML = '<p style="text-align: center; color: var(--construction-color);">No completed buildings.</p>';
+                return;
+            }
+
+            // Ensure the list header is present if there's content
+            const listHeader = $('portfolio-list-header');
+            if (listHeader && listHeader.parentElement) {
+                // Keep the header in its container
+            }
+
+
+            gameState.portfolio.forEach((property, index) => {
+                const def = PROPERTY_DEFINITIONS[property.typeId];
+                const isStarter = def.isStarter;
+                const incomePerLogicalTick = Math.round(def.rentDaily / TICKS_PER_DAY);
+
+                const item = document.createElement('div');
+                item.className = 'property-item';
+                const actionButton = isStarter 
+                    ? `<span style="color: var(--construction-color); font-size: 0.9em;">Core Asset</span>`
+                    : `<button class="btn-sell" style="background-color: var(--danger-color); color: white; margin: 0; padding: 5px 10px; font-size: 0.8em;" onclick="sellProperty(${index})">Sell</button>`;
+
+                item.innerHTML = `
+                    <span>${def.icon} ${def.name}</span>
+                    <span style="font-weight: 700;">${formatCurrency(property.currentMarketValue)}</span>
+                    <span class="income-text">${def.rentDaily > 0 ? formatCurrency(incomePerLogicalTick) : 'N/A'}</span>
+                    ${actionButton}
+                `;
+                propertyPortfolioEl.appendChild(item);
+            });
+        }
+        
+        function buyLand() {
+            const landPrice = LAND_COST;
+            if (gameState.cash >= landPrice) {
+                gameState.cash -= landPrice;
+                gameState.landUnits += 1;
+                // Land cost increases by 5% PLUS land value increase from parks
+                LAND_COST = Math.round(LAND_COST * 1.05); 
+                showMessage(`🌳 Bought 1 unit of land for ${formatCurrency(landPrice)}. New cost: ${formatCurrency(LAND_COST)}.`, 'success');
+            } else {
+                showMessage('❌ Not enough cash to buy land.', 'error');
+            }
+            renderStats();
+            renderDevelopmentOptions();
+        }
+
+        function buildProperty(typeId) {
+            const def = PROPERTY_DEFINITIONS[typeId];
+
+            if (gameState.cash < def.cost || gameState.landUnits < def.land) {
+                showMessage('Cannot build: Insufficient cash or land.', 'error');
+                return;
+            }
+
+            gameState.cash -= def.cost;
+            gameState.landUnits -= def.land;
+
+            // Apply global build time modifier at the start of construction
+            const baseTicks = def.buildTimeDays * TICKS_PER_DAY;
+            const modifiedTicks = baseTicks * gameState.globalBuildTimeModifier;
+
+            gameState.constructionQueue.push({
+                typeId: typeId,
+                ticksLeft: modifiedTicks,
+                totalCost: def.cost,
+                landUsed: def.land,
+                originalPrice: def.cost 
+            });
+
+            const timeDisplay = (modifiedTicks / TICKS_PER_DAY).toFixed(1);
+
+            showMessage(`🏗️ Started construction of ${def.name}. Expected completion in ${timeDisplay} days.`, 'info');
+            renderStats();
+            renderDevelopmentOptions();
+            if (constructionModalEl.style.display === 'flex') renderConstructionQueue();
+        }
+
+        function sellProperty(index) {
+            const property = gameState.portfolio[index];
+            const def = PROPERTY_DEFINITIONS[property.typeId];
+            
+            if (def.isStarter) {
+                 showMessage('The starting business cannot be sold!', 'error');
+                 return;
+            }
+
+            gameState.cash += property.currentMarketValue;
+            gameState.landUnits += def.land; 
+            
+            // If selling a Research Lab, remove its effect
+            if (def.name === 'Research Lab') {
+                gameState.researchLabs--;
+                // Recalculate global modifier
+                const researchBonus = PROPERTY_DEFINITIONS.research_lab.researchBonus || 0;
+                gameState.globalBuildTimeModifier = 1.0 - (gameState.researchLabs * researchBonus);
+                const modifierDisplay = ((1 - gameState.globalBuildTimeModifier) * 100).toFixed(0);
+                showMessage(`🔬 Research Lab sold. Future construction speed is now ${modifierDisplay}% faster.`, 'info');
+            }
+            
+            // If selling a Skyway Station, remove its effect
+            if (def.name === 'Skyway Station') {
+                const reducer = PROPERTY_DEFINITIONS.skyway_station.volatilityReducer || 0;
+                gameState.globalVolatilityReducer = Math.max(0, gameState.globalVolatilityReducer - reducer);
+                const reductionDisplay = (gameState.globalVolatilityReducer * 100).toFixed(1);
+                showMessage(`🚟 Skyway Station decommissioned. Market stability reduced to ${reductionDisplay}% volatility reduction.`, 'info');
+            }
+
+
+            gameState.portfolio.splice(index, 1);
+
+            showMessage(`💸 Sold ${def.name} for ${formatCurrency(property.currentMarketValue)}. Land returned.`, 'success');
+            renderStats();
+            renderDevelopmentOptions();
+            renderPortfolio();
+        }
+
+
+        /** The main game loop function, called every TICK_RATE (user-defined). */
+        function gameTick() {
+            
+            // CRITICAL: Decouple simulation progress from the refresh rate
+            const PROGRESS_SCALE = TICK_RATE / LOGICAL_TICK_RATE; 
+
+            let tickIncome = 0;
+            
+            // 1. Collect Rent and Update Property Values
+            gameState.portfolio.forEach(property => {
+                const def = PROPERTY_DEFINITIONS[property.typeId];
+                
+                const incomePerLogicalTick = Math.round(def.rentDaily / TICKS_PER_DAY);
+                
+                // Scale the income collected based on the progress made in this specific tick
+                tickIncome += incomePerLogicalTick * PROGRESS_SCALE;
+
+                // Apply global volatility reduction
+                const effectiveVolatility = Math.max(0, def.volatility - gameState.globalVolatilityReducer);
+
+                // Volatility and Value Change (also scaled)
+                const volatilityPerTick = effectiveVolatility * PROGRESS_SCALE;
+                const changeFactor = (Math.random() * (2 * volatilityPerTick) - volatilityPerTick);
+                const valueChange = property.currentMarketValue * changeFactor;
+                
+                property.currentMarketValue += valueChange;
+                property.currentMarketValue = Math.max(property.originalPrice * 0.5, property.currentMarketValue); 
+
+                // Community Park effect (scaled)
+                if (def.name === 'Community Park') {
+                    LAND_COST *= (1 + (0.005 * PROGRESS_SCALE)); 
+                }
+            });
+            
+            gameState.cash += tickIncome; 
+            // Advance the tick counter by the scale
+            gameState.tickCounter += PROGRESS_SCALE;
+
+            // 2. Advance Construction Queue
+            let completedProjects = [];
+            gameState.constructionQueue = gameState.constructionQueue.filter(project => {
+                // Reduce ticks left by the scale
+                project.ticksLeft -= PROGRESS_SCALE;
+                if (project.ticksLeft <= 0) {
+                    completedProjects.push(project);
+                    return false; 
+                }
+                return true; 
+            });
+
+            // 3. Finalize Completed Projects
+            if (completedProjects.length > 0) {
+                completedProjects.forEach(project => {
+                    const def = PROPERTY_DEFINITIONS[project.typeId];
+                    gameState.portfolio.push({
+                        typeId: project.typeId,
+                        currentMarketValue: project.totalCost, 
+                        originalPrice: project.totalCost
+                    });
+                    
+                    // Special effect for Research Lab completion
+                    if (def.name === 'Research Lab') {
+                        gameState.researchLabs++;
+                        const researchBonus = def.researchBonus || 0;
+                        gameState.globalBuildTimeModifier = 1.0 - (gameState.researchLabs * researchBonus);
+                        const modifierDisplay = ((1 - gameState.globalBuildTimeModifier) * 100).toFixed(0);
+                        showMessage(`🔬 Research Lab complete! Future construction is now ${modifierDisplay}% faster!`, 'success');
+                    } 
+                    
+                    // Special effect for Skyway Station completion
+                    else if (def.name === 'Skyway Station') {
+                         const reducer = def.volatilityReducer || 0;
+                         gameState.globalVolatilityReducer += reducer;
+                         const reductionDisplay = (gameState.globalVolatilityReducer * 100).toFixed(1);
+                         showMessage(`🚟 Skyway Station complete! Market volatility reduced by ${reductionDisplay}%!`, 'success');
+                    }
+                    
+                    else {
+                        showMessage(`✅ ${def.icon} ${def.name} complete!`, 'success');
+                    }
+                });
+            }
+
+
+            // 4. Advance Game Day
+            if (gameState.tickCounter >= TICKS_PER_DAY) {
+                gameState.day++;
+                gameState.tickCounter -= TICKS_PER_DAY; // Subtract the full day's worth of ticks
+            }
+            
+            // 5. Check Win Condition
+            if (calculateNetWorth() >= WIN_GOAL) {
+                showMessage(`🎉 VICTORY! You reached ${formatCurrency(WIN_GOAL)} Net Worth! You are a true City Tycoon!`, 'success');
+                endGame();
+                return;
+            }
+
+            // 6. Re-render UI
+            renderStats();
+            renderPortfolio();
+            // Only re-render modals if they are open (optimization)
+            if (plannerModalEl && plannerModalEl.style.display === 'flex') {
+                renderDevelopmentOptions();
+            }
+            if (constructionModalEl && constructionModalEl.style.display === 'flex') {
+                 renderConstructionQueue();
+            }
+        }
+
+        /** Initializes or resets the game state. */
+        function initializeGame() {
+            if (gameInterval) {
+                clearInterval(gameInterval);
+            }
+            
+            gameState = {
+                cash: INITIAL_CASH,
+                landUnits: INITIAL_LAND,
+                day: 1,
+                tickCounter: 0,
+                portfolio: [{ 
+                    typeId: 'starting_business',
+                    currentMarketValue: 5000, 
+                    originalPrice: 5000
+                }], 
+                constructionQueue: [], 
+                redeemedCodes: new Set(),
+                researchLabs: 0, 
+                globalBuildTimeModifier: 1.0, 
+                globalVolatilityReducer: 0.0,
+            };
+
+            LAND_COST = 5000; 
+            TICK_RATE = 1000; // Reset refresh rate to default
+
+            // Close all modals
+            closeModal(null, 'construction-modal'); 
+            closeModal(null, 'planner-modal');
+            closeModal(null, 'settings-modal');
+
+            renderStats();
+            renderDevelopmentOptions(); 
+            renderConstructionQueue(); 
+            renderPortfolio();
+            
+            // Reset settings UI
+            if (speedSliderEl) speedSliderEl.value = TICK_RATE;
+            adjustGameSpeed(TICK_RATE);
+
+            showMessage('City Tycoon: Game Reset! Simulation runs at 1x speed.', 'success');
+            
+            gameInterval = setInterval(gameTick, TICK_RATE);
+        }
+        
+        function endGame() {
+            if (gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+            }
+        }
+
+        /** Handles the initial setup when the page fully loads. */
+        window.onload = function() {
+            getDOMElements();
+            
+            // Setup Buy Land button once
+            const landButtonContainer = $('land-button-container');
+            if (landButtonContainer) {
+                const landButton = document.createElement('button');
+                landButton.id = 'btn-buy-land';
+                landButton.className = 'btn-build';
+                landButton.style.marginTop = '10px';
+                landButton.style.backgroundColor = getCssVar('--secondary-color');
+                landButton.onclick = buyLand;
+                landButtonContainer.appendChild(landButton);
+            }
+
+            // Setup event listeners for Reset
+            $('btn-reset').addEventListener('click', initializeGame);
+
+            // Set up initial theme and font size from defaults
+            adjustFontSize(currentFontScale);
+            // Must check the element exists before toggling
+            if (darkModeToggleEl) darkModeToggleEl.checked = isDarkMode; 
+            toggleDarkMode(); 
+
+            initializeGame();
+        };
+
+    </script>
+
+</body>
+</html>
