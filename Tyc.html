@@ -513,7 +513,7 @@
                     <h2 id="reward-code-title">♦️ Reward Codes ♦️</h2>
                 </div>
                 <div class="redeem-body">
-                    <p class="instruction-text">Enter gift codes here for special bonuses!</p>
+                    <p class="instruction-text">Enter gift codes here for special bonuses! Codes are always in **ALL CAPS**.</p>
                     <input type="text" id="redeem-input" placeholder="ENTER CODE HERE" maxlength="15" onkeypress="handleRedeemKey(event)">
                     <button class="btn-redeem" onclick="attemptRedeem()">
                         Redeem!
@@ -607,11 +607,15 @@
         // This is the actual setInterval delay, which is now user-adjustable for refresh speed
         let TICK_RATE = 1000; 
 
-        // Define redeemable codes
+        // Define redeemable codes with cash and land rewards
+        // ALL CODES ARE IN UPPERCASE for easy input
         const REDEEM_CODES = {
-            'SAMBAR': { reward: 25000, message: 'Code accepted! Enjoy your $25,000 bonus.' },
-            'ROBBERY': { reward: 50000, message: 'Code accepted! Enjoy your $50,000 bonus.' },
-            'GOLDENAGE': { reward: 100000, message: 'Code accepted! A new era begins with $100,000!' }
+            'SAMBAR': { cash: 25000, land: 0, message: 'Code accepted! Enjoy your $25,000 bonus.' },
+            'ROBBERY': { cash: 50000, land: 0, message: 'Code accepted! Enjoy your $50,000 bonus.' },
+            'GOLDENAGE': { cash: 100000, land: 0, message: 'Code accepted! A new era begins with $100,000!' },
+            'FOUNDATION': { cash: 25000, land: 2, message: 'FOUNDATION built! You received $25,000 and 2 Land Units.' },
+            'LANDGRAB': { cash: 0, land: 5, message: 'LANDGRAB successful! You received 5 Land Units.' },
+            'MEGABUX': { cash: 500000, land: 0, message: 'MEGA CASH ALERT! $500,000 has been deposited!' }
         };
 
         const PROPERTY_DEFINITIONS = {
@@ -675,7 +679,7 @@
             redeemedCodes: new Set(), 
             researchLabs: 0, 
             globalBuildTimeModifier: 1.0, 
-            globalVolatilityReducer: 0.0, // New state for volatility reduction
+            globalVolatilityReducer: 0.0, 
         };
         
         let gameInterval = null;
@@ -843,6 +847,7 @@
         function attemptRedeem() {
             if (!redeemInputEl) return;
             
+            // CRITICAL: Convert input to uppercase for case-insensitive matching
             const rawCode = redeemInputEl.value.trim().toUpperCase();
             redeemInputEl.value = ''; // Clear input immediately
             
@@ -859,7 +864,9 @@
             const codeInfo = REDEEM_CODES[rawCode];
 
             if (codeInfo) {
-                gameState.cash += codeInfo.reward;
+                // Apply cash and land rewards
+                gameState.cash += codeInfo.cash;
+                gameState.landUnits += codeInfo.land;
                 gameState.redeemedCodes.add(rawCode);
                 showMessage(codeInfo.message, 'success');
                 renderStats();
@@ -902,7 +909,7 @@
                 .map(key => ({ ...PROPERTY_DEFINITIONS[key], id: key }))
                 .filter(def => !def.isStarter);
 
-            // 2. Sort the array by cost (lowest to highest)
+            // 2. Sort the array by cost (lowest to highest) as requested
             propertiesArray.sort((a, b) => a.cost - b.cost);
 
             // 3. Render the sorted cards
