@@ -92,14 +92,26 @@
 </head>
 <body>
 
-    <!-- Main application container, centered and constrained --><div id="app-container" class="max-w-7xl mx-auto p-4 md:p-6 bg-gray-900/50 rounded-2xl shadow-2xl backdrop-blur-sm border border-gray-700">
+    
+
+<div id="app-container" class="max-w-7xl mx-auto p-4 md:p-6 bg-gray-900/50 rounded-2xl shadow-2xl backdrop-blur-sm border border-gray-700">
         
         <h1 class="text-3xl md:text-4xl font-extrabold text-center mb-6 text-amber-400 drop-shadow-lg">
             Scepter Negotiation Arena
         </h1>
 
-        <!-- Layout Grid: Stacks on small screens, side-by-side on large --><div class="flex flex-col lg:flex-row gap-6 h-[calc(90vh-100px)]"> <!-- Dynamic height for inner content --><!-- Item Status and Controls Column (Initially full width, then 1/3 on large) --><div class="w-full lg:w-1/3 flex flex-col">
-                <!-- Shop Item Status Card --><div class="p-6 bg-gray-800 rounded-xl shadow-inner border border-amber-700/50 flex-grow">
+        
+
+<div class="flex flex-col lg:flex-row gap-6 h-[calc(90vh-100px)]"> 
+
+<div class="w-full lg:w-1/3 flex flex-col">
+                
+                <!-- Status Indicator - Now displays simple connection status -->
+                <div id="auth-status" class="p-4 bg-yellow-900/40 text-yellow-300 text-center rounded-lg border border-yellow-700/50 mb-6">
+                    <p class="font-semibold text-sm">Connecting to the Ancient Vault...</p>
+                </div>
+                <!-- Shop Item Status Card -->
+                <div class="p-6 bg-gray-800 rounded-xl shadow-inner border border-amber-700/50 flex-grow">
                     <h2 class="text-xl md:text-2xl font-bold mb-4 pb-2 border-b border-amber-700 flex items-center text-amber-300">
                         <svg class="w-6 h-6 mr-2 text-amber-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 19l-7-7 7-7m4 14l7-7-7-7"></path></svg>
                         The Ancient Scepter
@@ -112,27 +124,41 @@
                         <span id="current-price-display" class="text-4xl md:text-5xl font-extrabold text-red-500 ml-2 drop-shadow-md">...</span>
                     </p>
                     
-                    <!-- Buy Button and Sold Status --><div id="buy-section">
+                    
+
+<div id="buy-section">
                         <button id="buy-button" class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-lg transition duration-300 shadow-xl shadow-green-900/70 active:scale-[0.98] flex items-center justify-center disabled:opacity-50" disabled>
                             <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             Claim Artifact Now!
                         </button>
                     </div>
                     <div id="sold-message" class="hidden mt-4 p-4 bg-green-900/50 border border-green-700 text-green-300 rounded-lg text-center font-bold text-xl">
-                        <!-- Sold message goes here --></div>
+                        
+
+</div>
                 </div>
             </div>
 
-            <!-- Chat Column (Initially full width, then 2/3 on large) --><div class="w-full lg:w-2/3 flex flex-col bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
+            
+
+<div class="w-full lg:w-2/3 flex flex-col bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
                 
-                <!-- Chat Header --><div class="p-4 border-b border-gray-700 bg-gray-900 rounded-t-xl">
+                
+
+<div class="p-4 border-b border-gray-700 bg-gray-900 rounded-t-xl">
                     <h3 class="text-xl font-bold text-amber-400">Negotiation Transcript</h3>
                 </div>
 
-                <!-- Chat History (The internal scrolling element) --><div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-3 max-h-[40vh] lg:max-h-full"> <!-- Added max-h for smaller screens --><!-- Messages will be injected here --><div class="text-center text-sm text-gray-500 py-4">Hark! The Ancient Shopkeeper awaits your first offer.</div>
+                
+
+<div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-3 max-h-[40vh] lg:max-h-full"> 
+
+<div class="text-center text-sm text-gray-500 py-4">Hark! The Ancient Shopkeeper awaits your first offer.</div>
                 </div>
 
-                <!-- Message Input Section (Clearly defined - NOW BRIGHTER!) --><form id="chat-form" class="p-4 border-t border-gray-600 bg-gray-800 rounded-b-xl shadow-inner shadow-gray-700">
+                
+
+<form id="chat-form" class="p-4 border-t border-gray-600 bg-gray-800 rounded-b-xl shadow-inner shadow-gray-700">
                     <p class="text-sm font-semibold mb-2 text-white/90">Your Argument to the Shopkeeper:</p>
                     <div class="flex space-x-3">
                         <input type="text" id="message-input" placeholder="Post your strong negotiating argument..." class="flex-grow p-3 rounded-xl bg-white border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900 font-medium shadow-lg" required>
@@ -146,7 +172,9 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs and Logic --><script type="module">
+    
+
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, onSnapshot, serverTimestamp, runTransaction, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -164,16 +192,17 @@
         let db;
         let auth;
         let userId = null;
+        let displayNameCache = {}; // Cache for user IDs and their friendly names
 
         // Configuration
         const SHOPKEEPER_ID = 'Shopkeeper';
         const INITIAL_PRICE = 5000;
         const MIN_PRICE = 100;
-        const BASE_REDUCTION_PER_POINT = 100; // $100 reduction per persuasion score point (Score 1 = $100, Score 5 = $500)
+        const BASE_REDUCTION_PER_POINT = 100; 
 
         // Gemini API Configuration
         const GEMINI_MODEL = 'gemini-2.5-flash-preview-09-2025';
-        const API_KEY = ""; // Canvas environment provides this
+        const API_KEY = ""; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${API_KEY}`;
         
         // --- ENHANCED SYSTEM INSTRUCTION ---
@@ -187,30 +216,69 @@
         const formatPrice = (amount) => `$${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
 
+        // --- Display Name Generation ---
+        
+        // Simple deterministic hash function (not for security, just for stable color/name)
+        const simpleHash = (str) => {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash<<5)-hash)+char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        const ADJECTIVES = ['Emerald', 'Ruby', 'Sapphire', 'Obsidian', 'Silver', 'Golden', 'Iron', 'Bronze', 'Mythic', 'Ancient'];
+        const TITLES = ['Negotiator', 'Merchant', 'Scholar', 'Wanderer', 'Artisan', 'Diplomat', 'Seeker', 'Collector', 'Patron', 'Scribe'];
+
+        function getUserDisplayName(id) {
+            if (id === SHOPKEEPER_ID || id === 'System') return id;
+            if (displayNameCache[id]) return displayNameCache[id];
+
+            const hash = simpleHash(id);
+            const adj = ADJECTIVES[hash % ADJECTIVES.length];
+            const title = TITLES[Math.floor(hash / ADJECTIVES.length) % TITLES.length];
+            const name = `${adj} ${title}`;
+            
+            displayNameCache[id] = name;
+            return name;
+        }
+
+
         // --- Core Firebase Initialization ---
 
         async function initFirebase() {
+            const statusEl = document.getElementById('auth-status');
+            statusEl.innerHTML = '<p class="font-semibold text-sm">Connecting to the Ancient Vault...</p>';
+
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
                     console.error("Firebase configuration is missing.");
+                    statusEl.innerHTML = '<p class="font-semibold text-sm text-red-400">Error: Firebase Config Missing.</p>';
                     return;
                 }
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-
+                
+                // Add a listener to handle auth status changes
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
+                        // Use a simple success message, hiding the raw ID
+                        statusEl.innerHTML = `<p class="font-semibold text-sm text-green-400">Authenticated as ${getUserDisplayName(userId)}</p>`;
                         
                         document.getElementById('buy-button').disabled = false; 
                         document.getElementById('send-button').disabled = false;
                         
+                        // Load game components only after successful auth
                         await initializeGameState();
                         loadGameState();
                         loadMessages();
 
                     } else {
+                        // Attempt to sign in if not already
                         try {
                             if (initialAuthToken) {
                                 await signInWithCustomToken(auth, initialAuthToken);
@@ -219,12 +287,14 @@
                             }
                         } catch (error) {
                             console.error("Authentication failed:", error);
+                            statusEl.innerHTML = '<p class="font-semibold text-sm text-red-400">Authentication Failed. Inputs disabled.</p>';
                         }
                     }
                 });
 
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
+                statusEl.innerHTML = '<p class="font-semibold text-sm text-red-400">Initialization Error. Check console.</p>';
             }
         }
 
@@ -384,6 +454,7 @@
             const buyButton = document.getElementById('buy-button');
             buyButton.disabled = true; // Prevent double-click
             buyButton.textContent = 'Processing...';
+            const buyerDisplayName = getUserDisplayName(userId);
 
             const gameStateRef = doc(db, GAME_STATE_PATH);
 
@@ -410,9 +481,8 @@
                     });
                 });
 
-                // Post a system message to the chat after successful purchase
-                // We show only the first 8 characters of the userId as an identifier
-                await postSystemMessage(`The Ancient Scepter has been purchased by ${buyerId.substring(0, 8)} for ${formatPrice(finalPrice)}! The arena is closed!`);
+                // Post a system message using the display name
+                await postSystemMessage(`The Ancient Scepter has been purchased by ${buyerDisplayName} for ${formatPrice(finalPrice)}! The arena is closed!`);
 
             } catch (error) {
                 console.error("Transaction failed during purchase:", error);
@@ -447,9 +517,11 @@
 
                     // Handle Sold State
                     if (isSold) {
+                        const buyerDisplayName = getUserDisplayName(buyerId);
                         buySection.classList.add('hidden');
                         soldMessageEl.classList.remove('hidden');
-                        soldMessageEl.innerHTML = `SOLD by <strong class="text-white">${buyerId.substring(0, 8)}</strong> for <strong class="text-white">${formatPrice(finalPrice)}</strong>!`;
+                        // Use the display name for the sold message
+                        soldMessageEl.innerHTML = `SOLD by <strong class="text-white">${buyerDisplayName}</strong> for <strong class="text-white">${formatPrice(finalPrice)}</strong>!`;
                         
                         // Disable chat inputs
                         sendButton.disabled = true;
@@ -481,6 +553,7 @@
         // --- Chat Logic ---
 
         function loadMessages() {
+            // Using descending order for the query, but reversing locally for chat display
             const q = query(collection(db, MESSAGES_COLLECTION_PATH), orderBy("timestamp", "desc"), limit(50));
             const chatHistory = document.getElementById('chat-history');
 
@@ -507,6 +580,8 @@
                         return;
                     }
                     
+                    const displayName = getUserDisplayName(msg.userId);
+
                     let bubbleClass;
                     let username;
                     let userColor;
@@ -517,12 +592,12 @@
                         userColor = 'text-white';
                     } else if (isShopkeeper) {
                         bubbleClass = 'shopkeeper-message mr-auto';
-                        username = 'Shopkeeper';
+                        username = 'The Shopkeeper';
                         userColor = 'text-amber-300';
                     } else {
                         bubbleClass = 'other-message mr-auto';
-                        // Show only the first 8 characters of the userId
-                        username = msg.userId.substring(0, 8); 
+                        // Use the friendly display name
+                        username = displayName; 
                         userColor = 'text-blue-300';
                     }
 
