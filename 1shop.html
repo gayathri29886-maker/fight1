@@ -182,12 +182,7 @@
             box-shadow: 0 0.5em 1.25em rgba(0, 0, 0, 0.3);
         }
         
-        /* Rent Pulse Animation - Using em for font size and margins */
-        @keyframes rentPulse {
-            0% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.7; }
-        }
+        /* Rent Pulse Animation - Removed animation styles, kept layout */
         #passive-income-display {
             display: flex;
             align-items: center;
@@ -196,8 +191,8 @@
             color: var(--primary-color);
         }
         #passive-income-display span {
-            animation: rentPulse 2s infinite ease-in-out;
             margin-left: 0.5em; 
+            /* Removed animation styles */
         }
         
         /* Custom Styling for the Loan Slider (Ensures visibility) */
@@ -458,7 +453,6 @@
             
             // --- UPDATED FOR MULTIPLICATIVE RENT UPGRADE ---
             rentMultiplier: 2.0, // Start with 2x multiplier effect
-            // rentUpgradeIncrease: 5.00, // Removed this
             
             maintenancePerApartment: 2.00,
             accruedBills: 0,
@@ -814,13 +808,7 @@
             
             state.money += rentVolatile;
             
-            // Trigger rent pulse animation briefly
-            const rentPulse = document.getElementById('rent-pulse');
-            if (rentPulse) {
-                rentPulse.textContent = `+${formatCurrency(rentVolatile)}`;
-                rentPulse.style.opacity = '1';
-                setTimeout(() => rentPulse.textContent = '', 500);
-            }
+            // --- REMOVED THE FLICKERING RENT PULSE ANIMATION ---
 
             updateUI();
         }
