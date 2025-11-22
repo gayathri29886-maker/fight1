@@ -3,694 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scepter Negotiation Arena</title>
+    <title>Skyscraper Tycoon</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="nofollow" rel="stylesheet">
     <style>
-        /* Custom scrollbar for chat history */
-        #chat-history::-webkit-scrollbar {
-            width: 8px;
-        }
-        #chat-history::-webkit-scrollbar-thumb {
-            background-color: #6b7280; /* Gray-500 */
-            border-radius: 4px;
-        }
-        #chat-history::-webkit-scrollbar-track {
-            background: #1f2937; /* Gray-800 */
-        }
-        /* Styling for the main content area */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0d1117; /* Deep Dark theme background */
-            color: #e5e7eb; /* Off-white text */
-            height: 100vh; 
-            overflow: hidden; /* Prevent body scroll */
-            padding: 1rem;
-            display: flex; /* Use flexbox to center the app container within body */
-            justify-content: center;
-            align-items: center;
-        }
-        /* Container for the whole application */
-        #app-container {
-            max-height: 98vh; /* Allow a bit more height if needed */
-            width: 100%;
-            display: flex;
-            flex-direction: column;
+        :root {
+            --primary-color: #6ee7b7; /* Bright green for income */
+            --secondary-color: #818cf8; /* Light indigo/violet for progress */
+            --background-color: #1f2937; /* Dark Grey background */
+            --card-color: #374151; /* Slightly lighter card base */
+            --font-color: #f9fafb; /* Off-white text */
         }
 
-        .message-bubble {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 18px;
-            margin-bottom: 8px;
-            word-wrap: break-word;
-            transition: all 0.3s ease-out;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        /* --- LIGHT MODE OVERRIDES --- */
+        body.light-mode { background-color: #f3f4f6; color: #1f2937; }
+        body.light-mode .game-container { background-color: #ffffff; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1); }
+        body.light-mode .stat-card { background-color: #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        body.light-mode .stat-card p { color: #4b5563; }
+        body.light-mode #money-display { color: #059669; }
+        body.light-mode #apartment-display { color: #4f46e5; }
+        body.light-mode #passive-income-display { color: #059669; }
+        body.light-mode #actions-panel { background-color: #e5e7eb; border-color: #d1d5db; }
+        body.light-mode .bg-indigo-900\/30 { background-color: #e0e7ff; border-color: #a5b4fc; }
+        body.light-mode .bg-indigo-900 { background-color: #bfdbfe; }
+        body.light-mode footer p { color: #6b7280; }
+        body.light-mode footer { border-color: #e5e7eb; }
+        /* --- END LIGHT MODE OVERRIDES --- */
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--font-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem; 
+            transition: background-color 0.3s, color 0.3s;
         }
-        .my-message {
-            background-color: #3b82f6; /* Tailwind Blue-500 */
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
+
+        .game-container {
+            width: 100%;
+            max-width: 1024px;
+            background-color: var(--card-color);
+            border-radius: 1.5rem;
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            /* Added min-height to help with layout consistency */
+            min-height: 80vh; 
         }
-        .other-message {
-            background-color: #374151; /* Gray-700 equivalent */
-            color: #e5e7eb;
-            margin-right: auto;
-            border-bottom-left-radius: 4px;
+
+        /* Stats Panel Layout */
+        #stats-panel {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1rem;
         }
-        /* Special style for the AI Shopkeeper's messages (more luxurious) */
-        .shopkeeper-message {
-            background-color: #272c34; /* Darker background */
-            border-left: 6px solid #fbbf24; /* Amber border */
-            color: #fcd34d; /* Amber text for emphasis */
-            margin-right: auto;
-            border-radius: 12px;
-            border-bottom-left-radius: 4px;
-            font-style: italic;
+        @media (min-width: 640px) {
+            #stats-panel {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
         }
-        /* Style for the transient price drop notification */
-        .transient-notification {
-            text-align: center;
-            padding: 6px 10px;
-            margin: 10px auto;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            max-width: fit-content;
-            animation: fadeInOut 3s ease-in-out;
-            color: #10b981; /* Green-500 */
-            background-color: #102e30; /* Darker teal background */
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+
+        .stat-card {
+            background-color: #4b5563;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
         }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(-10px); }
-            10% { opacity: 1; transform: translateY(0); }
-            90% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-10px); }
+
+        /* BUTTON STYLING */
+        .action-button {
+            transition: all 0.2s;
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+            border: none;
+            margin-bottom: 1rem;
+            width: 100%; 
+            text-align: left;
+            padding: 1rem;
+            border-radius: 0.75rem;
+        }
+
+        .action-button:hover:not(:disabled) {
+            box-shadow: 0 12px 25px -5px rgba(110, 231, 183, 0.4), 0 6px 12px -3px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .action-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+            box-shadow: none;
+        }
+        
+        /* Passive income animation */
+        @keyframes rentPulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        #passive-income-display {
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem; 
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        #passive-income-display span {
+            animation: rentPulse 2s infinite ease-in-out;
+            margin-left: 0.5rem;
+        }
+        
+        /* SKYSCRAPER VISUAL STYLING */
+        #skyscraper-view {
+            width: 100%;
+            height: 400px; /* Gives the view some height */
+            background-color: #27303d; /* Dark background for city view */
+            border-radius: 0.75rem;
+            border: 2px solid #4b5563;
+            overflow: hidden; /* Important for containing building elements */
+            position: relative;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .floor {
+            height: 50px;
+            background-color: #4b5563;
+            margin-top: 1px;
+            border-bottom: 1px solid #1f2937;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d1d5db;
+            font-size: 0.875rem;
+        }
+        .base {
+            height: 100px;
+            background-color: #6b7280;
+            border-bottom: 5px solid #1f2937;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
         }
     </style>
 </head>
 <body>
-
     
-
-<div id="app-container" class="max-w-7xl mx-auto p-4 md:p-6 bg-gray-900/50 rounded-2xl shadow-2xl backdrop-blur-sm border border-gray-700">
+    <div class="game-container" id="main-game-container">
         
-        <h1 class="text-3xl md:text-4xl font-extrabold text-center mb-6 text-amber-400 drop-shadow-lg">
-            Scepter Negotiation Arena
-        </h1>
+        <header class="text-center mb-8 relative">
+            <h1 class="text-5xl font-extrabold text-white">Skyscraper Tycoon</h1>
+            <button onclick="openSettingsModal()" class="action-button absolute top-0 right-0 bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg text-sm transition duration-150 shadow-md">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M11.496 14.288a3.978 3.978 0 11-2.992-2.992 3.978 3.978 0 012.992 2.992zm-.592 1.545a.75.75 0 01-.75-1.5 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5-.75 3.978 3.978 0 011.858-1.858.75.75 0 011.5-.75 2.478 2.478 0 001.858-1.858.75.75 0 011.5-.75 3.978 3.978 0 011.858 1.858.75.75 0 011.5.75 2.478 2.478 0 001.858 1.858.75.75 0 011.5.75 3.978 3.978 0 01-1.858 1.858.75.75 0 01-1.5-.75 2.478 2.478 0 00-1.858-1.858.75.75 0 01-1.5.75 3.978 3.978 0 01-1.858 1.858z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </header>
 
-        
-
-<div class="flex flex-col lg:flex-row gap-6 h-[calc(90vh-100px)]"> 
-
-<div class="w-full lg:w-1/3 flex flex-col">
-                
-                <!-- Status Indicator - Now displays simple connection status -->
-                <div id="auth-status" class="p-4 bg-yellow-900/40 text-yellow-300 text-center rounded-lg border border-yellow-700/50 mb-6">
-                    <p class="font-semibold text-sm">Connecting to the Ancient Vault...</p>
-                </div>
-                <!-- Shop Item Status Card -->
-                <div class="p-6 bg-gray-800 rounded-xl shadow-inner border border-amber-700/50 flex-grow">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4 pb-2 border-b border-amber-700 flex items-center text-amber-300">
-                        <svg class="w-6 h-6 mr-2 text-amber-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 19l-7-7 7-7m4 14l7-7-7-7"></path></svg>
-                        The Ancient Scepter
-                    </h2>
-                    <p class="text-sm mb-4 text-gray-400 italic">"This artifact knows its own worth. Impress the custodian with your rhetoric to earn a price reduction."</p>
-
-                    <p class="mb-2 text-sm text-gray-500">Original Price: <span id="initial-price-display" class="font-mono text-lg text-gray-400">...</span></p>
-                    <p class="mb-6">
-                        <strong class="text-xl md:text-2xl text-red-400">Current Price:</strong>
-                        <span id="current-price-display" class="text-4xl md:text-5xl font-extrabold text-red-500 ml-2 drop-shadow-md">...</span>
-                    </p>
-                    
-                    
-
-<div id="buy-section">
-                        <button id="buy-button" class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-extrabold rounded-lg transition duration-300 shadow-xl shadow-green-900/70 active:scale-[0.98] flex items-center justify-center disabled:opacity-50" disabled>
-                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            Claim Artifact Now!
-                        </button>
-                    </div>
-                    <div id="sold-message" class="hidden mt-4 p-4 bg-green-900/50 border border-green-700 text-green-300 rounded-lg text-center font-bold text-xl">
-                        
-
-</div>
-                </div>
+        <div class="mb-8 p-4 bg-indigo-900/30 border border-indigo-700 rounded-xl shadow-inner">
+            <div class="flex justify-between text-sm font-semibold mb-1">
+                <p class="text-indigo-300">Current Level: <span id="level-display" class="font-black text-lg">1</span></p>
+                <p class="text-indigo-300">XP Progress: <span id="xp-current-display">0</span> / <span id="xp-next-display">10</span> XP</p>
             </div>
-
-            
-
-<div class="w-full lg:w-2/3 flex flex-col bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
-                
-                
-
-<div class="p-4 border-b border-gray-700 bg-gray-900 rounded-t-xl">
-                    <h3 class="text-xl font-bold text-amber-400">Negotiation Transcript</h3>
-                </div>
-
-                
-
-<div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-3 max-h-[40vh] lg:max-h-full"> 
-
-<div class="text-center text-sm text-gray-500 py-4">Hark! The Ancient Shopkeeper awaits your first offer.</div>
-                </div>
-
-                
-
-<form id="chat-form" class="p-4 border-t border-gray-600 bg-gray-800 rounded-b-xl shadow-inner shadow-gray-700">
-                    <p class="text-sm font-semibold mb-2 text-white/90">Your Argument to the Shopkeeper:</p>
-                    <div class="flex space-x-3">
-                        <input type="text" id="message-input" placeholder="Post your strong negotiating argument..." class="flex-grow p-3 rounded-xl bg-white border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900 font-medium shadow-lg" required>
-                        <button type="submit" id="send-button" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition duration-300 disabled:opacity-50 shadow-md shadow-blue-900/50 active:scale-[0.98]" disabled>
-                            Send
-                        </button>
-                    </div>
-                </form>
+            <div class="w-full bg-indigo-900 rounded-full h-3">
+                <div id="xp-bar" class="bg-indigo-400 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
-
+            <p class="text-xs text-indigo-500 mt-1">Earn XP by building Apartment Units!</p>
         </div>
-    </div>
 
-    
-
-<script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, onSnapshot, serverTimestamp, runTransaction, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Set Firebase logging level to Debug for visibility
-        setLogLevel('Debug');
-
-        // Global variables provided by the environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let app;
-        let db;
-        let auth;
-        let userId = null;
-        let displayNameCache = {}; // Cache for user IDs and their friendly names
-
-        // Configuration
-        const SHOPKEEPER_ID = 'Shopkeeper';
-        const INITIAL_PRICE = 5000;
-        const MIN_PRICE = 100;
-        const BASE_REDUCTION_PER_POINT = 100; 
-
-        // Gemini API Configuration
-        const GEMINI_MODEL = 'gemini-2.5-flash-preview-09-2025';
-        const API_KEY = ""; 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${API_KEY}`;
+        <div id="stats-panel" class="grid gap-4 mb-8">
+            <div class="stat-card">
+                <p class="text-sm font-semibold uppercase text-gray-300">Money (₹)</p>
+                <p id="money-display" class="text-3xl font-bold text-green-400">₹10,000.00</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-sm font-semibold uppercase text-gray-300">Apartment Units</p>
+                <p id="apartment-display" class="text-3xl font-bold text-indigo-400">0</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-sm font-semibold uppercase text-gray-300">Passive Income</p>
+                <p id="passive-income-display">
+                    ₹0.00
+                    <span>/ sec</span>
+                </p>
+            </div>
+        </div>
         
-        // --- ENHANCED SYSTEM INSTRUCTION ---
-        const SYSTEM_INSTRUCTION = "You are 'The Ancient Shopkeeper,' a **thousand-year-old entity** with a **shrewd, slightly eccentric, and highly theatrical** personality. You are the **custodian of rare, ancient artifacts** and view every sale as a **philosophical duel of wits**. You are currently guarding the 'Ancient Scepter of Eloquence.' Your dialogue should be **archaic, pompous, and filled with slightly condescending pronouncements** about the artifact's true value and the customer's lack of understanding. **Use dramatic language** (e.g., 'Hark!', 'Fie upon you!', 'A paltry sum!'). You must **never agree to a price** or appear desperate to sell. After analyzing the customer's negotiation argument, provide a JSON object containing your counter-reply and a **'Persuasion Score' (1 to 5)**. The customer's price is automatically lowered based on this score. Your reply must be **one dramatic, well-crafted sentence** that elevates the drama.";
-        
-        // Firestore Paths (Public Data)
-        const GAME_STATE_PATH = `artifacts/${appId}/public/data/negotiation_arena/game_state`;
-        const MESSAGES_COLLECTION_PATH = `artifacts/${appId}/public/data/negotiation_chat_messages`;
+        <div id="skyscraper-view" class="mb-8">
+            <div id="building-container" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/3 min-w-[150px] flex flex-col justify-end h-full">
+                <div class="floor bg-green-700/80">COMMERCIAL FLOOR (x1)</div>
+                <div class="floor bg-indigo-700/80">APARTMENT FLOOR (x4)</div>
+                <div class="floor bg-indigo-700/80">APARTMENT FLOOR (x4)</div>
+                <div class="floor bg-indigo-700/80">APARTMENT FLOOR (x4)</div>
+                <div class="floor bg-indigo-700/80">APARTMENT FLOOR (x4)</div>
+                <div class="base">BASEMENT & FOUNDATION</div>
+            </div>
+        </div>
 
-        // Utility: Format number as currency
-        const formatPrice = (amount) => `$${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-
-
-        // --- Display Name Generation ---
-        
-        // Simple deterministic hash function (not for security, just for stable color/name)
-        const simpleHash = (str) => {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash<<5)-hash)+char;
-                hash = hash & hash; // Convert to 32bit integer
-            }
-            return Math.abs(hash);
-        }
-
-        const ADJECTIVES = ['Emerald', 'Ruby', 'Sapphire', 'Obsidian', 'Silver', 'Golden', 'Iron', 'Bronze', 'Mythic', 'Ancient'];
-        const TITLES = ['Negotiator', 'Merchant', 'Scholar', 'Wanderer', 'Artisan', 'Diplomat', 'Seeker', 'Collector', 'Patron', 'Scribe'];
-
-        function getUserDisplayName(id) {
-            if (id === SHOPKEEPER_ID || id === 'System') return id;
-            if (displayNameCache[id]) return displayNameCache[id];
-
-            const hash = simpleHash(id);
-            const adj = ADJECTIVES[hash % ADJECTIVES.length];
-            const title = TITLES[Math.floor(hash / ADJECTIVES.length) % TITLES.length];
-            const name = `${adj} ${title}`;
+        <div id="actions-panel" class="p-6 bg-gray-700/50 border border-gray-600 rounded-xl shadow-inner mb-8">
+            <h2 class="text-2xl font-extrabold mb-4 text-white border-b border-gray-600 pb-2">🏗️ Actions & Upgrades</h2>
             
-            displayNameCache[id] = name;
-            return name;
-        }
-
-
-        // --- Core Firebase Initialization ---
-
-        async function initFirebase() {
-            const statusEl = document.getElementById('auth-status');
-            statusEl.innerHTML = '<p class="font-semibold text-sm">Connecting to the Ancient Vault...</p>';
-
-            try {
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.error("Firebase configuration is missing.");
-                    statusEl.innerHTML = '<p class="font-semibold text-sm text-red-400">Error: Firebase Config Missing.</p>';
-                    return;
-                }
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Add a listener to handle auth status changes
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        // Use a simple success message, hiding the raw ID
-                        statusEl.innerHTML = `<p class="font-semibold text-sm text-green-400">Authenticated as ${getUserDisplayName(userId)}</p>`;
-                        
-                        document.getElementById('buy-button').disabled = false; 
-                        document.getElementById('send-button').disabled = false;
-                        
-                        // Load game components only after successful auth
-                        await initializeGameState();
-                        loadGameState();
-                        loadMessages();
-
-                    } else {
-                        // Attempt to sign in if not already
-                        try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (error) {
-                            console.error("Authentication failed:", error);
-                            statusEl.innerHTML = '<p class="font-semibold text-sm text-red-400">Authentication Failed. Inputs disabled.</p>';
-                        }
-                    }
-                });
-
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-                statusEl.innerHTML = '<p class="font-semibold text-sm text-red-400">Initialization Error. Check console.</p>';
-            }
-        }
-
-        async function initializeGameState() {
-            const gameStateRef = doc(db, GAME_STATE_PATH);
-
-             try {
-                await runTransaction(db, async (transaction) => {
-                    const docSnap = await transaction.get(gameStateRef);
-                    let data = docSnap.exists() ? docSnap.data() : {};
-                    const initialPrice = data.initialPrice || INITIAL_PRICE;
-                    const currentPrice = data.currentPrice || initialPrice;
-                    
-                    if (!docSnap.exists() || data.initialPrice === undefined) {
-                        transaction.set(gameStateRef, {
-                            initialPrice: initialPrice,
-                            currentPrice: currentPrice,
-                            isSold: false, // Ensure this flag is set
-                            finalPrice: null,
-                            buyerId: null,
-                            lastUpdate: serverTimestamp()
-                        }, { merge: true });
-                    }
-                });
-
-             } catch (error) {
-                console.error("Transaction failed during game state initialization:", error);
-             }
-        }
-
-        // --- Gemini AI Function (JSON Mode) ---
-
-        async function callGeminiAPI(prompt, maxRetries = 3) {
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: {
-                    parts: [{ text: SYSTEM_INSTRUCTION }]
-                },
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            "aiReply": { "type": "STRING", "description": "The shopkeeper's theatrical counter-argument (one dramatic, well-crafted sentence)." },
-                            "persuasionScore": { "type": "INTEGER", "description": "A score from 1 to 5 indicating the strength of the user's negotiation line. 5 is extremely persuasive." }
-                        },
-                        "required": ["aiReply", "persuasionScore"]
-                    }
-                }
-            };
-
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    const jsonString = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    
-                    if (jsonString) {
-                        const parsedJson = JSON.parse(jsonString);
-                        // Sanity check the score
-                        const score = Math.max(1, Math.min(5, parsedJson.persuasionScore || 1));
-                        return { aiReply: parsedJson.aiReply || "I find your silence golden, and costly.", persuasionScore: score };
-                    }
-
-                } catch (error) {
-                    console.error(`Gemini API call attempt ${i + 1} failed, falling back to default:`, error);
-                    if (i < maxRetries - 1) {
-                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-                    }
-                }
-            }
-            // Fallback response if all retries fail
-            return { aiReply: "The ancient network seems to be buffering; such a mundane delay hardly befits this esteemed transaction! (Score 1).", persuasionScore: 1 };
-        }
-
-
-        // --- Game Logic: Price Reduction & Buy ---
-        
-        /**
-         * Utility to post a system/notification message to the chat
-         */
-        async function postSystemMessage(text) {
-            const messagesRef = collection(db, MESSAGES_COLLECTION_PATH);
-            await setDoc(doc(messagesRef), {
-                userId: 'System',
-                text: text,
-                timestamp: serverTimestamp()
-            });
-        }
-
-        /**
-         * Reduces the price based on the persuasion score determined by the AI.
-         */
-        async function applyPriceReduction(score) {
-            const reductionAmount = score * BASE_REDUCTION_PER_POINT;
+            <h3 class="text-xl font-bold text-green-400 mt-6 mb-2">Apartment Construction</h3>
             
-            const gameStateRef = doc(db, GAME_STATE_PATH);
-
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const gameStateDoc = await transaction.get(gameStateRef);
-                    if (!gameStateDoc.exists() || gameStateDoc.data().isSold) {
-                        throw "Game state not found or item already sold!";
-                    }
-                    const data = gameStateDoc.data();
-                    let currentPrice = data.currentPrice || data.initialPrice || INITIAL_PRICE;
-                    
-                    if (currentPrice > MIN_PRICE) {
-                        const newPrice = Math.max(MIN_PRICE, currentPrice - reductionAmount);
-
-                        transaction.update(gameStateRef, {
-                            currentPrice: newPrice,
-                            lastUpdate: serverTimestamp(),
-                        });
-
-                        // Display transient success message directly to the UI
-                        const notificationEl = document.createElement('div');
-                        const priceChange = formatPrice(currentPrice - newPrice);
-                        notificationEl.className = 'transient-notification';
-                        
-                        if (currentPrice > newPrice) {
-                            notificationEl.textContent = `HARK! A concession! Price dropped by ${priceChange} (Score: ${score}/5)!`;
-                        } else {
-                            notificationEl.textContent = `A momentary pause... The price holds firm at minimum ${formatPrice(MIN_PRICE)}.`;
-                        }
-                        
-                        document.getElementById('chat-history').appendChild(notificationEl);
-                        // Scroll to bottom after adding notification
-                        document.getElementById('chat-history').scrollTop = document.getElementById('chat-history').scrollHeight;
-                        setTimeout(() => notificationEl.remove(), 4000); 
-
-                    }
-                });
-            } catch (error) {
-                console.error("Transaction failed during price reduction:", error);
-            }
-        }
-
-        /**
-         * Handles the "Buy Now!" button click.
-         */
-        async function handleBuy() {
-            if (!userId) {
-                console.error("User not authenticated.");
-                return;
-            }
-
-            const buyButton = document.getElementById('buy-button');
-            buyButton.disabled = true; // Prevent double-click
-            buyButton.textContent = 'Processing...';
-            const buyerDisplayName = getUserDisplayName(userId);
-
-            const gameStateRef = doc(db, GAME_STATE_PATH);
-
-            try {
-                let finalPrice = 0;
-                let buyerId = '';
-
-                await runTransaction(db, async (transaction) => {
-                    const gameStateDoc = await transaction.get(gameStateRef);
-                    if (!gameStateDoc.exists() || gameStateDoc.data().isSold) {
-                        throw "Item already sold or state invalid.";
-                    }
-                    const data = gameStateDoc.data();
-                    
-                    finalPrice = data.currentPrice;
-                    buyerId = userId;
-
-                    // Mark as sold and record buyer/price
-                    transaction.update(gameStateRef, {
-                        isSold: true,
-                        finalPrice: finalPrice,
-                        buyerId: buyerId,
-                        soldTimestamp: serverTimestamp()
-                    });
-                });
-
-                // Post a system message using the display name
-                await postSystemMessage(`The Ancient Scepter has been purchased by ${buyerDisplayName} for ${formatPrice(finalPrice)}! The arena is closed!`);
-
-            } catch (error) {
-                console.error("Transaction failed during purchase:", error);
-                buyButton.disabled = false;
-                buyButton.textContent = 'Claim Artifact Now!';
-            }
-        }
-
-        function loadGameState() {
-            const docRef = doc(db, GAME_STATE_PATH);
-            const initialPriceDisplay = document.getElementById('initial-price-display');
-            const currentPriceDisplay = document.getElementById('current-price-display');
-            const buySection = document.getElementById('buy-section');
-            const soldMessageEl = document.getElementById('sold-message');
-            const sendButton = document.getElementById('send-button');
-            const messageInput = document.getElementById('message-input');
-            const buyButton = document.getElementById('buy-button');
-
-
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const initialPrice = data.initialPrice || INITIAL_PRICE;
-                    const currentPrice = data.currentPrice || initialPrice;
-                    const isSold = data.isSold || false;
-                    const buyerId = data.buyerId;
-                    const finalPrice = data.finalPrice;
-
-                    // Update Price Displays
-                    initialPriceDisplay.textContent = formatPrice(initialPrice);
-                    currentPriceDisplay.textContent = formatPrice(currentPrice);
-
-                    // Handle Sold State
-                    if (isSold) {
-                        const buyerDisplayName = getUserDisplayName(buyerId);
-                        buySection.classList.add('hidden');
-                        soldMessageEl.classList.remove('hidden');
-                        // Use the display name for the sold message
-                        soldMessageEl.innerHTML = `SOLD by <strong class="text-white">${buyerDisplayName}</strong> for <strong class="text-white">${formatPrice(finalPrice)}</strong>!`;
-                        
-                        // Disable chat inputs
-                        sendButton.disabled = true;
-                        messageInput.disabled = true;
-                        messageInput.placeholder = "Negotiation closed. The Scepter has been purchased.";
-                    } else {
-                        buySection.classList.remove('hidden');
-                        soldMessageEl.classList.add('hidden');
-                        
-                        // Enable buy button only if user is logged in
-                        buyButton.disabled = !userId; 
-                        buyButton.textContent = 'Claim Artifact Now!';
-                        
-                        // Enable chat
-                        if (userId) {
-                            sendButton.disabled = false;
-                            messageInput.disabled = false;
-                            messageInput.placeholder = "Post your strong negotiating argument...";
-                        }
-                    }
-
-                }
-            }, (error) => {
-                console.error("Game state listener error:", error);
-            });
-        }
-
-
-        // --- Chat Logic ---
-
-        function loadMessages() {
-            // Using descending order for the query, but reversing locally for chat display
-            const q = query(collection(db, MESSAGES_COLLECTION_PATH), orderBy("timestamp", "desc"), limit(50));
-            const chatHistory = document.getElementById('chat-history');
-
-            onSnapshot(q, (snapshot) => {
-                const messages = [];
-                snapshot.forEach(doc => {
-                    messages.push({ id: doc.id, ...doc.data() });
-                });
-
-                messages.reverse();
-
-                chatHistory.innerHTML = '';
-                messages.forEach(msg => {
-                    const isMyMessage = msg.userId === userId;
-                    const isShopkeeper = msg.userId === SHOPKEEPER_ID;
-                    const isSystem = msg.userId === 'System'; // System messages
-                    
-                    if (isSystem) {
-                        // System messages are centered, styled notifications
-                        const messageElement = document.createElement('div');
-                        messageElement.className = 'text-center text-sm font-semibold text-green-400 p-2 border-y border-green-800 bg-green-900/20 my-2 rounded-lg mx-auto max-w-full';
-                        messageElement.textContent = msg.text;
-                        chatHistory.appendChild(messageElement);
-                        return;
-                    }
-                    
-                    const displayName = getUserDisplayName(msg.userId);
-
-                    let bubbleClass;
-                    let username;
-                    let userColor;
-
-                    if (isMyMessage) {
-                        bubbleClass = 'my-message ml-auto';
-                        username = 'You';
-                        userColor = 'text-white';
-                    } else if (isShopkeeper) {
-                        bubbleClass = 'shopkeeper-message mr-auto';
-                        username = 'The Shopkeeper';
-                        userColor = 'text-amber-300';
-                    } else {
-                        bubbleClass = 'other-message mr-auto';
-                        // Use the friendly display name
-                        username = displayName; 
-                        userColor = 'text-blue-300';
-                    }
-
-                    const messageElement = document.createElement('div');
-                    messageElement.className = `message-bubble ${bubbleClass} flex flex-col`;
-                    messageElement.innerHTML = `
-                        <div class="text-xs font-semibold mb-1 ${userColor}">${username}</div>
-                        <div class="text-sm">${msg.text}</div>
-                    `;
-                    chatHistory.appendChild(messageElement);
-                });
-
-                chatHistory.scrollTop = chatHistory.scrollHeight;
-
-            }, (error) => {
-                console.error("Messages listener error:", error);
-            });
-        }
-
-        /**
-         * Sends the user's message, gets the AI response/score, posts AI response, and triggers price reduction.
-         */
-        async function sendMessage(e) {
-            e.preventDefault();
-
-            if (!userId) {
-                console.error("User not authenticated.");
-                return;
-            }
+            <button id="build-apartment-btn-1" class="action-button bg-green-600 hover:bg-green-700 text-white flex justify-between items-center" onclick="buildApartment(1)">
+                <span>**Build Standard Unit** (Adds +1 Unit, +₹5/sec)</span>
+                <span class="text-xl font-black">Cost: ₹5,000</span>
+            </button>
             
-            // Check if item is already sold before sending
-            const gameStateDoc = doc(db, GAME_STATE_PATH);
-            const gameStateSnapshot = await getDoc(gameStateDoc);
-            if (gameStateSnapshot.exists() && gameStateSnapshot.data().isSold) {
-                 return; // Do nothing if sold
-            }
+            <button id="build-apartment-btn-10" class="action-button bg-green-600 hover:bg-green-700 text-white flex justify-between items-center" onclick="buildApartment(10)">
+                <span>**Build 10 Units** (Bulk Discount)</span>
+                <span class="text-xl font-black">Cost: ₹45,000</span>
+            </button>
+            
+            <h3 class="text-xl font-bold text-indigo-400 mt-6 mb-2">Infrastructure & Land</h3>
 
+            <button id="upgrade-land-btn" class="action-button bg-indigo-600 hover:bg-indigo-700 text-white flex justify-between items-center" onclick="upgradeLand()" disabled>
+                <span>**Upgrade Land Tier 2** (Unlock floors 20-40)</span>
+                <span class="text-xl font-black">Cost: ₹50,000</span>
+            </button>
+            
+            <button id="upgrade-elevator-btn" class="action-button bg-indigo-600 hover:bg-indigo-700 text-white flex justify-between items-center" onclick="upgradeElevator()">
+                <span>**Upgrade Elevator Speed** (2x passive rent)</span>
+                <span class="text-xl font-black">Cost: ₹25,000</span>
+            </button>
 
-            const input = document.getElementById('message-input');
-            const sendButton = document.getElementById('send-button');
-            const text = input.value.trim();
+            <h3 class="text-xl font-bold text-yellow-400 mt-6 mb-2">Marketing & Finance</h3>
 
-            if (text === '') return;
+            <button id="marketing-btn" class="action-button bg-yellow-600 hover:bg-yellow-700 text-white flex justify-between items-center" onclick="startMarketing()">
+                <span>**Start Marketing Campaign** (+10% Rent/sec)</span>
+                <span class="text-xl font-black">Cost: ₹15,000</span>
+            </button>
 
-            // Disable input/button while processing
-            sendButton.disabled = true;
-            input.disabled = true;
+            <p class="text-sm text-gray-400 mt-4">More upgrades will unlock as your Level increases.</p>
+        </div>
 
-            try {
-                const messagesRef = collection(db, MESSAGES_COLLECTION_PATH);
+        <footer class="text-center mt-8 pt-6 border-t border-gray-700/50">
+            <p class="text-sm text-gray-500">
+                Developed by **Sukesh(G7A)**
+            </p>
+        </footer>
 
-                // 1. Send User's Message to Firestore
-                await setDoc(doc(messagesRef), {
-                    userId: userId,
-                    text: text,
-                    timestamp: serverTimestamp()
-                });
-
-                input.value = ''; // Clear input immediately
-                
-                // 2. Get AI Response (Reply and Persuasion Score)
-                const { aiReply, persuasionScore } = await callGeminiAPI(text);
-                
-                // 3. Immediately trigger the price reduction based on the score
-                // This will also post the transient notification to the UI
-                await applyPriceReduction(persuasionScore);
-
-                // 4. Post AI's Counter-Reply to Firestore
-                await setDoc(doc(messagesRef), {
-                    userId: SHOPKEEPER_ID,
-                    text: aiReply,
-                    timestamp: serverTimestamp()
-                });
-
-            } catch (error) {
-                console.error("Error during message or AI response: ", error);
-            } finally {
-                // Re-enable input/button only if not sold
-                if (!gameStateSnapshot.exists() || !gameStateSnapshot.data().isSold) {
-                    sendButton.disabled = false;
-                    input.disabled = false;
-                    input.focus();
-                }
-            }
+    </div> <script>
+        // Placeholder functions for the buttons 
+        function openSettingsModal() {
+            console.log("Settings opened.");
         }
 
+        function buildApartment(count) {
+            console.log(`Building ${count} Apartments.`);
+        }
 
-        // --- Event Listeners and Initialization ---
+        function upgradeLand() {
+            console.log("Land upgraded.");
+        }
 
-        window.onload = initFirebase;
-        document.getElementById('chat-form').addEventListener('submit', sendMessage);
-        document.getElementById('buy-button').addEventListener('click', handleBuy);
+        function upgradeElevator() {
+            console.log("Elevator upgraded.");
+        }
 
+        function startMarketing() {
+            console.log("Marketing started.");
+        }
     </script>
 </body>
 </html>
