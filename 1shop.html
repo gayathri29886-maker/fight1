@@ -104,9 +104,6 @@
             justify-content: center;
         }
 
-        /* REMOVED: #game-page-content { display: none; } */
-
-
         /* Grid Layout for Stats: Forces 4 columns on large enough screens */
         #stats-panel {
             display: grid;
@@ -383,7 +380,7 @@
                     <div class="action-card bg-yellow-900/30">
                         <h3 class="text-xl font-semibold text-yellow-400 mb-2">Upgrade Rent Value</h3>
                         <p class="text-sm text-gray-400 mb-3">Increase the average rent per unit.</p>
-                        <p class="text-lg font-bold text-white mb-3">Cost: <span id="upgrade-cost-display">₹5,000.00</span> | Increase: <span id="upgrade-increase-display">₹5.00</span></p>
+                        <p class="text-lg font-bold text-white mb-3">Cost: <span id="upgrade-cost-display">₹5,000.00</span> | Multiplier: <span id="upgrade-increase-display">x2.0</span></p>
                         <button id="upgrade-rent-btn" class="action-button w-full" onclick="upgradeRentRate()">Upgrade Rental Value</button>
                     </div>
 
@@ -458,7 +455,10 @@
             landCost: 1000,
             apartmentCost: 500,
             rentUpgradeCost: 5000,
-            rentUpgradeIncrease: 5.00,
+            
+            // --- UPDATED FOR MULTIPLICATIVE RENT UPGRADE ---
+            rentMultiplier: 2.0, // Start with 2x multiplier effect
+            // rentUpgradeIncrease: 5.00, // Removed this
             
             maintenancePerApartment: 2.00,
             accruedBills: 0,
@@ -565,7 +565,9 @@
             document.getElementById('land-cost-display').textContent = formatCurrency(state.landCost);
             document.getElementById('apartment-cost-display').textContent = formatCurrency(state.apartmentCost);
             document.getElementById('upgrade-cost-display').textContent = formatCurrency(state.rentUpgradeCost);
-            document.getElementById('upgrade-increase-display').textContent = `+${formatCurrency(state.rentUpgradeIncrease)}`;
+            
+            // --- UPDATED LINE FOR MULTIPLIER DISPLAY ---
+            document.getElementById('upgrade-increase-display').textContent = `x${state.rentMultiplier.toFixed(1)}`;
 
             // Update Level UI
             const xpRatio = state.xp / state.xpToNextLevel;
@@ -693,7 +695,8 @@
                 state.xpToNextLevel = state.baseXPToNext * state.level;
                 
                 const rewardMoney = state.level * 10000;
-                const rewardRentIncrease = 5.00 + (state.level * 1.00);
+                // Since rent is now multiplicative, we'll keep the level-up rent boost simpler (additive)
+                const rewardRentIncrease = 5.00 + (state.level * 1.00); 
                 
                 state.money += rewardMoney;
                 state.rentPerUnit += rewardRentIncrease;
@@ -745,10 +748,14 @@
         function upgradeRentRate() {
             if (state.money >= state.rentUpgradeCost) {
                 state.money -= state.rentUpgradeCost;
-                state.rentPerUnit += state.rentUpgradeIncrease;
-                state.rentUpgradeCost = Math.floor(state.rentUpgradeCost * 1.15); // Increase cost by 15%
-                state.rentUpgradeIncrease = state.rentUpgradeIncrease * 1.1; // Increase future bonus by 10%
-                showMessage(`Rental Value Upgraded! Rent per unit is now ${formatCurrency(state.rentPerUnit)}`, "success");
+                
+                // --- MULTIPLICATIVE UPGRADE LOGIC ---
+                state.rentPerUnit *= state.rentMultiplier; 
+                state.rentUpgradeCost = Math.floor(state.rentUpgradeCost * 2.5); // Increased cost multiplier for greater impact
+                state.rentMultiplier += 0.2; // Slightly increase the multiplier for the next upgrade
+                // ------------------------------------
+                
+                showMessage(`Rental Value Upgraded! Rent per unit is now ${formatCurrency(state.rentPerUnit)} (Multiplier increased to x${state.rentMultiplier.toFixed(1)})`, "success");
                 updateUI();
             } else {
                 showMessage("Not enough money to upgrade rental value!", "error");
@@ -859,7 +866,6 @@
             
             // 2. Hide start screen and show game content
             document.getElementById('start-screen').classList.add('hidden');
-            // This line removes the 'hidden' class, which now correctly makes the game content visible.
             document.getElementById('game-page-content').classList.remove('hidden'); 
 
             // 3. Start game loops
