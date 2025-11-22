@@ -104,10 +104,8 @@
             justify-content: center;
         }
 
-        /* Game Page Content - Hidden by default */
-        #game-page-content {
-            display: none; 
-        }
+        /* REMOVED: #game-page-content { display: none; } */
+
 
         /* Grid Layout for Stats: Forces 4 columns on large enough screens */
         #stats-panel {
@@ -308,7 +306,7 @@
 
     </div>
 
-    <div id="game-page-content" class="hidden">
+    <div id="game-page-content" class="hidden"> 
         <div class="game-container">
             <header class="text-center mb-8 relative">
                 <h1 class="text-5xl font-extrabold text-white">Skyscraper Tycoon</h1>
@@ -861,7 +859,8 @@
             
             // 2. Hide start screen and show game content
             document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-page-content').classList.remove('hidden');
+            // This line removes the 'hidden' class, which now correctly makes the game content visible.
+            document.getElementById('game-page-content').classList.remove('hidden'); 
 
             // 3. Start game loops
             state.gameInterval = setInterval(gameLoop, state.gameTickMs);
