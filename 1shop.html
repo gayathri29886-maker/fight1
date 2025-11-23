@@ -192,7 +192,6 @@
         }
         #passive-income-display span {
             margin-left: 0.5em; 
-            /* Removed animation styles */
         }
         
         /* Custom Styling for the Loan Slider (Ensures visibility) */
@@ -452,19 +451,22 @@
             rentUpgradeCost: 5000,
             
             // --- UPDATED FOR MULTIPLICATIVE RENT UPGRADE ---
-            rentMultiplier: 2.0, // Start with 2x multiplier effect
+            rentMultiplier: 2.0, 
             
             maintenancePerApartment: 2.00,
             accruedBills: 0,
 
-            loanAmount: 10000, 
+            // --- LOAN FIXES START ---
+            loanAmount: 10000, // Base loan principal (will be updated at start)
             loanDue: 0,
+            initialLoanSelection: 10000, // New property to hold slider value
             loanInterestRate: 0.05,
             loanPaymentIntervalMs: 360000, 
             loanTimer: 360,
             loanPaid: false, 
             loanAccrualCount: 0, 
             loanResetCost: 10000, 
+            // --- LOAN FIXES END ---
 
             level: 1,
             xp: 0,
@@ -607,10 +609,11 @@
         }
         
         function updateLoanDisplay(value) {
-            state.loanAmount = parseInt(value, 10);
+            // FIX: Save the slider value to the dedicated property
+            state.initialLoanSelection = parseInt(value, 10);
             const display = document.getElementById('loan-amount-display');
             
-            if(display) display.textContent = formatCurrency(state.loanAmount);
+            if(display) display.textContent = formatCurrency(state.initialLoanSelection);
         }
 
 
@@ -808,8 +811,6 @@
             
             state.money += rentVolatile;
             
-            // --- REMOVED THE FLICKERING RENT PULSE ANIMATION ---
-
             updateUI();
         }
 
@@ -850,7 +851,10 @@
 
         function startGame() {
             // 1. Initialize game state with selected loan
-            state.loanDue = state.loanAmount;
+            // FIX: Use the value saved from the slider
+            state.loanAmount = state.initialLoanSelection;
+            state.loanDue = state.initialLoanSelection;
+            state.loanTimer = 360; // Ensure timer starts fresh
             
             // 2. Hide start screen and show game content
             document.getElementById('start-screen').classList.add('hidden');
@@ -863,6 +867,7 @@
 
             // 4. Initial UI update
             updateUI();
+            updateLoanTimerDisplay(); // FIX: Call this to show the initial 6:00
         }
 
         // Initial setup for the start screen (pre-game)
