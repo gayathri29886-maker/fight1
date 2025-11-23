@@ -182,7 +182,7 @@
             box-shadow: 0 0.5em 1.25em rgba(0, 0, 0, 0.3);
         }
         
-        /* Rent Pulse Animation - Removed animation styles, kept layout */
+        /* Passive Income Display */
         #passive-income-display {
             display: flex;
             align-items: center;
@@ -456,17 +456,17 @@
             maintenancePerApartment: 2.00,
             accruedBills: 0,
 
-            // --- LOAN FIXES START ---
+            // --- LOAN STATE (FIXED) ---
             loanAmount: 10000, // Base loan principal (will be updated at start)
             loanDue: 0,
-            initialLoanSelection: 10000, // New property to hold slider value
+            initialLoanSelection: 10000, // Holds the slider value before game start
             loanInterestRate: 0.05,
             loanPaymentIntervalMs: 360000, 
             loanTimer: 360,
             loanPaid: false, 
             loanAccrualCount: 0, 
             loanResetCost: 10000, 
-            // --- LOAN FIXES END ---
+            // --------------------------
 
             level: 1,
             xp: 0,
@@ -617,7 +617,7 @@
         }
 
 
-        // --- SETTINGS LOGIC ---
+        // --- SETTINGS LOGIC (REMAINS UNCHANGED) ---
         function applyTheme(theme) {
             state.settings.theme = theme;
             const body = document.body;
@@ -684,7 +684,7 @@
         }
 
 
-        // --- LEVEL SYSTEM LOGIC ---
+        // --- LEVEL SYSTEM LOGIC (REMAINS UNCHANGED) ---
         function checkLevelUp() {
             while (state.xp >= state.xpToNextLevel) {
                 state.xp -= state.xpToNextLevel;
@@ -711,7 +711,7 @@
         }
 
 
-        // --- GAME ACTIONS ---
+        // --- GAME ACTIONS (REMAINS UNCHANGED) ---
 
         function buyLand() {
             if (state.money >= state.landCost) {
@@ -801,7 +801,7 @@
         }
 
 
-        // --- MAIN GAME LOOPS ---
+        // --- MAIN GAME LOOPS (REMAINS UNCHANGED) ---
 
         // 1. Passive Income (Rent Collection)
         function gameLoop() {
@@ -835,11 +835,12 @@
             } else {
                 // Timer hit zero: Accrue interest
                 const interest = state.loanAmount * state.loanInterestRate;
+                // Add accrued interest to the amount due
                 state.loanDue += interest;
                 state.loanTimer = 360; // Reset timer to 6 minutes
                 state.loanAccrualCount += 1;
                 
-                // Increase base loan amount for next payment cycle if multiple payments missed
+                // Increase base loan principal for next payment cycle if payments are continually missed
                 state.loanAmount = state.loanAmount + interest; 
 
                 showMessage(`🚨 LOAN INTEREST DUE! ${formatCurrency(interest)} added to your total debt.`, "error");
@@ -847,11 +848,11 @@
             updateLoanTimerDisplay();
         }
 
-        // --- GAME START & INITIALIZATION ---
+        // --- GAME START & INITIALIZATION (FIXED) ---
 
         function startGame() {
             // 1. Initialize game state with selected loan
-            // FIX: Use the value saved from the slider
+            // FIX: Use the value saved in initialLoanSelection to set both base and due amount
             state.loanAmount = state.initialLoanSelection;
             state.loanDue = state.initialLoanSelection;
             state.loanTimer = 360; // Ensure timer starts fresh
@@ -867,13 +868,15 @@
 
             // 4. Initial UI update
             updateUI();
-            updateLoanTimerDisplay(); // FIX: Call this to show the initial 6:00
+            // FIX: Must update loan timer display immediately to show 6:00
+            updateLoanTimerDisplay(); 
         }
 
         // Initial setup for the start screen (pre-game)
         document.addEventListener('DOMContentLoaded', () => {
              // Set initial loan display
-             updateLoanDisplay(document.getElementById('loan-slider').value); 
+             const initialSliderValue = document.getElementById('loan-slider').value;
+             updateLoanDisplay(initialSliderValue); 
              
              // Ensure initial money display is correct for pre-game screen
              const initialMoneyDisplay = document.getElementById('initial-money-start');
