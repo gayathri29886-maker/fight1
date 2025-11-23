@@ -450,23 +450,20 @@
             apartmentCost: 500,
             rentUpgradeCost: 5000,
             
-            // --- UPDATED FOR MULTIPLICATIVE RENT UPGRADE ---
             rentMultiplier: 2.0, 
             
             maintenancePerApartment: 2.00,
             accruedBills: 0,
 
-            // --- LOAN STATE (FIXED) ---
-            loanAmount: 10000, // Base loan principal (will be updated at start)
-            loanDue: 0,
+            // --- LOAN STATE ---
+            loanAmount: 10000, 
+            loanDue: 0, // This is the amount the user must pay
             initialLoanSelection: 10000, // Holds the slider value before game start
             loanInterestRate: 0.05,
-            loanPaymentIntervalMs: 360000, 
             loanTimer: 360,
             loanPaid: false, 
-            loanAccrualCount: 0, 
             loanResetCost: 10000, 
-            // --------------------------
+            // ------------------
 
             level: 1,
             xp: 0,
@@ -547,6 +544,8 @@
 
             // Update Financial obligations
             document.getElementById('bill-cost-display').textContent = formatCurrency(state.accruedBills);
+            
+            // *** LOAN UI UPDATE ***
             const loanDueDisplay = document.getElementById('loan-due-display');
             if (loanDueDisplay) loanDueDisplay.textContent = formatCurrency(state.loanDue);
             const payLoanCostDisplay = document.getElementById('pay-loan-cost-display');
@@ -562,7 +561,6 @@
             document.getElementById('apartment-cost-display').textContent = formatCurrency(state.apartmentCost);
             document.getElementById('upgrade-cost-display').textContent = formatCurrency(state.rentUpgradeCost);
             
-            // --- UPDATED LINE FOR MULTIPLIER DISPLAY ---
             document.getElementById('upgrade-increase-display').textContent = `x${state.rentMultiplier.toFixed(1)}`;
 
             // Update Level UI
@@ -581,12 +579,12 @@
             const payLoanBtn = document.getElementById('pay-loan-btn');
             const resetTimerBtn = document.getElementById('reset-timer-btn'); 
 
-            // IMPORTANT: Setting button disabled states
             if (buyLandBtn) buyLandBtn.disabled = state.money < state.landCost;
             if (buildApartmentBtn) buildApartmentBtn.disabled = state.money < state.apartmentCost || state.land < 1;
             if (upgradeRentBtn) upgradeRentBtn.disabled = state.money < state.rentUpgradeCost;
             if (payBillsBtn) payBillsBtn.disabled = state.accruedBills <= 0 || state.money < state.accruedBills;
             
+            // *** LOAN BUTTON STATES ***
             if (payLoanBtn) payLoanBtn.disabled = state.loanDue <= 0 || state.money < state.loanDue;
             if (resetTimerBtn) resetTimerBtn.disabled = state.money < state.loanResetCost;
             
@@ -609,15 +607,14 @@
         }
         
         function updateLoanDisplay(value) {
-            // FIX: Save the slider value to the dedicated property
+            // Saves the slider value to the dedicated property
             state.initialLoanSelection = parseInt(value, 10);
             const display = document.getElementById('loan-amount-display');
             
             if(display) display.textContent = formatCurrency(state.initialLoanSelection);
         }
 
-
-        // --- SETTINGS LOGIC (REMAINS UNCHANGED) ---
+        // --- SETTINGS LOGIC (UNCHANGED) ---
         function applyTheme(theme) {
             state.settings.theme = theme;
             const body = document.body;
@@ -673,7 +670,6 @@
             document.getElementById('settings-modal').classList.add('hidden');
         }
         
-        // --- CHEAT FUNCTION ---
         function giveCheatMoney() {
             const cheatAmount = 100000000000000; // 100 Trillion
             state.money += cheatAmount;
@@ -684,7 +680,7 @@
         }
 
 
-        // --- LEVEL SYSTEM LOGIC (REMAINS UNCHANGED) ---
+        // --- LEVEL SYSTEM LOGIC (UNCHANGED) ---
         function checkLevelUp() {
             while (state.xp >= state.xpToNextLevel) {
                 state.xp -= state.xpToNextLevel;
@@ -692,7 +688,6 @@
                 state.xpToNextLevel = state.baseXPToNext * state.level;
                 
                 const rewardMoney = state.level * 10000;
-                // Since rent is now multiplicative, we'll keep the level-up rent boost simpler (additive)
                 const rewardRentIncrease = 5.00 + (state.level * 1.00); 
                 
                 state.money += rewardMoney;
@@ -711,7 +706,7 @@
         }
 
 
-        // --- GAME ACTIONS (REMAINS UNCHANGED) ---
+        // --- GAME ACTIONS (UNCHANGED) ---
 
         function buyLand() {
             if (state.money >= state.landCost) {
@@ -746,11 +741,9 @@
             if (state.money >= state.rentUpgradeCost) {
                 state.money -= state.rentUpgradeCost;
                 
-                // --- MULTIPLICATIVE UPGRADE LOGIC ---
                 state.rentPerUnit *= state.rentMultiplier; 
-                state.rentUpgradeCost = Math.floor(state.rentUpgradeCost * 2.5); // Increased cost multiplier for greater impact
-                state.rentMultiplier += 0.2; // Slightly increase the multiplier for the next upgrade
-                // ------------------------------------
+                state.rentUpgradeCost = Math.floor(state.rentUpgradeCost * 2.5); 
+                state.rentMultiplier += 0.2; 
                 
                 showMessage(`Rental Value Upgraded! Rent per unit is now ${formatCurrency(state.rentPerUnit)} (Multiplier increased to x${state.rentMultiplier.toFixed(1)})`, "success");
                 updateUI();
@@ -773,6 +766,7 @@
             }
         }
 
+        // *** LOAN ACTION ***
         function payLoan() {
             if (state.loanDue > 0 && state.money >= state.loanDue) {
                 state.money -= state.loanDue;
@@ -786,11 +780,12 @@
             }
         }
         
+        // *** LOAN ACTION ***
         function resetLoanTimer() {
              if (!state.loanPaid && state.money >= state.loanResetCost) {
                 state.money -= state.loanResetCost;
                 state.loanTimer = 360;
-                state.loanResetCost = Math.floor(state.loanResetCost * 1.5); // Increase reset cost
+                state.loanResetCost = Math.floor(state.loanResetCost * 1.5); 
                 showMessage(`Loan Timer Reset! Cost: ${formatCurrency(state.loanResetCost)} for the next reset.`, "info");
                 updateUI();
             } else if (state.loanPaid) {
@@ -801,12 +796,10 @@
         }
 
 
-        // --- MAIN GAME LOOPS (REMAINS UNCHANGED) ---
+        // --- MAIN GAME LOOPS (UNCHANGED) ---
 
-        // 1. Passive Income (Rent Collection)
         function gameLoop() {
             const totalRent = state.apartments * state.rentPerUnit;
-            // Add some volatility to the rent for realism
             const rentVolatile = totalRent * (1 + (Math.random() * state.settings.rentVolatility * 2) - state.settings.rentVolatility);
             
             state.money += rentVolatile;
@@ -814,7 +807,6 @@
             updateUI();
         }
 
-        // 2. Maintenance Bills Accrual
         function billLoop() {
             if (state.apartments > 0) {
                 const maintenanceCost = state.apartments * state.maintenancePerApartment;
@@ -823,7 +815,7 @@
             }
         }
 
-        // 3. Loan Timer/Interest
+        // *** LOAN TIMER LOOP (FIXED) ***
         function loanTimerLoop() {
             if (state.loanPaid) {
                 clearInterval(state.timerInterval);
@@ -834,16 +826,17 @@
                 state.loanTimer -= 1;
             } else {
                 // Timer hit zero: Accrue interest
-                const interest = state.loanAmount * state.loanInterestRate;
-                // Add accrued interest to the amount due
+                // Use Math.round to prevent floating point issues in currency
+                const interest = Math.round(state.loanAmount * state.loanInterestRate * 100) / 100;
+                
                 state.loanDue += interest;
                 state.loanTimer = 360; // Reset timer to 6 minutes
-                state.loanAccrualCount += 1;
                 
                 // Increase base loan principal for next payment cycle if payments are continually missed
                 state.loanAmount = state.loanAmount + interest; 
 
                 showMessage(`🚨 LOAN INTEREST DUE! ${formatCurrency(interest)} added to your total debt.`, "error");
+                updateUI(); // Update UI to reflect the new debt
             }
             updateLoanTimerDisplay();
         }
@@ -852,10 +845,9 @@
 
         function startGame() {
             // 1. Initialize game state with selected loan
-            // FIX: Use the value saved in initialLoanSelection to set both base and due amount
             state.loanAmount = state.initialLoanSelection;
             state.loanDue = state.initialLoanSelection;
-            state.loanTimer = 360; // Ensure timer starts fresh
+            state.loanTimer = 360; 
             
             // 2. Hide start screen and show game content
             document.getElementById('start-screen').classList.add('hidden');
@@ -864,11 +856,10 @@
             // 3. Start game loops
             state.gameInterval = setInterval(gameLoop, state.gameTickMs);
             state.billInterval = setInterval(billLoop, state.billTickMs);
-            state.timerInterval = setInterval(loanTimerLoop, 1000); // Loan timer runs every second
+            state.timerInterval = setInterval(loanTimerLoop, 1000); 
 
             // 4. Initial UI update
             updateUI();
-            // FIX: Must update loan timer display immediately to show 6:00
             updateLoanTimerDisplay(); 
         }
 
@@ -878,7 +869,6 @@
              const initialSliderValue = document.getElementById('loan-slider').value;
              updateLoanDisplay(initialSliderValue); 
              
-             // Ensure initial money display is correct for pre-game screen
              const initialMoneyDisplay = document.getElementById('initial-money-start');
              if(initialMoneyDisplay) {
                 initialMoneyDisplay.textContent = formatCurrency(state.money);
