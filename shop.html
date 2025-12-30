@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Iron Deal - AI Bargaining Game</title>
+    <title>The Merchant's Tongue - NLP Bargain Game</title>
     <style>
         :root {
-            --bg: #1a1a2e;
-            --panel: #16213e;
-            --accent: #e94560;
-            --text: #e9ecef;
+            --bg: #121212;
+            --panel: #1e1e1e;
+            --accent: #d4af37; /* Gold */
+            --player-bubble: #2c3e50;
+            --ai-bubble: #27ae60;
+            --text: #f0f0f0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
             background-color: var(--bg);
             color: var(--text);
             display: flex;
@@ -24,62 +26,52 @@
         }
 
         #game-container {
-            width: 500px;
+            width: 600px;
+            height: 80vh;
             background: var(--panel);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid #0f3460;
+            display: flex;
+            flex-direction: column;
+            border-radius: 12px;
+            border: 2px solid var(--accent);
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
         }
 
         .header {
+            padding: 20px;
+            background: #252525;
             text-align: center;
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            border-bottom: 1px solid #444;
         }
 
-        #chat-window {
-            height: 300px;
+        #chat-area {
+            flex-grow: 1;
+            padding: 20px;
             overflow-y: auto;
-            background: #0f3460;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
+            background-image: linear-gradient(rgba(30,30,30,0.9), rgba(30,30,30,0.9)), 
+                              url('https://www.transparenttextures.com/patterns/parchment.png');
         }
 
         .msg {
             max-width: 80%;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            line-height: 1.4;
+            padding: 12px 16px;
+            border-radius: 15px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease;
         }
 
-        .shopkeeper-msg {
-            background: #1a1a2e;
-            align-self: flex-start;
-            border-left: 4px solid var(--accent);
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .player-msg {
-            background: var(--accent);
-            align-self: flex-end;
-            color: white;
-        }
+        .ai-msg { background: var(--ai-bubble); align-self: flex-start; border-bottom-left-radius: 2px; color: white; }
+        .player-msg { background: var(--player-bubble); align-self: flex-end; border-bottom-right-radius: 2px; }
 
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            margin-bottom: 10px;
-            color: #95a5a6;
-        }
-
-        .input-area {
+        .controls {
+            padding: 20px;
+            background: #252525;
             display: flex;
             gap: 10px;
         }
@@ -87,177 +79,169 @@
         input {
             flex-grow: 1;
             padding: 12px;
-            border-radius: 5px;
-            border: none;
-            background: #0f3460;
+            border: 1px solid #444;
+            background: #121212;
             color: white;
-            font-size: 1rem;
+            border-radius: 8px;
+            outline: none;
         }
+
+        input:focus { border-color: var(--accent); }
 
         button {
-            padding: 10px 20px;
+            padding: 10px 25px;
             background: var(--accent);
             border: none;
-            color: white;
-            border-radius: 5px;
+            color: #000;
+            font-weight: bold;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
         }
 
-        button:hover {
-            filter: brightness(1.2);
+        .stats-bar {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-around;
         }
 
-        .item-info {
-            text-align: center;
-            font-weight: bold;
-            color: #f1c40f;
-            margin-bottom: 5px;
-        }
+        .highlight { color: var(--accent); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
     <div class="header">
-        <h2>Silas the Blacksmith</h2>
-        <div class="stats">
-            <span id="patience-display">Patience: 100%</span>
-            <span id="reputation-display">Mood: Neutral</span>
+        <h2 style="margin:0; color:var(--accent)">Master Trader Elara</h2>
+        <div class="stats-bar">
+            <span>Patience: <span id="patience">100</span>%</span>
+            <span>Interest: <span id="respect">Neutral</span></span>
         </div>
     </div>
 
-    <div class="item-info">Item: Ancient Dragon-Forged Dagger</div>
-    <div id="chat-window">
-        </div>
+    <div id="chat-area">
+        <div class="msg ai-msg">Greetings, traveler. This <span class="highlight">Emerald Amulet</span> is a rare find. I'm asking 500 gold for it. What say you?</div>
+    </div>
 
-    <div class="input-area">
-        <input type="number" id="player-offer" placeholder="Enter your gold offer...">
-        <button onclick="makeOffer()">Offer Gold</button>
+    <div class="controls">
+        <input type="text" id="player-input" placeholder="Type your offer or talk to her..." onkeypress="handleKey(event)">
+        <button onclick="processInput()">Speak</button>
     </div>
 </div>
 
 <script>
-    // --- GAME LOGIC STATE ---
-    const item = {
-        name: "Dragon-Forged Dagger",
-        baseValue: 100, // What he wants
-        cost: 60,       // The absolute minimum he can accept
-    };
-
-    let currentAsk = 150; // Starting price
+    // --- GAME DATA ---
+    const item = { name: "Emerald Amulet", startPrice: 500, floorPrice: 300 };
+    let currentAsk = 500;
     let patience = 100;
-    let turnCount = 0;
+    let respect = 50; // 0 to 100
     let gameOver = false;
 
-    const chatWindow = document.getElementById('chat-window');
-    const patienceDisplay = document.getElementById('patience-display');
+    function handleKey(e) { if(e.key === "Enter") processInput(); }
 
-    // --- INITIAL GREETING ---
-    window.onload = () => {
-        addMessage("shopkeeper", "Look, I haven't got all day. This blade is worth at least 150 gold. You want it or not?");
-    };
-
-    function addMessage(sender, text) {
-        const div = document.createElement('div');
-        div.className = `msg ${sender}-msg`;
-        div.innerText = text;
-        chatWindow.appendChild(div);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    function makeOffer() {
+    function processInput() {
         if(gameOver) return;
+        const inputField = document.getElementById('player-input');
+        const text = inputField.value.trim();
+        if(!text) return;
 
-        const input = document.getElementById('player-offer');
-        const offer = parseInt(input.value);
+        addMessage('player', text);
+        inputField.value = "";
 
-        if (isNaN(offer) || offer <= 0) {
-            alert("Enter a real amount of gold!");
-            return;
-        }
+        // ANALYZE SENTENCE
+        const detectedOffer = extractNumber(text);
+        const sentiment = analyzeSentiment(text);
 
-        addMessage("player", `I'll give you ${offer} gold for it.`);
-        input.value = "";
-        
-        processBargain(offer);
+        setTimeout(() => {
+            generateAIResponse(detectedOffer, sentiment);
+        }, 600);
     }
 
-    // --- THE "TALENT" ENGINE ---
-    function processBargain(offer) {
-        turnCount++;
+    function extractNumber(str) {
+        const match = str.match(/\d+/);
+        return match ? parseInt(match[0]) : null;
+    }
+
+    function analyzeSentiment(str) {
+        const s = str.toLowerCase();
+        let score = 0;
         
-        // 1. Check for immediate deal
-        if (offer >= currentAsk) {
-            addMessage("shopkeeper", `Sold! ${offer} gold. A fair price for fine steel. Don't cut yourself.`);
-            endGame("Success! You bought the item.");
-            return;
+        // Keywords that increase respect/patience
+        if(s.includes("beautiful") || s.includes("quality") || s.includes("fair") || s.includes("please")) score += 20;
+        // Keywords that decrease respect/patience
+        if(s.includes("scam") || s.includes("expensive") || s.includes("rip off") || s.includes("bad")) score -= 25;
+        // Logic words
+        if(s.includes("other shop") || s.includes("cheaper")) score -= 10;
+
+        return score;
+    }
+
+    function generateAIResponse(offer, sentiment) {
+        let response = "";
+        
+        // 1. Update Internal State based on sentiment
+        respect += sentiment;
+        patience -= 10; // Base decay per turn
+
+        // 2. Logic Branching
+        if (offer === null) {
+            if (sentiment > 0) response = "You have a kind tongue, but flattery doesn't pay my taxes. Give me a real number.";
+            else if (sentiment < 0) response = "If you don't like my prices, the door is right there. Are you going to buy it or just complain?";
+            else response = "I don't have all day for riddles. How much gold are you offering?";
+        } 
+        else if (offer >= currentAsk) {
+            response = `Done! At ${offer} gold, I'd be a fool to say no. The amulet is yours.`;
+            endGame(true);
+        }
+        else if (offer < item.floorPrice) {
+            patience -= 20;
+            response = offer < 100 ? "Are you mocking me? That's an insult!" : "That's far below my cost. I'd rather keep it.";
+        }
+        else {
+            // Intelligent counter-offering
+            // If they are polite (high respect), AI drops price faster
+            let discountFactor = respect > 60 ? 0.5 : 0.3;
+            let gap = currentAsk - offer;
+            currentAsk -= Math.floor(gap * discountFactor);
+            
+            if (sentiment > 0) response = `I like your attitude. I'll meet you part way... ${currentAsk} gold?`;
+            else response = `You're tight-fisted, aren't you? I can do ${currentAsk}, not a copper less.`;
         }
 
-        // 2. Logic: The "Lowball" Detection
-        if (offer < item.cost) {
-            patience -= 30;
-            updatePatience();
-            if (patience <= 0) {
-                addMessage("shopkeeper", "You're insulting me. Get out of my shop! We're done.");
-                endGame("Failed. You were kicked out.");
-                return;
-            }
-            addMessage("shopkeeper", getInsultResponse(offer));
-            return;
-        }
-
-        // 3. Logic: Strategic Counter-Offer
-        patience -= 10; // Every turn loses a bit of patience
-        updatePatience();
-
+        // Check for Game Over
         if (patience <= 0) {
-            addMessage("shopkeeper", "I'm tired of this back and forth. 150 gold or no deal. Goodbye.");
-            endGame("Negotiation collapsed.");
-            return;
+            response = "I've had enough of this. Get out of my sight!";
+            endGame(false);
         }
 
-        // The AI calculates a new price based on how close the player is
-        let gap = currentAsk - offer;
-        let drop = gap * 0.4; // AI is willing to drop 40% of the difference
-        currentAsk = Math.max(item.cost + 5, Math.floor(currentAsk - drop));
-
-        addMessage("shopkeeper", getCounterResponse(currentAsk));
+        updateUI();
+        addMessage('ai', response);
     }
 
-    function getInsultResponse(offer) {
-        const lines = [
-            `${offer}? This isn't a charity!`,
-            `I've seen spoons worth more than that offer.`,
-            `Are you trying to rob me? Raise your price or leave.`,
-            "Bah! My apprentice wouldn't even let you touch it for that price."
-        ];
-        return lines[Math.floor(Math.random() * lines.length)];
-    }
-
-    function getCounterResponse(price) {
-        const lines = [
-            `Hmm... I'll tell you what. Give me ${price} and it's yours.`,
-            `You drive a hard bargain. How about ${price}?`,
-            `I can't go lower than ${price}. Take it or leave it.`,
-            `Tell you what, ${price} is my best offer today.`
-        ];
-        return lines[Math.floor(Math.random() * lines.length)];
-    }
-
-    function updatePatience() {
-        patienceDisplay.innerText = `Patience: ${patience}%`;
-        if (patience < 40) patienceDisplay.style.color = "red";
-    }
-
-    function endGame(status) {
-        gameOver = true;
+    function addMessage(type, text) {
+        const area = document.getElementById('chat-area');
         const div = document.createElement('div');
-        div.style.textAlign = "center";
-        div.style.marginTop = "10px";
-        div.style.color = "#f1c40f";
-        div.innerHTML = `<strong>GAME OVER: ${status}</strong><br><button onclick="location.reload()">Try Again</button>`;
-        chatWindow.appendChild(div);
+        div.className = `msg ${type}-msg`;
+        div.innerText = text;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function updateUI() {
+        document.getElementById('patience').innerText = Math.max(0, patience);
+        let mood = "Neutral";
+        if (respect > 70) mood = "Friendly";
+        if (respect < 30) mood = "Annoyed";
+        document.getElementById('respect').innerText = mood;
+    }
+
+    function endGame(won) {
+        gameOver = true;
+        setTimeout(() => {
+            alert(won ? "Success! You secured the item." : "Failed! You were kicked out.");
+            location.reload();
+        }, 1000);
     }
 </script>
 
