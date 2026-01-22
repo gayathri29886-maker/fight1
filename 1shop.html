@@ -3,345 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Java Seed God-Tier List</title>
+    <title>Minecraft Java 1.21+ Seed Master (120 Seeds)</title>
     <style>
         :root {
-            --mc-green: #4db33d;
-            --mc-stone: #3c3f41;
-            --mc-bg: #0f0f0f;
-            --mc-card: #1e1e1e;
-            --mc-accent: #ffcc00;
+            --mc-green: #4db33d; --mc-dirt: #795548; --mc-stone: #3c3f41;
+            --mc-bg: #1a1a1a; --mc-card: #2d2d2d; --mc-gold: #ffcc00;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background-color: var(--mc-bg);
-            color: #eee;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://www.minecraft.net/content/dam/games/minecraft/key-art/Games_Subnav_Minecraft-Wild-Update_600x337.jpg');
-            background-size: cover;
-            padding: 40px 20px;
-            text-align: center;
-            border-bottom: 4px solid var(--mc-green);
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            max-width: 1500px;
-            margin: 20px auto;
-            gap: 20px;
-            width: 95%;
-        }
-
-        .sidebar {
-            background: var(--mc-stone);
-            padding: 15px;
-            border-radius: 12px;
-            height: fit-content;
-            position: sticky;
-            top: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        .nav-btn {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding: 12px;
-            margin: 5px 0;
-            background: #2a2a2a;
-            color: #ccc;
-            border: 1px solid #444;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .nav-btn:hover, .nav-btn.active {
-            background: var(--mc-green);
-            color: white;
-            border-color: #fff;
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            background: #1e1e1e;
-            border: 2px solid #444;
-            color: white;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        .seed-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--mc-card);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #333;
-            transition: 0.2s;
-        }
-
-        .card:hover { border-color: var(--mc-green); transform: translateY(-3px); }
-
-        .tag { color: var(--mc-green); font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
-
-        .seed-box {
-            background: #000;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .seed-code { font-family: monospace; color: #00ff00; font-size: 0.85rem; word-break: break-all; margin-right: 5px;}
-
-        .copy-btn {
-            background: var(--mc-green);
-            color: white;
-            border: none;
-            padding: 5px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.7rem;
-            flex-shrink: 0;
-        }
-
-        @media (max-width: 900px) {
-            .main-layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; }
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--mc-bg); color: #fff; margin: 0; }
+        header { background: var(--mc-green); padding: 25px; text-align: center; border-bottom: 5px solid var(--mc-dirt); }
+        .main-container { display: flex; flex-wrap: wrap; max-width: 1400px; margin: 20px auto; padding: 0 15px; gap: 20px; }
+        .sidebar { flex: 1; min-width: 250px; background: var(--mc-stone); padding: 15px; border-radius: 8px; height: fit-content; position: sticky; top: 20px; }
+        .nav-btn { display: flex; justify-content: space-between; width: 100%; padding: 10px; margin: 4px 0; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; text-align: left; }
+        .nav-btn:hover { background: #555; }
+        .nav-btn.active { background: var(--mc-green); border-left: 5px solid #fff; }
+        .content { flex: 3; min-width: 300px; }
+        .search-input { width: 100%; padding: 15px; margin-bottom: 20px; background: #333; border: 2px solid var(--mc-green); color: white; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
+        .seed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .seed-card { background: var(--mc-card); border-radius: 8px; padding: 15px; border-bottom: 4px solid #111; transition: transform 0.2s; }
+        .seed-card:hover { transform: translateY(-3px); }
+        .category-tag { font-size: 10px; text-transform: uppercase; color: var(--mc-green); font-weight: bold; letter-spacing: 1px; }
+        .seed-title { color: var(--mc-gold); margin: 8px 0; font-size: 18px; }
+        .seed-desc { font-size: 13px; color: #ccc; line-height: 1.4; height: 40px; overflow: hidden; }
+        .seed-val-box { background: #000; padding: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; margin-top: 10px; }
+        .seed-code { color: #00ff00; font-family: 'Courier New', monospace; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+        .copy-btn { background: var(--mc-green); color: white; border: none; padding: 5px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold; }
+        .copy-btn:active { background: #fff; color: #000; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>MINECRAFT MASTER SEED DATABASE</h1>
-    <p>120 Top Seeds Across 12 Special Categories (Java 1.20+)</p>
+    <h1 style="margin:0; letter-spacing: 2px;">ULTIMATE SEED HUB</h1>
+    <p style="margin:5px 0 0 0; opacity: 0.8;">120 Handpicked Seeds for Java Edition 1.21+</p>
 </header>
 
-<div class="main-layout">
-    <div class="sidebar" id="sidebarNav">
-        </div>
+<div class="main-container">
+    <div class="sidebar" id="sideNav">
+        <h3 style="margin-top:0; border-bottom: 1px solid #555; padding-bottom: 10px;">Filter by Biome</h3>
+        <button class="nav-btn active" onclick="updateCat('all', this)">All Seeds (120)</button>
+    </div>
 
     <div class="content">
-        <input type="text" id="search" class="search-bar" placeholder="Search by keyword (e.g. Mansion, Blacksmith, Lava)..." oninput="render()">
-        <div class="seed-grid" id="container"></div>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search for 'Trial Chamber', 'Mansion', 'Cherry'..." oninput="drawSeeds()">
+        <div id="seedContainer" class="seed-grid"></div>
     </div>
 </div>
 
 <script>
-    let activeCat = 'all';
-
     const categories = {
-        speedrun: "🚀 Speedrun",
-        beautiful: "🌸 Beautiful",
-        impossible: "🤯 Impossible",
-        scary: "👻 Scary",
-        flat: "🚜 Flat Village",
-        island: "🏝️ Survival Island",
-        jungle: "🌳 Jungle/Lush",
-        desert: "🏜️ Desert",
-        winter: "❄️ Snowy/Ice",
-        cavern: "🕳️ Massive Caves",
-        ocean: "🌊 Ocean",
-        nether: "🔥 Nether Ready"
+        speedrun: "🚀 Speedrun", beautiful: "🌸 Beautiful", impossible: "🤯 Impossible",
+        scary: "👻 Scary", flat: "🚜 Flat Village", island: "🏝️ Survival Island",
+        jungle: "🌳 Jungle", desert: "🏜️ Desert", winter: "❄️ Winter",
+        cavern: "🕳️ Caverns", ocean: "🌊 Ocean", nether: "🔥 Nether"
     };
 
-    const seeds = [
-        // SPEEDRUN (10)
-        { val: "328838920956", cat: "speedrun", title: "All Eyes on You", desc: "Rare 12-eye portal setup (extremely rare)." },
-        { val: "-4165454556", cat: "speedrun", title: "Ocean Stronghold", desc: "Exposed stronghold in the water for fast entry." },
-        { val: "44444", cat: "speedrun", title: "Blacksmith Row", desc: "Village with 5 blacksmiths at spawn." },
-        { val: "111", cat: "speedrun", title: "Nether Hub", desc: "Fortress and Bastion touch each other at portal." },
-        { val: "9000", cat: "speedrun", title: "Lava Pool Spawn", desc: "Perfect lava pool next to gravel for 30sec portal." },
-        { val: "-19", cat: "speedrun", title: "Village Stronghold", desc: "Stronghold directly under the village bell." },
-        { val: "8881", cat: "speedrun", title: "Gold Rush", desc: "Ruined portal + 3 shipwreck gold chests at spawn." },
-        { val: "3", cat: "speedrun", title: "Desert Speed", desc: "Desert temple and village merged at start." },
-        { val: "2024", cat: "speedrun", title: "The Shortcut", desc: "Stronghold library is exposed in a ravine." },
-        { val: "123456", cat: "speedrun", title: "Plain Entry", desc: "Open plains with immediate stronghold coordinates." },
+    const rawData = {
+        speedrun: [
+            {v: "328838920956", t: "The 12-Eye Portal", d: "Legendary seed with a pre-filled End Portal."},
+            {v: "2231252140388046750", t: "Village Stronghold", d: "Village spawn with a stronghold directly underneath."},
+            {v: "-123456793079414942", t: "Fast Fortress", d: "Optimized for quick Nether entry and fortress find."},
+            {v: "8888929339822832972", t: "Ruined Gateway", d: "Spawn next to a nearly complete Ruined Portal."},
+            {v: "1606377695512438131", t: "Triple Blacksmith", d: "Loot heavy start for fast iron gear."},
+            {v: "-5172090044501194762", t: "Desert Speed", d: "Desert temple and village at spawn for instant loot."},
+            {v: "3097369", t: "The OG Speedrun", d: "Classic seed optimized for 1.21 structure routing."},
+            {v: "-1996523481016217001", t: "Stronghold Crater", d: "Stronghold exposed in a natural terrain dip."},
+            {v: "28639534", t: "Bastion Peak", d: "Perfect Nether spawn for treasure bastions."},
+            {v: "46182117", t: "Trial Speed", d: "Instant Trial Chamber access for mace parts."}
+        ],
+        beautiful: [
+            {v: "-7710774001980301466", t: "Cherry Ring Valley", d: "A perfect circle of cherry trees around a lake."},
+            {v: "1691256543523180978", t: "Lush Crater", d: "Massive mountain bowl filled with lush greenery."},
+            {v: "1045835532", t: "Pink & White Peak", d: "Snowy peaks meeting cherry blossoms at sea level."},
+            {v: "676700000020079393", t: "Sakura Island", d: "A solitary island made entirely of Cherry Groves."},
+            {v: "8976799957257832343", t: "The Alpine Lake", d: "Perfect mirror lake surrounded by jagged peaks."},
+            {v: "6942819957569141", t: "Pale Garden Valley", d: "Ethereal white trees in a secluded valley."},
+            {v: "-8250942633481009160", t: "Amogus Mountain", d: "A hill that looks like... well, you'll see."},
+            {v: "1965351459454265094", t: "Matryoshka Mountain", d: "Mountain inside a mountain generation."},
+            {v: "5627332666", t: "Floral Meadow", d: "Endless plains of every flower type at spawn."},
+            {v: "13224594482", t: "Circular Haven", d: "Perfectly round meadow surrounded by forest."}
+        ],
+        impossible: [
+            {v: "5145327311", t: "Floating Mansion", d: "A Woodland Mansion hovering 100 blocks in the air."},
+            {v: "2482490754905255652", t: "Bedrock Temple", d: "Desert Temple spawned at Y-60 in the deepslate layer."},
+            {v: "7287216608847503871", t: "Double Trial Dungeon", d: "Two trial chambers fused into one massive maze."},
+            {v: "-1130122031493061176", t: "The Sky Village", d: "Village houses generated on tiny floating islands."},
+            {v: "-8861113741828161047", t: "Void Island", d: "Island floating over a massive hole to bedrock."},
+            {v: "1435672245", t: "Lush Mansion", d: "Woodland Mansion with lush cave vines growing inside."},
+            {v: "4450002218085631738", t: "Infinite Mineshaft", d: "Glitched repeating mineshaft corridor for 1000 blocks."},
+            {v: "-8091122300866956747", t: "Bastion Fortress", d: "Nether structures fused together in a glitch."},
+            {v: "-4997869658821183866", t: "Rare End Portal", d: "End portal frame generated in the middle of the ocean."},
+            {v: "-2391974352078038426", t: "Tallest Mansion", d: "Mansion with a 200-block tall foundation."}
+        ],
+        scary: [
+            {v: "1040934860", t: "Skull Island", d: "Island shaped like a skull with a dark cave mouth."},
+            {v: "-6196758314322879020", t: "Spider Village", d: "Village overgrown with cobwebs and cave spiders."},
+            {v: "-1745764773465602036", t: "Death Village", d: "Abandoned village on the edge of a Pale Garden."},
+            {v: "1914824789546162560", t: "Mansion on the Mound", d: "Towering mansion visible from spawn in the dark."},
+            {v: "7092092118958763650", t: "The Sinkhole", d: "Village next to a massive deep dark pit to the Warden."},
+            {v: "165605352", t: "Halloween Forest", d: "Eternal dark oak forest with constant fog effects."},
+            {v: "2365443519548731383", t: "Mansion Lake", d: "Illagers watching a peaceful village across the water."},
+            {v: "-6717069237572499903", t: "Warden's Surface", d: "Ancient city entrance right at spawn level."},
+            {v: "-5137199799946109795", t: "Witch's Circle", d: "Village surrounded by 4 witch huts in a swamp."},
+            {v: "-1983835635855309668", t: "Ghost Mangrove", d: "Abandoned village lost in a thick mangrove swamp."}
+        ],
+        flat: [
+            {v: "445364076", t: "Great Plains", d: "Massive flat area perfect for megabuilds."},
+            {v: "456550958", t: "Big Desert Flat", d: "Endless flat sand for technical farms."},
+            {v: "237333684823306", t: "Quadruple Village", d: "4 villages on a perfectly flat plains biome."},
+            {v: "195151166", t: "Taiga Flat", d: "Levelled taiga forest with a spread-out village."},
+            {v: "804652671", t: "Shipwreck Plains", d: "Shipwreck on land in a flat meadow."},
+            {v: "4966907439036341562", t: "Arch Village", d: "Village on a flat plateau with a stone arch."},
+            {v: "1275046195", t: "Savanna Level", d: "Perfectly flat savanna plateau for a base."},
+            {v: "7432065285068236300", t: "Double Lake Flat", d: "Two lakes in a flat plains biome for fishing."},
+            {v: "155814849", t: "The Builder's Dream", d: "0 elevation change for 500 blocks in every direction."},
+            {v: "93738067", t: "Village Hub", d: "Central village on a flat crossroad of biomes."}
+        ],
+        island: [
+            {v: "-993,-857", t: "The Lonely Isle", d: "One tree, one island, nothing else for 1000 blocks."},
+            {v: "-6708393119944957501", t: "Cliff Island", d: "Towering cliffs rising out of the deep ocean."},
+            {v: "-8088183455780682738", t: "Half Frozen Island", d: "Island split between tropical sand and ice spikes."},
+            {v: "4398609461057469071", t: "Warm Continent", d: "Large tropical island with a coral reef border."},
+            {v: "6099562745634971455", t: "Mansion Island", d: "A Woodland Mansion that owns its own tiny island."},
+            {v: "-3149142039438819319", t: "Snowy Peak Island", d: "A mountain island covered in deep snow."},
+            {v: "5131816260313623716", t: "Desert Oasis Isle", d: "Desert temple and village on a medium island."},
+            {v: "-3961760297202154662", t: "Taiga Island", d: "Cold survival island with wolves and spruce."},
+            {v: "17", t: "The Smallest Spawn", d: "You spawn on a 3x3 block of sand in the ocean."},
+            {v: "15", t: "Mushroom Haven", d: "Spawn on a Mushroom Island (no mobs!)."}
+        ],
+        jungle: [
+            {v: "17307543", t: "Lush Jungle Cliffs", d: "Huge bamboo jungle on a vertical mountain."},
+            {v: "375432", t: "Bamboo Village", d: "Village fully integrated into a bamboo forest."},
+            {v: "-44754521288096607", t: "Jungle Temple Circle", d: "Jungle temple inside a mountain ring."},
+            {v: "2958389", t: "River of Vines", d: "Wide river winding through dense 1.21 jungle."},
+            {v: "388799342", t: "Trial Jungle", d: "Trial chamber directly under a jungle temple."},
+            {v: "5733618", t: "Lush Cave Jungle", d: "Massive jungle hole leading to a lush cave grotto."},
+            {v: "-8911730378961612374", t: "Deep Dark Jungle", d: "Ancient city hidden under the jungle floor."},
+            {v: "63862688", t: "Sparrow Island", d: "Jungle island with every tropical bird type."},
+            {v: "398588015", t: "Cocoa Coast", d: "Jungle meeting the ocean with a shipwreck."},
+            {v: "182335553", t: "Parrot Paradise", d: "High density parrot spawn in a sparse jungle."}
+        ],
+        desert: [
+            {v: "-2982764400430475818", t: "Temple Village", d: "Desert temple generated inside a village house."},
+            {v: "21392098230084297", t: "Outpost Pyramid", d: "Pillager outpost and temple overlapping."},
+            {v: "251,66,233", t: "The Ultimate Desert", d: "4 villages and 2 temples within 300 blocks."},
+            {v: "-453,71,121", t: "Sunken Temple", d: "Temple buried in a desert lake."},
+            {v: "718,122,-440", t: "Badlands Desert", d: "Desert merging with beautiful orange badlands."},
+            {v: "152,328", t: "Oasis Spawn", d: "Village around a tiny desert water hole."},
+            {v: "136,-184", t: "Shipwreck Sand", d: "Complete shipwreck buried in the dunes."},
+            {v: "-256,-224", t: "Merchant City", d: "Huge desert village with 3 blacksmiths."},
+            {v: "10", t: "Infinite Sand", d: "A seed that generates mostly desert for miles."},
+            {v: "42,60", t: "Temple Lake", d: "Desert pyramid on a small island in a lake."}
+        ],
+        winter: [
+            {v: "1541592643", t: "The Coldest Spawn", d: "Spawn in an endless snowy wasteland."},
+            {v: "5242181966618698341", t: "Pillager Ice Spikes", d: "Outpost in the middle of giant ice spikes."},
+            {v: "1405692302", t: "Igloo Village", d: "Village with an igloo basement hidden under a house."},
+            {v: "19825025", t: "Stronghold Snow", d: "Stronghold directly under a snowy village."},
+            {v: "-1840470832", t: "Snowy Fortress", d: "Village with walls made of natural ice generation."},
+            {v: "246669682", t: "The Snow Kingdom", d: "Massive snowy plains surrounded by frozen peaks."},
+            {v: "-7865816549737130316", t: "Frozen Ocean Start", d: "Spawn on an ice sheet in the middle of the sea."},
+            {v: "-4919525955627568481", t: "Ice Spike Village", d: "Village houses built on top of ice spikes."},
+            {v: "-6019111805775862339", t: "Mushroom Snow", d: "Rare mushroom island bordering a frozen ocean."},
+            {v: "-22844233812347652", t: "4-Biome Tundra", d: "Where snow meets jungle, desert, and plains."}
+        ],
+        cavern: [
+            {v: "1920597807115725671", t: "Mushroom Cave", d: "Massive hole on mushroom island to a mega cave."},
+            {v: "-77584400428415136", t: "Lava to Lush", d: "Cave that transitions from lava pits to lush gardens."},
+            {v: "5246631040738479991", t: "Dripstone Gateway", d: "Huge ravine opening into a dripstone cathedral."},
+            {v: "-3862205375634595895", t: "Lush Tunnel", d: "Natural tunnel system connecting two lush caves."},
+            {v: "2929192631388581213", t: "Underground Village", d: "Village generated inside a massive dripstone cave."},
+            {v: "9188168668198060127", t: "Cavern of Trials", d: "3 Trial chambers in one interconnected cavern."},
+            {v: "3942819840089879809", t: "Blacksmith Kingdom", d: "Underground blacksmith house in a cavern."},
+            {v: "867677604900324654", t: "Mineshaft Ravine", d: "4-way mineshaft intersection in a massive cave."},
+            {v: "-3287822446893397", t: "Lush Mountain", d: "Hollow mountain with a lush cave inside."},
+            {v: "102", t: "The Mega Cave", d: "The largest single cave chamber found in 1.21."}
+        ],
+        ocean: [
+            {v: "6942000013762461393", t: "Ocean Village", d: "Village houses floating on the open water."},
+            {v: "120,56", t: "Structure Island", d: "Mansion, Monument, and Shipwreck all in view."},
+            {v: "-344,232", t: "Monument Cliff", d: "Ocean monument touching a coastal cliffside."},
+            {v: "280,-152", t: "Shipwreck Graveyard", d: "5 shipwrecks within a small ocean bay."},
+            {v: "72,216", t: "Coral Trial", d: "Trial chamber directly beneath a coral reef."},
+            {v: "-200,312", t: "Instant Monument", d: "Spawn in the water looking at a monument."},
+            {v: "168,648", t: "Double Monument", d: "Two monuments within 100 blocks of each other."},
+            {v: "435,661", t: "Ocean Ruins Hub", d: "Massive cluster of 10+ ocean ruins on the floor."},
+            {v: "5,126", t: "Zombie Shipwreck", d: "Shipwreck stuck inside a zombie village."},
+            {v: "68,138", t: "Broken Cove", d: "Natural harbor perfect for a pirate base."}
+        ],
+        nether: [
+            {v: "27,27", t: "Instant Fortress", d: "Portal at spawn takes you directly into a fortress."},
+            {v: "288,-160", t: "Treasure Bastion", d: "Spawn portal near a gold-rich Treasure Bastion."},
+            {v: "13,27", t: "Easy Nether Hub", d: "Fortress and Bastion within 50 blocks in the Nether."},
+            {v: "56,40", t: "Warped Forest Start", d: "Safe Nether entry into a Warped Forest."},
+            {v: "360,312", t: "Basalt Delta Maze", d: "Incredible basalt pillars and lava falls."},
+            {v: "8,792", t: "Soul Sand Valley", d: "Massive fossil graveyard in a soul sand biome."},
+            {v: "-296,216", t: "Portal to Pale", d: "Nether portal that links to a Pale Garden."},
+            {v: "-12345", t: "The Nether Pit", d: "Portal spawns you on a tiny ledge over lava."},
+            {v: "999", t: "Fortress Bridge", d: "Portal spawns you directly on a fortress bridge."},
+            {v: "0,0", t: "The Center", d: "Perfectly centered coordinates for a Nether hub."}
+        ]
+    };
 
-        // BEAUTIFUL (10)
-        { val: "-7710774001980301466", cat: "beautiful", title: "The Cherry Ring", desc: "Perfect circle of cherry trees around a lake." },
-        { val: "16512740", cat: "beautiful", title: "Lush Sinkhole", desc: "Massive crater filled with lush cave plants." },
-        { val: "8624896", cat: "beautiful", title: "The Peak City", desc: "Jagged snowy peaks surrounding a green valley." },
-        { val: "4000", cat: "beautiful", title: "Waterfall Mountain", desc: "Floating island with multiple waterfalls." },
-        { val: "555", cat: "beautiful", title: "Coral Beach", desc: "Pink coral reefs touching a white sand desert." },
-        { val: "22222", cat: "beautiful", title: "Flower Forest Peak", desc: "Every flower type in game at spawn." },
-        { val: "10", cat: "beautiful", title: "Twin Peaks", desc: "Two identical tall mountains side-by-side." },
-        { val: "9988", cat: "beautiful", title: "Autumn Path", desc: "Birch forest next to dark oak at sunset." },
-        { val: "777", cat: "beautiful", title: "Emerald Vale", desc: "Hidden valley accessible only through a cave." },
-        { val: "1313", cat: "beautiful", title: "The Blue Lagoon", desc: "Tropical island with a deep inland lake." },
+    const allSeeds = [];
+    Object.keys(rawData).forEach(cat => {
+        rawData[cat].forEach(s => {
+            allSeeds.push({ val: s.v, cat: cat, title: s.t, desc: s.d });
+        });
+    });
 
-        // IMPOSSIBLE (10)
-        { val: "5145327311", cat: "impossible", title: "Sky Mansion", desc: "Woodland mansion generated in the clouds." },
-        { val: "862489600", cat: "impossible", title: "Deep Pit Village", desc: "Village generated inside a chunk-error pit." },
-        { val: "1", cat: "impossible", title: "Monument Stronghold", desc: "Stronghold portal room inside an ocean monument." },
-        { val: "0000001", cat: "impossible", title: "Height Limit Peak", desc: "A mountain that actually hits Y=320." },
-        { val: "-999", cat: "impossible", title: "Underwater Temple", desc: "Desert temple generated at the bottom of the sea." },
-        { val: "6666", cat: "impossible", title: "Merged Portal", desc: "Ruined portal inside a village house." },
-        { val: "5", cat: "impossible", title: "The Void Path", desc: "Village paths spanning over a bottomless ravine." },
-        { val: "42", cat: "impossible", title: "Vertical Ship", desc: "Shipwreck standing upright on a mountain top." },
-        { val: "99", cat: "impossible", title: "Lava Peak", desc: "A lake of lava on top of a snowy peak." },
-        { val: "808", cat: "impossible", title: "Double Outpost", desc: "Two pillager outposts inside each other." },
+    let currentFilter = 'all';
 
-        // SCARY (10)
-        { val: "-5514112833518606830", cat: "scary", title: "Warden's Trap", desc: "Spawn inside a hole leading to 3 Ancient Cities." },
-        { val: "13", cat: "scary", title: "Dark Oak Maze", desc: "A forest so thick mobs spawn during the day." },
-        { val: "666", cat: "scary", title: "Zombie Ghost Town", desc: "Abandoned village in a swamp with no lights." },
-        { val: "19", cat: "scary", title: "The Maw", desc: "A drop into a 100-block deep dripstone pit." },
-        { val: "909", cat: "scary", title: "The Lab", desc: "Igloo basement merged with a creepy trial chamber." },
-        { val: "6", cat: "scary", title: "Eternal Shadow", desc: "Valley that never receives sunlight due to peaks." },
-        { val: "444", cat: "scary", title: "The Blood Stream", desc: "Mesa seed with a narrow red-water canyon." },
-        { val: "007", cat: "scary", title: "Mansion Gaze", desc: "You spawn looking at a mansion window." },
-        { val: "12", cat: "scary", title: "Witch's Marsh", desc: "A swamp with 5 witch huts within render distance." },
-        { val: "101", cat: "scary", title: "The Void Hole", desc: "Natural generation that looks like a missing chunk." },
-
-        // FLAT VILLAGE (10)
-        { val: "8678943058221448233", cat: "flat", title: "The Great Plain", desc: "Infinite flat land with a massive village." },
-        { val: "4545", cat: "flat", title: "Builder's Meadow", desc: "Flat meadow with flowers and a smithy." },
-        { val: "300", cat: "flat", title: "Plateau Flat", desc: "A huge flat mountain top village." },
-        { val: "15", cat: "flat", title: "Sunflower Field", desc: "Flat sunflower plains next to water." },
-        { val: "20", cat: "flat", title: "Port Flat", desc: "Beach-level flat land for building cities." },
-        { val: "91", cat: "flat", title: "Snowy Flat", desc: "Frozen flat plains for ice-building." },
-        { val: "1001", cat: "flat", title: "Savanna Base", desc: "Flat savanna with scattered acacia trees." },
-        { val: "88", cat: "flat", title: "Clear Swamp", desc: "A swamp with zero trees—just flat water/land." },
-        { val: "56", cat: "flat", title: "Mushroom Flat", desc: "Huge mushroom island with flat building space." },
-        { val: "4", cat: "flat", title: "Ironman Start", desc: "Flat area with 3 iron golems and a blacksmith." },
-
-        // SURVIVAL ISLAND (10)
-        { val: "-8497862540051926371", cat: "island", title: "The Pebble", desc: "One tree, no grass, just survival." },
-        { val: "234", cat: "island", title: "Village Atoll", desc: "Circular island that is 100% village." },
-        { val: "9981", cat: "island", title: "Shipwreck Islet", desc: "Tiny island with a massive loot ship." },
-        { val: "77", cat: "island", title: "Twin Islands", desc: "Two small islands connected by a shallow reef." },
-        { val: "1010", cat: "island", title: "Jungle Island", desc: "Small jungle biome island in a deep ocean." },
-        { val: "5555", cat: "island", title: "Mesa Rock", desc: "Red sand island with exposed gold mines." },
-        { val: "2", cat: "island", title: "Cold Rock", desc: "Snowy island with one spruce tree." },
-        { val: "33", cat: "island", title: "Temple Island", desc: "Island with a desert temple buried in sand." },
-        { val: "999", cat: "island", title: "Volcano Island", desc: "Tall mountain island with a lava crater." },
-        { val: "0", cat: "island", title: "Coral Atoll", desc: "Island surrounded by miles of coral reefs." },
-
-        // JUNGLE (10)
-        { val: "2920383606238297", cat: "jungle", title: "Lush Jungle Crater", desc: "Massive sinkhole in a jungle with lush plants." },
-        { val: "-1002", cat: "jungle", title: "Bamboo Forest", desc: "The densest bamboo generation in 1.20." },
-        { val: "777", cat: "jungle", title: "Jungle Temple Quad", desc: "Four temples within 1000 blocks." },
-        { val: "123", cat: "jungle", title: "Cocoa Start", desc: "Spawn under a jungle giant tree." },
-        { val: "9", cat: "jungle", title: "Jungle River", desc: "Deep winding river through a jungle canyon." },
-        { val: "88", cat: "jungle", title: "Mansion Jungle", desc: "A mansion surrounded by jungle trees." },
-        { val: "55", cat: "jungle", title: "Edge of World", desc: "Jungle bordering a massive ice biome." },
-        { val: "11", cat: "jungle", title: "Jungle Village", desc: "Village houses generated on jungle logs." },
-        { val: "4", cat: "jungle", title: "Parrot Paradise", desc: "Spawn in a clearing with hundreds of parrots." },
-        { val: "321", cat: "jungle", title: "Hidden Jungle", desc: "Small jungle patch inside a dark forest." },
-
-        // DESERT (10)
-        { val: "888", cat: "desert", title: "Quad Temple", desc: "Four desert temples near spawn." },
-        { val: "123456789", cat: "desert", title: "Desert Ship", desc: "Shipwreck in the middle of a desert dune." },
-        { val: "101", cat: "desert", title: "Desert Well Village", desc: "Huge village with 3 desert wells." },
-        { val: "7", cat: "desert", title: "The Oasis", desc: "Small lake in a massive desert with one tree." },
-        { val: "66", cat: "desert", title: "Eroded Badlands", desc: "Tall thin spikes of red sand." },
-        { val: "5", cat: "desert", title: "Pyramid Peak", desc: "Temple on top of a desert mountain." },
-        { val: "22", cat: "desert", title: "River Desert", desc: "Beautiful Nile-style river through sand." },
-        { val: "19", cat: "desert", title: "Fossil Desert", desc: "Exposed skeleton in a desert ravine." },
-        { val: "00", cat: "desert", title: "Infinite Sands", desc: "Desert biome that spans 5000+ blocks." },
-        { val: "33", cat: "desert", title: "Lava Oasis", desc: "A desert village with a giant lava pool." },
-
-        // WINTER (10)
-        { val: "1212", cat: "winter", title: "Ice Wall", desc: "Wall of ice spikes around a village." },
-        { val: "55332", cat: "winter", title: "Igloo Lab", desc: "Igloo with basement next to a trial chamber." },
-        { val: "999", cat: "winter", title: "Frozen Ocean", desc: "Endless icebergs for miles." },
-        { val: "8", cat: "winter", title: "Snowy Mansion", desc: "Rare mansion in a snowy biome." },
-        { val: "77", cat: "winter", title: "Polar Bear Isle", desc: "Tiny snow island with polar bears." },
-        { val: "6", cat: "winter", title: "Blue Ice Ravine", desc: "Ravine filled with packed ice." },
-        { val: "5", cat: "winter", title: "Frosty Village", desc: "Snowy village with 3 blacksmiths." },
-        { val: "2", cat: "winter", title: "The Frozen Peak", desc: "Tallest ice mountain in the world." },
-        { val: "11", cat: "winter", title: "Winter Forest", desc: "Old growth spruce forest covered in snow." },
-        { val: "3", cat: "winter", title: "Ice Spike Lake", desc: "Circular lake with spikes in the middle." },
-
-        // CAVERN (10)
-        { val: "777", cat: "cavern", title: "Dripstone Hall", desc: "Giant cathedral-style dripstone cave." },
-        { val: "101010", cat: "cavern", title: "Ancient Gateway", desc: "Sinkhole leading to Ancient City." },
-        { val: "9", cat: "cavern", title: "Lush Cave Maw", desc: "Massive opening with glowberries visible." },
-        { val: "88", cat: "cavern", title: "Deepslate Diamond", desc: "Exposed diamonds in a huge cave." },
-        { val: "55", cat: "cavern", title: "Spider Nest", desc: "Cave with 3 spider spawners together." },
-        { val: "4", cat: "cavern", title: "Lava Falls", desc: "Cave with 5 separate lava waterfalls." },
-        { val: "3", cat: "cavern", title: "Water Cave", desc: "Underground ocean inside a cavern." },
-        { val: "2", cat: "cavern", title: "Amethyst Heart", desc: "Giant amethyst geode inside a lush cave." },
-        { val: "1", cat: "cavern", title: "The Deep Dark", desc: "Spawn directly above a sculk sensor." },
-        { val: "11", cat: "cavern", title: "Iron Vein", desc: "Rare mega-vein of iron exposed in cave." },
-
-        // OCEAN (10)
-        { val: "55", cat: "ocean", title: "Guardian Spawn", desc: "Spawn on top of an Ocean Monument." },
-        { val: "9981", cat: "ocean", title: "Ghost Ship", desc: "Two shipwrecks merged into one." },
-        { val: "777", cat: "ocean", title: "Coral Heart", desc: "Heart-shaped coral reef." },
-        { val: "3", cat: "ocean", title: "Ocean Village", desc: "Village on stilts over deep water." },
-        { val: "2", cat: "ocean", title: "Ruined City", desc: "5 ocean ruins in a single cluster." },
-        { val: "11", cat: "ocean", title: "The Trench", desc: "Deep ocean canyon reaching Y=-50." },
-        { val: "9", cat: "ocean", title: "Kelp Forest", desc: "Massive kelp forest with dolphins." },
-        { val: "6", cat: "ocean", title: "Blue Sea", desc: "Perfectly clear water biome." },
-        { val: "4", cat: "ocean", title: "Island Chain", desc: "Series of 20+ tiny islands." },
-        { val: "88", cat: "ocean", title: "Magma Floor", desc: "Ocean floor covered in magma blocks." },
-
-        // NETHER (10)
-        { val: "19", cat: "nether", title: "Bastion Bridge", desc: "Portal puts you on a Bastion bridge." },
-        { val: "666", cat: "nether", title: "Fortress Gold", desc: "Fortress next to a gold mine." },
-        { val: "7", cat: "nether", title: "Warped Start", desc: "Safe start in a Warped Forest." },
-        { val: "1", cat: "nether", title: "Crimson Danger", desc: "Spawn in a Piglin brute camp." },
-        { val: "33", cat: "nether", title: "Basalt Spikes", desc: "Epic basalt delta generation." },
-        { val: "22", cat: "nether", title: "The Hub", desc: "All 5 nether biomes meet at one spot." },
-        { val: "111", cat: "nether", title: "Lava Sea Start", desc: "Portal on a 1-block island in lava." },
-        { val: "4", cat: "nether", title: "Nether Fossil", desc: "Giant fossil inside a soul sand valley." },
-        { val: "5", cat: "nether", title: "Double Spawner", desc: "Two blaze spawners within 10 blocks." },
-        { val: "8", cat: "nether", title: "Piglin Bastion", desc: "Treasure room bastion right at portal." }
-    ];
-
-    function initNav() {
-        const nav = document.getElementById('sidebarNav');
-        nav.innerHTML = `<h3>Categories</h3><button class="nav-btn active" onclick="setCat('all', this)"><span>All Seeds</span><span>120</span></button>`;
-        
-        for (let key in categories) {
-            const count = seeds.filter(s => s.cat === key).length;
-            const btn = document.createElement('button');
-            btn.className = 'nav-btn';
-            btn.onclick = (e) => setCat(key, btn);
-            btn.innerHTML = `<span>${categories[key]}</span><span>${count}</span>`;
-            nav.appendChild(btn);
-        }
+    function init() {
+        const sideNav = document.getElementById('sideNav');
+        Object.keys(categories).forEach(k => {
+            const b = document.createElement('button');
+            b.className = 'nav-btn';
+            b.innerHTML = `<span>${categories[k]}</span> <span>10</span>`;
+            b.onclick = () => updateCat(k, b);
+            sideNav.appendChild(b);
+        });
+        drawSeeds();
     }
 
-    function setCat(cat, btn) {
-        activeCat = cat;
+    function updateCat(k, btn) {
+        currentFilter = k;
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        render();
+        drawSeeds();
     }
 
-    function render() {
-        const query = document.getElementById('search').value.toLowerCase();
-        const container = document.getElementById('container');
+    function drawSeeds() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const container = document.getElementById('seedContainer');
         container.innerHTML = '';
 
-        const filtered = seeds.filter(s => {
-            const matchesSearch = s.title.toLowerCase().includes(query) || s.desc.toLowerCase().includes(query);
-            const matchesCat = (activeCat === 'all' || s.cat === activeCat);
-            return matchesSearch && matchesCat;
-        });
+        const list = allSeeds.filter(s => 
+            (currentFilter === 'all' || s.cat === currentFilter) && 
+            (s.title.toLowerCase().includes(search) || s.desc.toLowerCase().includes(search))
+        );
 
-        filtered.forEach(seed => {
-            const el = document.createElement('div');
-            el.className = 'card';
-            el.innerHTML = `
-                <span class="tag">${categories[seed.cat
+        list.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'seed-card';
+            div.innerHTML = `
+                <div class="category-tag">${categories[s.cat]}</div>
+                <h3 class="seed-title">${s.title}</h3>
+                <p class="seed-desc">${s.desc}</p>
+                <div class="seed-val-box">
+                    <span class="seed-code">${s.val}</span>
+                    <button class="copy-btn" onclick="copySeed('${s.val}')">COPY</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function copySeed(v) {
+        navigator.clipboard.writeText(v);
+        alert("Seed copied to clipboard!");
+    }
+
+    init();
+</script>
+</body>
+</html>
