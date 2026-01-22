@@ -3,157 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Seed Explorer</title>
+    <title>Ultimate Minecraft Seed Hub</title>
     <style>
         :root {
-            --mc-green: #48a02c;
-            --mc-dirt: #795548;
-            --mc-stone: #313131;
+            --mc-green: #4db33d;
+            --mc-dark-green: #2e661c;
+            --mc-stone: #3c3f41;
+            --mc-border: #1e1e1e;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1e1e1e;
-            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #2b2b2b;
+            color: #e0e0e0;
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding-bottom: 50px;
         }
 
         header {
-            background-color: var(--mc-green);
-            width: 100%;
-            padding: 20px 0;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://www.minecraft.net/content/dam/games/minecraft/key-art/Games_Subnav_Minecraft-Wild-Update_600x337.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 40px 20px;
             text-align: center;
-            box-shadow: 0 4px 0px #2e661c;
-            margin-bottom: 30px;
+            border-bottom: 5px solid var(--mc-green);
         }
 
         .container {
-            max-width: 800px;
-            width: 90%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .controls {
-            margin-bottom: 20px;
+        .filter-bar {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            background: var(--mc-stone);
+            padding: 15px;
+            border-radius: 8px;
             display: flex;
             gap: 10px;
             justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
         }
 
         select, button {
-            padding: 10px;
-            border-radius: 4px;
+            padding: 10px 15px;
             border: none;
+            border-radius: 4px;
+            font-weight: bold;
             cursor: pointer;
         }
 
+        select { background: white; color: black; }
+        button { background: var(--mc-green); color: white; }
+        button:hover { background: #5edb4a; }
+
+        .seed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
         .seed-card {
-            background-color: var(--mc-stone);
-            border: 3px solid #555;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            transition: transform 0.2s;
+            background: #3c3f41;
+            border: 2px solid #555;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .seed-card:hover {
-            transform: scale(1.02);
-            border-color: var(--mc-green);
+        .seed-title { color: #ffcc00; margin-top: 0; font-size: 1.2rem; }
+        .seed-desc { font-size: 0.9rem; line-height: 1.4; color: #ccc; }
+        
+        .seed-footer {
+            margin-top: 15px;
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .seed-value {
-            font-family: monospace;
-            background: #000;
-            padding: 5px 10px;
+        .seed-val {
+            font-family: 'Courier New', monospace;
             color: #00ff00;
-            display: inline-block;
-            margin-top: 10px;
+            font-size: 0.85rem;
+            word-break: break-all;
         }
 
-        .tag {
-            background: var(--mc-dirt);
-            padding: 2px 8px;
-            font-size: 0.8rem;
-            border-radius: 4px;
-            margin-right: 5px;
+        .copy-btn {
+            background: #555;
+            font-size: 10px;
+            padding: 5px 8px;
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>MINECRAFT SEED FINDER</h1>
-    <p>Java Edition 1.20+</p>
+    <h1 style="font-size: 2.5rem; text-shadow: 2px 2px #000;">JAVA SEED LIBRARY</h1>
+    <p>Hand-picked Top 30 Seeds for Version 1.20 & 1.21</p>
 </header>
 
 <div class="container">
-    <div class="controls">
-        <select id="categoryFilter">
-            <option value="all">All Categories</option>
-            <option value="village">Villages</option>
+    <div class="filter-bar">
+        <select id="catSelect" onchange="render()">
+            <option value="all">All Seeds (30)</option>
+            <option value="village">Villages & Towns</option>
             <option value="structures">Rare Structures</option>
-            <option value="survival">Hardcore/Survival</option>
+            <option value="survival">Survival Challenges</option>
         </select>
-        <button onclick="displaySeeds()" style="background: var(--mc-green); color: white; font-weight: bold;">Filter Seeds</button>
     </div>
 
-    <div id="seedList">
-        </div>
+    <div class="seed-grid" id="seedContainer"></div>
 </div>
 
 <script>
-    const seeds = [
-        {
-            value: "-7710774001980301466",
-            description: "Massive Cherry Grove surrounding a lake with a village nearby.",
-            category: "village",
-            tags: ["Cherry Grove", "Village", "Scenic"]
-        },
-        {
-            value: "8678943058221448233",
-            description: "Woodland Mansion right at spawn next to a pillager outpost.",
-            category: "structures",
-            tags: ["Mansion", "Outpost", "Action"]
-        },
-        {
-            value: "-5514112833518606830",
-            description: "Ancient City located directly beneath a jungle spawn.",
-            category: "structures",
-            tags: ["Ancient City", "Jungle", "Loot"]
-        },
-        {
-            value: "548301213",
-            description: "Small mushroom island surrounded by deep cold ocean.",
-            category: "survival",
-            tags: ["Mushroom Island", "Safe Haven"]
-        }
+    const seedData = [
+        // VILLAGES (10)
+        { val: "-7710774001980301466", cat: "village", title: "Cherry Blossom Village", desc: "A massive cherry grove valley surrounding a peaceful village." },
+        { val: "8678943058221448233", cat: "village", title: "The Quad Village", desc: "Four villages intersecting near a single snowy plain." },
+        { val: "-45465620", cat: "village", title: "Mountain Peak Town", desc: "Village generated on top of a jagged peak." },
+        { val: "2214063321", cat: "village", title: "Desert Temple Town", desc: "Desert village with two temples built into the houses." },
+        { val: "460628901", cat: "village", title: "Coastal Kingdom", desc: "Large village on a cliff overlooking a coral reef." },
+        { val: "5633968", cat: "village", title: "Zombie Village", desc: "Rare abandoned village surrounded by dark forest." },
+        { val: "-1995211516", cat: "village", title: "Ice Spikes Village", desc: "Rare village crossing into an Ice Spikes biome." },
+        { val: "2234239", cat: "village", title: "Sunflower Plains Start", desc: "Massive sunflower field with 3 villages within 500 blocks." },
+        { val: "107038380838084", cat: "village", title: "Island Village", desc: "A tiny island in the ocean completely covered by a village." },
+        { val: "694200001", cat: "village", title: "Mangrove Village", desc: "Swamp-adjacent village with unique pathing." },
+
+        // STRUCTURES (10)
+        { val: "-5514112833518606830", cat: "structures", title: "Ancient City Spawn", desc: "Spawn directly above one of the largest Ancient Cities." },
+        { val: "16512740", cat: "structures", title: "Lush Cave Mansion", desc: "Woodland Mansion with a massive Lush Cave underneath." },
+        { val: "1910", cat: "structures", title: "The Stronghold Well", desc: "A village well that leads directly into a Portal Room." },
+        { val: "512333333", cat: "structures", title: "Ocean Monument Core", desc: "Spawn on a small beach with 3 monuments visible." },
+        { val: "9384756", cat: "structures", title: "Jungle Temple Trio", desc: "Three jungle temples located within 300 blocks of spawn." },
+        { val: "29384", cat: "structures", title: "Exposed Shipwreck", desc: "Complete shipwreck generated on dry land in a desert." },
+        { val: "888", cat: "structures", title: "The Pillar Outpost", desc: "Pillager outpost on a tiny rock in the middle of a lake." },
+        { val: "-123456789", cat: "structures", title: "Trial Chamber Start", desc: "New 1.21 Trial Chamber directly under the starting point." },
+        { val: "7777777", cat: "structures", title: "Witch Hut Quad", desc: "Four witch huts in a single swamp - ultimate farm potential." },
+        { val: "00000012", cat: "structures", title: "Igloo Basement", desc: "Spawn next to an igloo with a secret basement lab." },
+
+        // SURVIVAL (10)
+        { val: "548301213", cat: "survival", title: "Mushroom Sanctuary", desc: "Large mushroom island - no hostile mobs will spawn here." },
+        { val: "-613756530319979507", cat: "survival", title: "Single Tree Island", desc: "The ultimate survival challenge. One tree, one island." },
+        { val: "124833", cat: "survival", title: "Frozen Wasteland", desc: "Thousands of blocks of ice and snow. Resources are scarce." },
+        { val: "99999", cat: "survival", title: "Deep Dark Sinkhole", desc: "Spawn on a ledge over a 100-block drop into the Deep Dark." },
+        { val: "-222", cat: "survival", title: "Endless Jungle", desc: "Good luck finding your way out of this dense canopy." },
+        { val: "404", cat: "survival", title: "The Missing Floor", desc: "Spawn over a ravines that leads straight to lava." },
+        { val: "1", cat: "survival", title: "Plains of Nothing", desc: "Perfect for builders. Flat, empty, and infinite." },
+        { val: "666", cat: "survival", title: "Badlands Goldmine", desc: "Survival in the Mesa with exposed gold everywhere." },
+        { val: "55555", cat: "survival", title: "Dripstone Pit", desc: "Spawn inside a massive vertical cave filled with dripstone." },
+        { val: "909090", cat: "survival", title: "Coral Reef Survival", desc: "Ocean spawn with a massive coral reef for food and beauty." }
     ];
 
-    function displaySeeds() {
-        const filter = document.getElementById('categoryFilter').value;
-        const listElement = document.getElementById('seedList');
-        listElement.innerHTML = '';
+    function render() {
+        const filter = document.getElementById('catSelect').value;
+        const container = document.getElementById('seedContainer');
+        container.innerHTML = '';
 
-        const filtered = seeds.filter(s => filter === 'all' || s.category === filter);
+        const filtered = seedData.filter(s => filter === 'all' || s.cat === filter);
 
         filtered.forEach(seed => {
-            const card = document.createElement('div');
-            card.className = 'seed-card';
-            card.innerHTML = `
-                <h3>${seed.tags[0]} Adventure</h3>
-                <p>${seed.description}</p>
-                <div>${seed.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-                <div class="seed-value">${seed.value}</div>
-                <button onclick="navigator.clipboard.writeText('${seed.value}'); alert('Seed copied!')" style="margin-left:10px; font-size: 12px;">Copy</button>
+            const el = document.createElement('div');
+            el.className = 'seed-card';
+            el.innerHTML = `
+                <div>
+                    <h3 class="seed-title">${seed.title}</h3>
+                    <p class="seed-desc">${seed.description || seed.desc}</p>
+                </div>
+                <div class="seed-footer">
+                    <span class="seed-val">${seed.val}</span>
+                    <button class="copy-btn" onclick="copy('${seed.val}')">COPY</button>
+                </div>
             `;
-            listElement.appendChild(card);
+            container.appendChild(el);
         });
     }
 
-    // Initial load
-    displaySeeds();
+    function copy(text) {
+        navigator.clipboard.writeText(text);
+        alert("Seed copied to clipboard!");
+    }
+
+    render();
 </script>
 
 </body>
