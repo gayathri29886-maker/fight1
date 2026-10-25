@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skyscraper Tycoon - Pro Ultra AP Master</title>
+    <title>Skyscraper Tycoon</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -13,19 +13,17 @@
             --background-color: #0b0f19;
             --card-color: #111827;
             --font-color: #f3f4f6;
-            --base-font-size: 15px;
+            --base-font-size: 14px;
         }
 
-        html {
-            font-size: var(--base-font-size);
-        }
+        html { font-size: var(--base-font-size); }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--background-color);
             color: var(--font-color);
             margin: 0;
-            padding: 0.75rem;
+            padding: 0.5rem;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -36,12 +34,12 @@
 
         .game-container {
             width: 100%;
-            max-width: 1280px;
-            height: calc(100vh - 1.5rem);
+            max-width: 1320px;
+            height: calc(100vh - 1rem);
             background: linear-gradient(145deg, #111827 0%, #0b0f19 100%);
-            border-radius: 1.5rem;
+            border-radius: 1.25rem;
             box-shadow: 0 0 50px rgba(99, 102, 241, 0.15), inset 0 0 2px rgba(255, 255, 255, 0.1);
-            padding: 1.25rem;
+            padding: 1rem;
             border: 1px solid #1f2937;
             display: flex;
             flex-direction: column;
@@ -52,11 +50,11 @@
         .stat-card {
             background: rgba(31, 41, 55, 0.7);
             backdrop-filter: blur(8px);
-            padding: 0.75rem 1rem;
+            padding: 0.6rem 0.8rem;
             border-radius: 0.75rem;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .stat-card:hover {
@@ -65,7 +63,7 @@
         }
 
         .glow-btn {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
         }
@@ -73,31 +71,20 @@
         .glow-btn::after {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
             background: linear-gradient(60deg, transparent, rgba(255,255,255,0.15), transparent);
             transform: rotate(30deg);
             transition: 0.5s;
         }
 
-        .glow-btn:hover::after {
-            left: 100%;
-        }
+        .glow-btn:hover::after { left: 100%; }
 
         .glow-btn:hover:not(:disabled) {
             transform: translateY(-2px) scale(1.01);
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
         }
 
-        .glow-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.4;
-            filter: grayscale(80%);
-        }
-
-        /* Modal Overlay */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -111,91 +98,73 @@
             animation: fadeIn 0.2s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-content {
             background: linear-gradient(160deg, #1f2937 0%, #111827 100%);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 1.25rem;
-            max-width: 780px;
+            max-width: 820px;
             width: 100%;
-            max-height: 85vh;
+            max-height: 86vh;
             display: flex;
             flex-direction: column;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(99, 102, 241, 0.2);
             overflow: hidden;
         }
 
-        /* Architectural Tower Viewport */
         #tower-viewport {
             height: 100%;
-            min-height: 320px;
+            min-height: 300px;
             background: radial-gradient(circle at 50% 20%, #0369a120 0%, #0f172a 70%, #020617 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
+            border-radius: 0.85rem;
             position: relative;
             overflow-y: auto;
             display: flex;
             flex-direction: column-reverse;
             align-items: center;
-            padding: 1.25rem 1rem 0.5rem 1rem;
-            gap: 6px;
+            padding: 1rem 0.8rem 0.5rem 0.8rem;
+            gap: 5px;
             box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9);
         }
 
         .tower-base {
-            width: 90%;
-            height: 20px;
+            width: 92%; height: 18px;
             background: linear-gradient(90deg, #1e293b, #475569, #1e293b);
             border-radius: 4px 4px 0 0;
             border: 1px solid #64748b;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-            margin-top: 4px;
-            flex-shrink: 0;
+            margin-top: 4px; flex-shrink: 0;
         }
 
         .floor-item {
-            width: 86%;
-            min-height: 48px;
+            width: 88%; min-height: 44px;
             border-radius: 8px;
-            display: flex;
-            align-items: center;
+            display: flex; align-items: center;
             justify-content: space-between;
-            padding: 0.5rem 1.25rem;
-            font-weight: 700;
+            padding: 0.4rem 1rem; font-weight: 700;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            animation: buildConstruct 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
+            animation: buildConstruct 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative; overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-            transition: all 0.2s ease;
+            cursor: pointer; transition: all 0.2s ease;
         }
 
-        .floor-item:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-        }
+        .floor-item:hover { transform: scale(1.01); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
 
         .floor-windows {
-            position: absolute;
-            top: 6px; left: 12px; right: 12px; bottom: 6px;
-            display: flex; gap: 6px; pointer-events: none; opacity: 0.35;
+            position: absolute; top: 5px; left: 10px; right: 10px; bottom: 5px;
+            display: flex; gap: 5px; pointer-events: none; opacity: 0.35;
         }
 
-        .window-pane {
-            flex: 1; background: #e2e8f0; border-radius: 2px; box-shadow: 0 0 6px #38bdf8;
-        }
+        .window-pane { flex: 1; background: #e2e8f0; border-radius: 2px; box-shadow: 0 0 5px #38bdf8; }
 
         @keyframes buildConstruct {
-            0% { opacity: 0; transform: translateY(40px) scaleX(0.7); }
+            0% { opacity: 0; transform: translateY(30px) scaleX(0.8); }
             100% { opacity: 1; transform: translateY(0) scaleX(1); }
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
@@ -209,81 +178,80 @@
     <!-- HEADER BAR -->
     <div class="flex justify-between items-center pb-2 border-b border-gray-800">
         <div>
-            <h1 class="text-2xl font-black text-gray-100 tracking-tight flex items-center gap-2">
+            <h1 class="text-xl font-black text-gray-100 tracking-tight flex items-center gap-2">
                 <span>🏗️ SKYSCRAPER TYCOON</span>
-                <span class="text-[10px] bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2.5 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-md">Pro Ultra AP</span>
+                <span class="text-[9px] bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-md">AP Engine</span>
             </h1>
-            <p class="text-xs text-gray-400">Single-Screen Commercial Real Estate Management Platform</p>
+            <p class="text-[11px] text-gray-400">Single-Screen Commercial Real Estate Management Platform</p>
         </div>
 
         <div class="flex items-center gap-2">
-            <!-- AP Button -->
             <button onclick="handleAPAuth()" class="glow-btn bg-gradient-to-r from-amber-500 via-red-600 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-black py-1.5 px-3 rounded-xl text-xs flex items-center gap-1 shadow-lg border border-amber-400/50">
                 <span>⚡ AP OPERATOR</span>
             </button>
 
-            <button onclick="toggleModal('loan-modal')" class="glow-btn bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs flex items-center gap-1.5 shadow-md">
+            <button onclick="toggleModal('loan-modal')" class="glow-btn bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold py-1.5 px-2.5 rounded-xl text-xs flex items-center gap-1 shadow-md">
                 <span>🏦 Bank Loans</span>
-                <span id="active-loan-badge" class="bg-red-500 text-[10px] px-1.5 py-0.2 rounded-full hidden">Active</span>
+                <span id="active-loan-badge" class="bg-red-500 text-[9px] px-1.5 py-0.2 rounded-full hidden">Active</span>
             </button>
 
-            <button onclick="toggleModal('stocks-modal')" class="glow-btn bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs flex items-center gap-1.5 shadow-md">
+            <button onclick="toggleModal('stocks-modal')" class="glow-btn bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-1.5 px-2.5 rounded-xl text-xs flex items-center gap-1 shadow-md">
                 <span>📈 Stock Market</span>
             </button>
 
             <button onclick="toggleModal('settings-panel')" class="text-gray-400 hover:text-white p-1.5 bg-gray-800/80 rounded-xl border border-gray-700">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.526.321 1.026.321 1.526 0l.52-.312z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.526.321 1.026.321 1.526 0l.52-.312z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </button>
         </div>
     </div>
 
-    <!-- LEVEL & PROGRESSION HUD BAR -->
-    <div onclick="toggleModal('levels-modal')" class="p-2.5 bg-gradient-to-r from-indigo-950/80 via-purple-950/60 to-gray-900 border border-indigo-800/60 rounded-xl shadow-lg cursor-pointer hover:border-indigo-500 transition-all">
-        <div class="flex justify-between items-center text-xs font-semibold mb-1">
+    <!-- LEVEL HUD -->
+    <div onclick="toggleModal('levels-modal')" class="p-2 bg-gradient-to-r from-indigo-950/80 via-purple-950/60 to-gray-900 border border-indigo-800/60 rounded-xl shadow-lg cursor-pointer hover:border-indigo-500 transition-all my-1">
+        <div class="flex justify-between items-center text-xs font-semibold mb-0.5">
             <div class="flex items-center gap-2">
-                <span class="text-indigo-300">Level <span id="level-display" class="font-black text-indigo-100 text-sm">1</span></span>
-                <span id="level-title" class="text-[10px] bg-indigo-900/80 text-indigo-200 px-2 py-0.5 rounded-md border border-indigo-700">Novice Developer</span>
+                <span class="text-indigo-300">Level <span id="level-display" class="font-black text-indigo-100 text-xs">1</span></span>
+                <span id="level-title" class="text-[9px] bg-indigo-900/80 text-indigo-200 px-2 py-0.5 rounded-md border border-indigo-700">Novice Developer</span>
             </div>
-            <p class="text-indigo-300">XP: <span id="xp-current-display" class="text-indigo-100">0</span> / <span id="xp-next-display" class="text-indigo-100">10</span> <span class="text-[10px] text-purple-400 ml-1">(Click for Level Perks & City Events 🏆)</span></p>
+            <p class="text-indigo-300 text-[10px]">XP: <span id="xp-current-display" class="text-indigo-100">0</span> / <span id="xp-next-display" class="text-indigo-100">10</span> <span class="text-[9px] text-purple-400 ml-1">(Perks & Events 🏆)</span></p>
         </div>
-        <div class="w-full bg-gray-900/80 rounded-full h-2 overflow-hidden border border-indigo-900/50">
-            <div id="xp-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        <div class="w-full bg-gray-900/80 rounded-full h-1.5 overflow-hidden border border-indigo-900/50">
+            <div id="xp-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD STAT CARDS -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <!-- STAT CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
         <div class="stat-card">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Net Treasury</p>
-            <p id="money-display" class="text-2xl font-black text-emerald-400 mt-0.5">₹15,000</p>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Net Treasury</p>
+            <p id="money-display" class="text-xl font-black text-emerald-400 mt-0.5">₹15,000</p>
         </div>
         <div class="stat-card">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Built Units</p>
-            <p id="apartment-display" class="text-2xl font-black text-indigo-400 mt-0.5">0</p>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Built Units</p>
+            <p id="apartment-display" class="text-xl font-black text-indigo-400 mt-0.5">0</p>
         </div>
         <div class="stat-card">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Floor Capacity</p>
-            <p id="land-display" class="text-2xl font-black text-yellow-400 mt-0.5">0 / 2</p>
-            <p id="plot-status" class="text-[10px] text-emerald-400 font-semibold">2 Floors Available</p>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Floor Capacity</p>
+            <p id="land-display" class="text-xl font-black text-yellow-400 mt-0.5">0 / 2</p>
+            <p id="plot-status" class="text-[9px] text-emerald-400 font-semibold">2 Floors Available</p>
         </div>
         <div class="stat-card">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Market Rent Yield</p>
-            <div class="flex items-center gap-1.5 mt-0.5">
-                <p id="rent-rate-display" class="text-xl font-black text-emerald-400">₹0</p>
-                <span id="rent-pulse" class="text-emerald-300 font-bold text-[10px]"></span>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Market Rent Yield</p>
+            <div class="flex items-center gap-1 mt-0.5">
+                <p id="rent-rate-display" class="text-lg font-black text-emerald-400">₹0</p>
+                <span id="rent-pulse" class="text-emerald-300 font-bold text-[9px]"></span>
             </div>
-            <p id="event-effect-indicator" class="text-[9px] text-gray-400 truncate">Fluctuates live with occupancy</p>
+            <p id="event-effect-indicator" class="text-[8px] text-gray-400 truncate">Fluctuates live with occupancy</p>
         </div>
     </div>
 
-    <!-- MAIN WORKSPACE SPLIT (SINGLE SCREEN) -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-grow overflow-hidden my-1">
+    <!-- MAIN WORKSPACE SPLIT -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 flex-grow overflow-hidden my-1">
         
-        <!-- Left 2 Cols: Architectural Tower Viewport -->
+        <!-- Left 2 Cols: Tower Viewport -->
         <div class="lg:col-span-2 flex flex-col h-full overflow-hidden">
             <div class="flex justify-between items-center mb-1 px-1">
-                <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Tower Structural View <span class="text-[10px] text-gray-500 lowercase">(click floor to inspect)</span></h2>
-                <span id="occupancy-rate-display" class="text-[10px] text-indigo-300 font-semibold bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-800">Market Occupancy: 100%</span>
+                <h2 class="text-[11px] font-bold text-gray-300 uppercase tracking-wider">Tower Structural View <span class="text-[9px] text-gray-500 lowercase">(click floor to inspect)</span></h2>
+                <span id="occupancy-rate-display" class="text-[9px] text-indigo-300 font-semibold bg-indigo-950/80 px-2 py-0.5 rounded-full border border-indigo-800">Market Occupancy: 100%</span>
             </div>
             <div id="tower-viewport" class="flex-grow">
                 <div class="tower-base"></div>
@@ -293,44 +261,40 @@
             </div>
         </div>
 
-        <!-- Right Col: Interactive Control Hub -->
-        <div class="flex flex-col justify-between gap-2 bg-gray-900/60 p-3 rounded-xl border border-gray-800/80 overflow-y-auto">
+        <!-- Right Col: Control Hub -->
+        <div class="flex flex-col justify-between gap-2 bg-gray-900/60 p-2.5 rounded-xl border border-gray-800/80 overflow-y-auto">
             <div class="space-y-2">
-                <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider border-b border-gray-800 pb-1">Management Hub</h2>
+                <h2 class="text-[11px] font-bold text-gray-300 uppercase tracking-wider border-b border-gray-800 pb-1">Management Hub</h2>
 
-                <!-- 1. Build Units Button -->
-                <button onclick="toggleModal('build-modal')" class="glow-btn w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-between text-xs">
-                    <span class="flex items-center gap-2">🏢 Build Units</span>
-                    <span id="build-options-count" class="text-[10px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded-md border border-emerald-700">8 Options</span>
+                <button onclick="toggleModal('build-modal')" class="glow-btn w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2 px-3 rounded-xl shadow-md flex items-center justify-between text-xs">
+                    <span class="flex items-center gap-1.5">🏢 Build Units</span>
+                    <span id="build-options-count" class="text-[9px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded-md border border-emerald-700">20 Options</span>
                 </button>
 
-                <!-- 2. Amenities Button -->
-                <button onclick="toggleModal('amenities-modal')" class="glow-btn w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-between text-xs">
-                    <span class="flex items-center gap-2">✨ Tower Amenities</span>
-                    <span id="amenities-count-badge" class="text-[10px] bg-purple-950 text-purple-200 px-2 py-0.5 rounded-md border border-purple-700">0/100 Stacks</span>
+                <button onclick="toggleModal('amenities-modal')" class="glow-btn w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-2 px-3 rounded-xl shadow-md flex items-center justify-between text-xs">
+                    <span class="flex items-center gap-1.5">✨ Tower Amenities</span>
+                    <span id="amenities-count-badge" class="text-[9px] bg-purple-950 text-purple-200 px-2 py-0.5 rounded-md border border-purple-700">0/200 Stacks</span>
                 </button>
 
-                <!-- 3. Executives Button -->
-                <button onclick="toggleModal('executives-modal')" class="glow-btn w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-between text-xs">
-                    <span class="flex items-center gap-2">👔 Executive Staff</span>
-                    <span id="executives-count-badge" class="text-[10px] bg-amber-950 text-amber-200 px-2 py-0.5 rounded-md border border-amber-700">0/100 Stacks</span>
+                <button onclick="toggleModal('executives-modal')" class="glow-btn w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-2 px-3 rounded-xl shadow-md flex items-center justify-between text-xs">
+                    <span class="flex items-center gap-1.5">👔 Executive Staff</span>
+                    <span id="executives-count-badge" class="text-[9px] bg-amber-950 text-amber-200 px-2 py-0.5 rounded-md border border-amber-700">0/200 Stacks</span>
                 </button>
 
-                <!-- 4. Levels & Events Info Button -->
-                <button onclick="toggleModal('levels-modal')" class="glow-btn w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-between text-xs">
-                    <span class="flex items-center gap-2">🏆 Perks & City Events</span>
-                    <span id="event-badge" class="text-[10px] bg-blue-950 text-blue-200 px-2 py-0.5 rounded-md border border-blue-700">View Status</span>
+                <button onclick="toggleModal('levels-modal')" class="glow-btn w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-2 px-3 rounded-xl shadow-md flex items-center justify-between text-xs">
+                    <span class="flex items-center gap-1.5">🏆 Perks & City Events</span>
+                    <span id="event-badge" class="text-[9px] bg-blue-950 text-blue-200 px-2 py-0.5 rounded-md border border-blue-700">View Status</span>
                 </button>
             </div>
 
             <!-- Floor Expansion Card -->
-            <div class="bg-gray-800/80 p-2.5 rounded-xl border border-gray-700/80">
-                <div class="flex justify-between items-center mb-1">
+            <div class="bg-gray-800/80 p-2 rounded-xl border border-gray-700/80">
+                <div class="flex justify-between items-center mb-0.5">
                     <span class="text-xs font-bold text-blue-300">Expand Floor Capacity 🗺️</span>
                     <span id="land-cost-display" class="text-xs font-bold text-gray-100">₹1,000</span>
                 </div>
-                <p class="text-[10px] text-gray-400 mb-2">Unlocks +1 floor slot to support higher building construction.</p>
-                <button id="buy-land-btn" onclick="buyLand()" class="glow-btn w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1.5 px-3 rounded-lg text-xs shadow-md">
+                <p class="text-[9px] text-gray-400 mb-1.5">Unlocks +1 floor slot to support higher building construction.</p>
+                <button id="buy-land-btn" onclick="buyLand()" class="glow-btn w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-lg text-xs shadow-md">
                     Acquire +1 Floor
                 </button>
             </div>
@@ -339,851 +303,333 @@
     </div>
 
     <!-- NOTIFICATION MSG BOX -->
-    <div id="message-box" class="p-2.5 bg-emerald-950/80 border border-emerald-700 text-emerald-300 rounded-xl hidden text-xs font-medium shadow-lg"></div>
+    <div id="message-box" class="p-2 bg-emerald-950/80 border border-emerald-700 text-emerald-300 rounded-xl hidden text-xs font-medium shadow-lg"></div>
 
     <!-- FOOTER -->
-    <footer class="text-center text-[11px] text-gray-500 pt-1 border-t border-gray-800/80 flex justify-between items-center px-2">
+    <footer class="text-center text-[10px] text-gray-500 pt-1 border-t border-gray-800/80 flex justify-between items-center px-2">
         <span>Developed by Sukesh(G7A) &bull; Skyscraper Tycoon Pro Edition</span>
         <span id="game-status-clock" class="text-indigo-400 font-mono">Running (Fresh State)</span>
     </footer>
 
 </div>
 
-<!-- MODAL: AP PANEL (OPERATOR MASTER PANEL) -->
+<!-- MODAL: AP MASTER OPERATOR PANEL -->
 <div id="ap-panel" class="modal-overlay">
-    <div class="modal-content" style="max-width: 720px;">
-        <div class="p-4 bg-gradient-to-r from-amber-900/90 via-purple-900/90 to-gray-900 border-b border-amber-500/40 flex justify-between items-center">
-            <h2 class="text-base font-black text-amber-300 flex items-center gap-2"><span>⚡</span> AP OPERATOR MASTER CONTROL PANEL</h2>
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="p-3 bg-gradient-to-r from-amber-900/90 via-purple-900/90 to-gray-900 border-b border-amber-500/40 flex justify-between items-center">
+            <h2 class="text-sm font-black text-amber-300 flex items-center gap-2"><span>⚡</span> AP MASTER SUPREME OPERATOR CONTROL PANEL</h2>
             <button onclick="toggleModal('ap-panel')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
         </div>
-        <div class="p-4 overflow-y-auto space-y-4 text-xs">
+        <div class="p-3 overflow-y-auto space-y-3 text-xs">
             
             <!-- Quick Grant Controls -->
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 space-y-2">
-                <h3 class="font-bold text-amber-400 text-xs uppercase tracking-wider">💰 Treasury & Capacity Grants</h3>
+            <div class="bg-gray-800/90 p-2.5 rounded-xl border border-gray-700 space-y-2">
+                <h3 class="font-bold text-amber-400 text-xs uppercase tracking-wider">💰 Instant Treasury & Floor Grants</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
-                        <label class="text-[10px] text-gray-400 block mb-1">Add Custom Treasury Cash (₹)</label>
+                        <label class="text-[9px] text-gray-400 block mb-0.5">Add Custom Treasury Cash (₹)</label>
                         <div class="flex gap-1">
-                            <input type="number" id="ap-cash-input" value="1000000" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                            <input type="number" id="ap-cash-input" value="1000000000" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
                             <button onclick="apGiveCash()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1 rounded-lg">Add Cash</button>
                         </div>
                     </div>
                     <div>
-                        <label class="text-[10px] text-gray-400 block mb-1">Add Custom Floor Capacity</label>
+                        <label class="text-[9px] text-gray-400 block mb-0.5">Add Custom Floor Capacity</label>
                         <div class="flex gap-1">
-                            <input type="number" id="ap-land-input" value="10" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                            <input type="number" id="ap-land-input" value="50" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
                             <button onclick="apGiveLand()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1 rounded-lg">Add Floors</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- AP Special Building & Level Control -->
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 space-y-2">
-                <h3 class="font-bold text-purple-400 text-xs uppercase tracking-wider">🏢 AP Supreme Infrastructure & Level Controls</h3>
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="apBuildAPOffice()" class="glow-btn bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-md">
-                        Construct "AP Office" (+₹50B/s)
+            <!-- AP 5 Special Supreme Buildings Direct Construction -->
+            <div class="bg-gray-800/90 p-2.5 rounded-xl border border-gray-700 space-y-2">
+                <h3 class="font-bold text-purple-400 text-xs uppercase tracking-wider">⚡ Direct AP Supreme Buildings Spawner (5 Unique Options)</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    <button onclick="buildFloor('apoffice')" class="glow-btn bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] shadow-md truncate">
+                        1. AP Office (+₹50B/s)
                     </button>
-                    <button onclick="apSetLevel(100)" class="glow-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-md">
-                        Set Level 100
+                    <button onclick="buildFloor('apcyber')" class="glow-btn bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] shadow-md truncate">
+                        2. AP Cyber Citadel (+₹250B/s)
                     </button>
-                    <button onclick="apClearLoans()" class="glow-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-md">
-                        Clear All Active Loans
+                    <button onclick="buildFloor('apapex')" class="glow-btn bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] shadow-md truncate">
+                        3. AP Apex Megagrid (+₹1T/s)
+                    </button>
+                    <button onclick="buildFloor('apquantum')" class="glow-btn bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] shadow-md truncate">
+                        4. AP Quantum Spire (+₹5T/s)
+                    </button>
+                    <button onclick="buildFloor('apcelestial')" class="glow-btn bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] shadow-md truncate sm:col-span-2">
+                        5. AP Celestial Starstation (+₹25T/s)
                     </button>
                 </div>
             </div>
 
-            <!-- AP Economic & Event Controls -->
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 space-y-2">
-                <h3 class="font-bold text-blue-400 text-xs uppercase tracking-wider">🌐 City Event & Occupancy Override</h3>
+            <!-- Game Speed & Auto-Pilot Powers -->
+            <div class="bg-gray-800/90 p-2.5 rounded-xl border border-gray-700 space-y-2">
+                <h3 class="font-bold text-red-400 text-xs uppercase tracking-wider">⚡ Hyper Speed Engine & Auto-Pilot AP Powers</h3>
+                <div class="flex flex-wrap gap-1.5">
+                    <button onclick="apSetSpeed(100)" class="glow-btn bg-red-600 hover:bg-red-500 text-white font-bold py-1 px-2.5 rounded-lg text-[10px]">
+                        10x Insane Speed Engine (100ms)
+                    </button>
+                    <button onclick="apSetSpeed(500)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1 px-2.5 rounded-lg text-[10px]">
+                        2x Fast Speed (500ms)
+                    </button>
+                    <button onclick="apSetSpeed(1000)" class="glow-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-2.5 rounded-lg text-[10px]">
+                        Normal Speed (1s)
+                    </button>
+                    <button onclick="apToggleAutoBuild()" class="glow-btn bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold py-1 px-2.5 rounded-lg text-[10px]">
+                        Toggle Auto-Build Bot
+                    </button>
+                    <button onclick="apInfiniteCash()" class="glow-btn bg-gradient-to-r from-red-600 to-amber-600 text-white font-bold py-1 px-2.5 rounded-lg text-[10px]">
+                        Grant ₹999 Trillion Cash
+                    </button>
+                    <button onclick="apMaxAllStacks()" class="glow-btn bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-1 px-2.5 rounded-lg text-[10px]">
+                        Max All 20 Stacks (10x)
+                    </button>
+                    <button onclick="apFreePrices()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1 px-2.5 rounded-lg text-[10px]">
+                        Zero Cost Toggle
+                    </button>
+                    <button onclick="apClearLoans()" class="glow-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1 px-2.5 rounded-lg text-[10px]">
+                        Wipe All Loans
+                    </button>
+                </div>
+            </div>
+
+            <!-- City Events Controller -->
+            <div class="bg-gray-800/90 p-2.5 rounded-xl border border-gray-700 space-y-2">
+                <h3 class="font-bold text-blue-400 text-xs uppercase tracking-wider">🌐 Global City Economic Events Controller</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
-                        <label class="text-[10px] text-gray-400 block mb-1">Trigger Specific City Event</label>
                         <select id="ap-event-select" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white text-xs">
                             <option value="BOOM">🌆 Economic Boom (+50% Rent, +30% Occ)</option>
                             <option value="TECH">💻 Tech Surge (+100% Rent Yields)</option>
                             <option value="TOURISM">🔭 Tourism Explosion (+100% Rent Yields)</option>
+                            <option value="HYPER">⚡ AP Golden Era (+500% Rent Yields)</option>
                             <option value="CRASH">📉 Market Crash (-30% Rent Yields)</option>
                             <option value="NORMAL">⚖️ Normal Stable Market</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="text-[10px] text-gray-400 block mb-1">Duration (Seconds)</label>
-                        <div class="flex gap-1">
-                            <input type="number" id="ap-event-duration" value="30" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
-                            <button onclick="apTriggerEvent()" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded-lg">Trigger</button>
-                        </div>
+                    <div class="flex gap-1">
+                        <input type="number" id="ap-event-duration" value="60" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                        <button onclick="apTriggerEvent()" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded-lg text-xs">Force Event</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Advanced Speed Multiplier & God Mode -->
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 space-y-2">
-                <h3 class="font-bold text-red-400 text-xs uppercase tracking-wider">⚡ Game Speed Engine & God Overrides</h3>
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="apSetSpeed(200)" class="glow-btn bg-red-600 hover:bg-red-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs">
-                        5x Ultra Speed Engine
-                    </button>
-                    <button onclick="apSetSpeed(1000)" class="glow-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs">
-                        Normal Speed (1s)
-                    </button>
-                    <button onclick="apInfiniteCash()" class="glow-btn bg-gradient-to-r from-red-600 to-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs">
-                        Grant ₹999 Trillion Cash
-                    </button>
-                    <button onclick="apMaxAllStacks()" class="glow-btn bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs">
-                        Max All 20 Stacks (10x)
-                    </button>
-                    <button onclick="apFreePrices()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs">
-                        Zero Cost Expansion
-                    </button>
-                </div>
-            </div>
-
         </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('ap-panel')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close AP Panel</button>
+        <div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right">
+            <button onclick="toggleModal('ap-panel')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-4 rounded-xl text-xs">Close AP Panel</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL 1: BUILD UNITS -->
-<div id="build-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-base font-bold text-gray-100 flex items-center gap-2"><span>🏢</span> Build Tower Units</h2>
-            <button onclick="toggleModal('build-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
-        </div>
-        <div class="p-4 overflow-y-auto space-y-3">
-            
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 class="font-bold text-emerald-300 text-sm">Commercial Office Floor 🏢</h3>
-                    <p class="text-[11px] text-gray-400">Standard business space (~₹120-₹220/s). (+2 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="commercial-cost" class="text-emerald-400">₹600</span> | <span class="text-yellow-400">Req Floors: 1</span></p>
-                </div>
-                <button onclick="buildFloor('commercial')" class="glow-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build Office
-                </button>
-            </div>
+<!-- MODALS FOR UNITS, AMENITIES, EXECUTIVES, LOANS, STOCKS, INSPECT, SETTINGS -->
+<div id="build-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">🏢 Build Tower Units (20 Options)</h2><button onclick="toggleModal('build-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button></div><div id="build-modal-body" class="p-3 overflow-y-auto space-y-2"></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('build-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 class="font-bold text-indigo-300 text-sm">Corporate Sky Tower Suite 🏙️</h3>
-                    <p class="text-[11px] text-gray-400">High-yield executive floors (~₹450-₹850/s). (+5 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="corporate-cost" class="text-indigo-400">₹2,500</span> | <span class="text-yellow-400">Req Floors: 1</span></p>
-                </div>
-                <button onclick="buildFloor('corporate')" class="glow-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build Suite
-                </button>
-            </div>
+<div id="amenities-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">✨ Tower Amenities (20 Options, Stackable to 10x)</h2><button onclick="toggleModal('amenities-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button></div><div id="amenities-modal-body" class="p-3 overflow-y-auto space-y-2"></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('amenities-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">Luxury Penthouse Suite 🍸</h3>
-                    <p class="text-[11px] text-gray-400">Ultra-exclusive penthouse space (~₹1,200-₹2,000/s). (+12 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="penthouse-cost" class="text-purple-400">₹8,000</span> | <span class="text-yellow-400 font-bold">Req Floors: 2</span></p>
-                </div>
-                <button onclick="buildFloor('penthouse')" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build Penthouse
-                </button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 class="font-bold text-blue-300 text-sm">Tech Innovation Hub 💻</h3>
-                    <p class="text-[11px] text-gray-400">High-tech server & dev hub (~₹2,800-₹4,500/s). (+25 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="techhub-cost" class="text-blue-400">₹22,000</span> | <span class="text-yellow-400 font-bold">Req Floors: 2</span></p>
-                </div>
-                <button onclick="buildFloor('techhub')" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build Tech Hub
-                </button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 class="font-bold text-teal-300 text-sm">Bio-Dome Greenhouse 🌿</h3>
-                    <p class="text-[11px] text-gray-400">Ecological indoor agriculture (~₹4,800-₹7,500/s). (+38 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="biodome-cost" class="text-teal-400">₹38,000</span> | <span class="text-yellow-400 font-bold">Req Floors: 3</span></p>
-                </div>
-                <button onclick="buildFloor('biodome')" class="glow-btn bg-teal-600 hover:bg-teal-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build Bio-Dome
-                </button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 class="font-bold text-yellow-300 text-sm">Sky Observatory & Lounge 🔭</h3>
-                    <p class="text-[11px] text-gray-400">Tourism & panorama deck (~₹6,000-₹10,000/s). (+50 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="observatory-cost" class="text-yellow-400">₹60,000</span> | <span class="text-yellow-400 font-bold">Req Floors: 3</span></p>
-                </div>
-                <button onclick="buildFloor('observatory')" class="glow-btn bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build Observatory
-                </button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 class="font-bold text-cyan-300 text-sm">Quantum Computing Data Center ⚡</h3>
-                    <p class="text-[11px] text-gray-400">Ultra high-tech AI processing (~₹10,000-₹16,000/s). (+75 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="quantum-cost" class="text-cyan-400">₹110,000</span> | <span class="text-yellow-400 font-bold">Req Floors: 4</span></p>
-                </div>
-                <button onclick="buildFloor('quantum')" class="glow-btn bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build Quantum Center
-                </button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h3 class="font-bold text-rose-300 text-sm">Helipad Executive Deck 🚁</h3>
-                    <p class="text-[11px] text-gray-400">Top-tier transport rooftop (~₹15,000-₹25,000/s). (+100 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="helipad-cost" class="text-rose-400">₹175,000</span> | <span class="text-yellow-400 font-bold">Req Floors: 4</span></p>
-                </div>
-                <button onclick="buildFloor('helipad')" class="glow-btn bg-rose-600 hover:bg-rose-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build Helipad
-                </button>
-            </div>
-
-            <!-- AP Special Building Option -->
-            <div id="ap-building-option" class="bg-amber-950/40 p-3 rounded-xl border border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hidden">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm flex items-center gap-1"><span>⚡</span> AP Office (Operator Headquarters)</h3>
-                    <p class="text-[11px] text-gray-300">Supreme operator headquarters (~₹50,000,000,000/s). (+1,000 XP)</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="apoffice-cost" class="text-amber-400">₹1,000,000,000</span> | <span class="text-yellow-400 font-bold">Req Floors: 1</span></p>
-                </div>
-                <button onclick="buildFloor('apoffice')" class="glow-btn bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-black py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Build AP Office
-                </button>
-            </div>
-
-        </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('build-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL 2: TOWER AMENITIES (10 TOTAL) -->
-<div id="amenities-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-base font-bold text-gray-100 flex items-center gap-2"><span>✨</span> Tower Amenities (10 Options, Stackable to 10x)</h2>
-            <button onclick="toggleModal('amenities-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
-        </div>
-        <div class="p-4 overflow-y-auto space-y-3">
-            
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">1. High-Speed Express Elevators 🛗</h3>
-                    <p class="text-[11px] text-gray-400">+10% rent boost per stack. Stacks: <span id="stack-elevators" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-elevators" class="text-purple-400">₹10,000</span></p>
-                </div>
-                <button onclick="buyAmenity('elevators', 10000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">2. Rooftop Infinity Pool & Gym 🏊‍♂️</h3>
-                    <p class="text-[11px] text-gray-400">+8% market occupancy boost per stack. Stacks: <span id="stack-pool" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-pool" class="text-purple-400">₹22,000</span></p>
-                </div>
-                <button onclick="buyAmenity('pool', 22000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">3. Solar Glass Façade ☀️</h3>
-                    <p class="text-[11px] text-gray-400">+15% rent boost per stack. Stacks: <span id="stack-solar" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-solar" class="text-purple-400">₹50,000</span></p>
-                </div>
-                <button onclick="buyAmenity('solar', 50000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">4. Biophilic Indoor Gardens 🌿</h3>
-                    <p class="text-[11px] text-gray-400">+12% rental yield per stack. Stacks: <span id="stack-garden" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-garden" class="text-purple-400">₹90,000</span></p>
-                </div>
-                <button onclick="buyAmenity('garden', 90000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">5. Smart Fiber Infrastructure 📡</h3>
-                    <p class="text-[11px] text-gray-400">+25% bonus XP gain per stack. Stacks: <span id="stack-fiber" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-fiber" class="text-purple-400">₹150,000</span></p>
-                </div>
-                <button onclick="buyAmenity('fiber', 150000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">6. 24/7 Security & Concierge Desk 🛡️</h3>
-                    <p class="text-[11px] text-gray-400">+5% base occupancy floor per stack. Stacks: <span id="stack-security" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-security" class="text-purple-400">₹250,000</span></p>
-                </div>
-                <button onclick="buyAmenity('security', 250000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">7. Luxury Valet & Underground Parking 🚘</h3>
-                    <p class="text-[11px] text-gray-400">+18% total rent boost per stack. Stacks: <span id="stack-parking" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-parking" class="text-purple-400">₹400,000</span></p>
-                </div>
-                <button onclick="buyAmenity('parking', 400000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">8. Automated Drone Delivery Hub 🚁</h3>
-                    <p class="text-[11px] text-gray-400">+20% rental yield per stack. Stacks: <span id="stack-drone" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-drone" class="text-purple-400">₹650,000</span></p>
-                </div>
-                <button onclick="buyAmenity('drone', 650000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">9. Cryo Hydro-Spa & Wellness Center 💆</h3>
-                    <p class="text-[11px] text-gray-400">+10% market occupancy per stack. Stacks: <span id="stack-spa" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-spa" class="text-purple-400">₹1,000,000</span></p>
-                </div>
-                <button onclick="buyAmenity('spa', 1000000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-purple-300 text-sm">10. Fusion Core Clean Energy Reactor ⚛️</h3>
-                    <p class="text-[11px] text-gray-400">+30% rent boost per stack. Stacks: <span id="stack-fusion" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-fusion" class="text-purple-400">₹2,500,000</span></p>
-                </div>
-                <button onclick="buyAmenity('fusion', 2500000)" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Upgrade</button>
-            </div>
-
-        </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('amenities-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL 3: EXECUTIVE STAFF (10 OPTIONS) -->
-<div id="executives-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-base font-bold text-gray-100 flex items-center gap-2"><span>👔</span> Executive Staff Managers (10 Options, Stackable to 10x)</h2>
-            <button onclick="toggleModal('executives-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
-        </div>
-        <div class="p-4 overflow-y-auto space-y-3">
-            
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">1. Chief Financial Officer (CFO) 📈</h3>
-                    <p class="text-[11px] text-gray-400">-10% loan interest per stack. Stacks: <span id="stack-cfo" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-cfo" class="text-amber-400">₹30,000</span></p>
-                </div>
-                <button onclick="hireExecutive('cfo', 30000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">2. VP of Operations 🏢</h3>
-                    <p class="text-[11px] text-gray-400">-6% construction cost per stack. Stacks: <span id="stack-vp" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-vp" class="text-amber-400">₹50,000</span></p>
-                </div>
-                <button onclick="hireExecutive('vp', 50000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">3. Chief Marketing Officer (CMO) 📣</h3>
-                    <p class="text-[11px] text-gray-400">+8% base market occupancy per stack. Stacks: <span id="stack-cmo" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-cmo" class="text-amber-400">₹90,000</span></p>
-                </div>
-                <button onclick="hireExecutive('cmo', 90000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">4. Head of Engineering 🛠️</h3>
-                    <p class="text-[11px] text-gray-400">-7% floor expansion cost per stack. Stacks: <span id="stack-eng" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-eng" class="text-amber-400">₹150,000</span></p>
-                </div>
-                <button onclick="hireExecutive('eng', 150000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">5. Chief Information Officer (CIO) 💻</h3>
-                    <p class="text-[11px] text-gray-400">+20% XP boost from construction per stack. Stacks: <span id="stack-cio" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-cio" class="text-amber-400">₹250,000</span></p>
-                </div>
-                <button onclick="hireExecutive('cio', 250000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">6. Chief Human Resources Officer (CHRO) 👥</h3>
-                    <p class="text-[11px] text-gray-400">-5% executive hire cost discount per stack. Stacks: <span id="stack-chro" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-chro" class="text-amber-400">₹400,000</span></p>
-                </div>
-                <button onclick="hireExecutive('chro', 400000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">7. Chief Security Officer (CSO) 🔒</h3>
-                    <p class="text-[11px] text-gray-400">+6% minimum occupancy floor guarantee. Stacks: <span id="stack-cso" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-cso" class="text-amber-400">₹600,000</span></p>
-                </div>
-                <button onclick="hireExecutive('cso', 600000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">8. Director of Investor Relations 📊</h3>
-                    <p class="text-[11px] text-gray-400">+25% REIT stock dividend payout per stack. Stacks: <span id="stack-ir" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-ir" class="text-amber-400">₹850,000</span></p>
-                </div>
-                <button onclick="hireExecutive('ir', 850000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">9. Chief Sustainability Officer (CSO-Eco) 🌱</h3>
-                    <p class="text-[11px] text-gray-400">+10% total rent yield across green units. Stacks: <span id="stack-eco" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-eco" class="text-amber-400">₹1,200,000</span></p>
-                </div>
-                <button onclick="hireExecutive('eco', 1200000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-amber-300 text-sm">10. Chief Strategy Officer (CSO-Global) 🌍</h3>
-                    <p class="text-[11px] text-gray-400">+15% rent multiplier on all units. Stacks: <span id="stack-strategy" class="font-bold text-white">0</span>/10</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Next Cost: <span id="cost-strategy" class="text-amber-400">₹2,000,000</span></p>
-                </div>
-                <button onclick="hireExecutive('strategy', 2000000)" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">Hire/Upgrade</button>
-            </div>
-
-        </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('executives-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close</button>
-        </div>
-    </div>
-</div>
+<div id="executives-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">👔 Executive Staff Managers (20 Options, Stackable to 10x)</h2><button onclick="toggleModal('executives-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button></div><div id="executives-modal-body" class="p-3 overflow-y-auto space-y-2"></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('executives-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
 <!-- MODAL 4: LEVELS & CITY EVENTS INFO -->
-<div id="levels-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-base font-bold text-gray-100 flex items-center gap-2"><span>🏆</span> Level Progression & Active City Events</h2>
-            <button onclick="toggleModal('levels-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
-        </div>
-        <div class="p-4 overflow-y-auto space-y-4">
-            
-            <div class="bg-indigo-950/50 p-3.5 border border-indigo-800/80 rounded-xl">
-                <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Current Executive Status</h3>
-                <div class="grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                        <p class="text-gray-400">Level:</p>
-                        <p id="info-level-num" class="font-bold text-white text-sm">Level 1</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-400">Rank Title:</p>
-                        <p id="info-level-title" class="font-bold text-indigo-300 text-sm">Novice Developer</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="space-y-2">
-                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Dynamic City Economic Events</h3>
-                <p class="text-[11px] text-gray-400">City events occur dynamically in the background, temporarily adjusting occupancy or rent yields across your properties.</p>
-                
-                <div id="active-event-card" class="bg-gray-800/90 p-3 rounded-xl border border-gray-700">
-                    <div class="flex justify-between items-center mb-1">
-                        <span id="event-name-display" class="font-bold text-blue-300 text-xs">Normal Market Conditions</span>
-                        <span id="event-timer-display" class="text-[10px] bg-blue-900 text-blue-200 px-2 py-0.5 rounded-full">Stable</span>
-                    </div>
-                    <p id="event-desc-display" class="text-[11px] text-gray-400">Standard real estate economic climate with steady tenant demand.</p>
-                </div>
-            </div>
-
-        </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('levels-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close Info</button>
-        </div>
-    </div>
-</div>
+<div id="levels-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">🏆 Level Progression & City Events</h2><button onclick="toggleModal('levels-modal')" class="text-gray-400 text-lg px-2">&times;</button></div><div class="p-3 space-y-3"><div class="bg-indigo-950/50 p-3 border border-indigo-800/80 rounded-xl"><div class="grid grid-cols-2 gap-2 text-xs"><div><p class="text-gray-400">Level:</p><p id="info-level-num" class="font-bold text-white">Level 1</p></div><div><p class="text-gray-400">Rank Title:</p><p id="info-level-title" class="font-bold text-indigo-300">Novice Developer</p></div></div></div><div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700"><div class="flex justify-between items-center mb-1"><span id="event-name-display" class="font-bold text-blue-300 text-xs">Normal Market Conditions</span><span id="event-timer-display" class="text-[9px] bg-blue-900 text-blue-200 px-2 py-0.5 rounded-full">Stable</span></div><p id="event-desc-display" class="text-[10px] text-gray-400">Standard real estate economic climate with steady tenant demand.</p></div></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('levels-modal')" class="bg-gray-700 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
 <!-- MODAL 5: BANK LOANS -->
-<div id="loan-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-base font-bold text-gray-100 flex items-center gap-2"><span>🏦</span> Commercial Credit Line</h2>
-            <button onclick="toggleModal('loan-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
-        </div>
-        <div class="p-4 overflow-y-auto space-y-4">
-            
-            <div id="active-loan-card" class="bg-indigo-950/40 border border-indigo-800 p-3 rounded-xl hidden">
-                <h3 class="font-bold text-indigo-300 text-xs mb-1.5">Active Loan Summary</h3>
-                <div class="grid grid-cols-2 gap-3 text-xs mb-2">
-                    <div>
-                        <p class="text-gray-400 text-[10px]">Total Balance (Principal + Interest):</p>
-                        <p id="loan-balance-display" class="font-black text-red-400 text-sm">₹0</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-400 text-[10px]">Interest Rate (Every 10s):</p>
-                        <p id="loan-rate-display" class="font-bold text-yellow-400 text-sm">1.5%</p>
-                    </div>
-                </div>
-                <button onclick="repayTotalLoan()" class="glow-btn w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs shadow-md">
-                    Repay Total Loan
-                </button>
-            </div>
+<div id="loan-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">🏦 Bank Credit Facilities</h2><button onclick="toggleModal('loan-modal')" class="text-gray-400 text-lg px-2">&times;</button></div><div class="p-3 space-y-3"><div id="active-loan-card" class="bg-indigo-950/40 border border-indigo-800 p-2.5 rounded-xl hidden"><div class="grid grid-cols-2 gap-2 text-xs mb-2"><div><p class="text-gray-400 text-[9px]">Total Balance Due:</p><p id="loan-balance-display" class="font-black text-red-400 text-xs">₹0</p></div><div><p class="text-gray-400 text-[9px]">Interest Rate (Every 10s):</p><p id="loan-rate-display" class="font-bold text-yellow-400 text-xs">1.5%</p></div></div><button onclick="repayTotalLoan()" class="glow-btn w-full bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs">Repay Total Loan</button></div><div class="space-y-2"><div class="bg-gray-800/80 p-2 rounded-xl border border-gray-700 flex justify-between items-center"><div><h4 class="font-bold text-blue-300 text-xs">Micro Starter Loan</h4><p class="text-[9px] text-gray-400">Borrow ₹5,000 at 1.5% interest every 10s.</p></div><button onclick="takeLoan(5000, 0.015)" class="glow-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-xl text-xs">Take ₹5,000</button></div><div class="bg-gray-800/80 p-2 rounded-xl border border-gray-700 flex justify-between items-center"><div><h4 class="font-bold text-blue-300 text-xs">Commercial Credit Line</h4><p class="text-[9px] text-gray-400">Borrow ₹20,000 at 2.0% interest every 10s.</p></div><button onclick="takeLoan(20000, 0.020)" class="glow-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-xl text-xs">Take ₹20,000</button></div><div class="bg-gray-800/80 p-2 rounded-xl border border-gray-700 flex justify-between items-center"><div><h4 class="font-bold text-blue-300 text-xs">Megastructure Loan</h4><p class="text-[9px] text-gray-400">Borrow ₹75,000 at 3.0% interest every 10s.</p></div><button onclick="takeLoan(75000, 0.030)" class="glow-btn bg-blue-600 text-white font-bold py-1 px-3 rounded-xl text-xs">Take ₹75,000</button></div></div></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('loan-modal')" class="bg-gray-700 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
-            <div class="space-y-3">
-                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Available Credit Facilities</h3>
-                
-                <div class="bg-gray-800/80 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                    <div>
-                        <h4 class="font-bold text-blue-300 text-xs">Micro Starter Loan</h4>
-                        <p class="text-[10px] text-gray-400">Borrow ₹5,000 at 1.5% interest every 10 seconds.</p>
-                    </div>
-                    <button onclick="takeLoan(5000, 0.015)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
-                        Take ₹5,000
-                    </button>
-                </div>
+<!-- MODAL 6: STOCKS -->
+<div id="stocks-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">📈 Commercial REIT Stock Portfolio</h2><button onclick="toggleModal('stocks-modal')" class="text-gray-400 text-lg px-2">&times;</button></div><div class="p-3 space-y-2"><div class="bg-gray-800/90 p-2.5 rounded-xl border border-gray-700 flex justify-between items-center"><div><h3 class="font-bold text-teal-300 text-xs">Global REIT Index Fund (GRIT)</h3><p class="text-[9px] text-gray-400">Shares Owned: <span id="grit-shares" class="font-bold text-white">0</span> | Dividend: ~₹80/s per share</p><p class="text-xs font-bold text-gray-200 mt-0.5">Price: ₹5,000</p></div><button onclick="buyStock('grit', 5000)" class="glow-btn bg-teal-600 text-white font-bold py-1 px-3 rounded-xl text-xs">Buy 1 Share</button></div></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('stocks-modal')" class="bg-gray-700 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
-                <div class="bg-gray-800/80 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                    <div>
-                        <h4 class="font-bold text-blue-300 text-xs">Commercial Credit Line</h4>
-                        <p class="text-[10px] text-gray-400">Borrow ₹20,000 at 2.0% interest every 10 seconds.</p>
-                    </div>
-                    <button onclick="takeLoan(20000, 0.020)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
-                        Take ₹20,000
-                    </button>
-                </div>
+<!-- MODAL 7: INSPECT -->
+<div id="inspect-modal" class="modal-overlay"><div class="modal-content" style="max-width: 420px;"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 id="inspect-title" class="text-sm font-bold text-gray-100">Floor Details</h2><button onclick="toggleModal('inspect-modal')" class="text-gray-400 text-lg px-2">&times;</button></div><div class="p-3 space-y-2 text-xs"><div class="bg-gray-800/80 p-2.5 rounded-xl border border-gray-700"><p class="text-gray-400">Floor Type: <span id="inspect-type" class="font-bold text-indigo-300">Commercial</span></p><p class="text-gray-400">Est. Average Yield: <span id="inspect-yield" class="font-bold text-emerald-400">₹0/s</span></p><p class="text-gray-400">Floors Occupied: <span id="inspect-plots" class="font-bold text-yellow-400">1</span></p></div></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('inspect-modal')" class="bg-gray-700 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
-                <div class="bg-gray-800/80 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                    <div>
-                        <h4 class="font-bold text-blue-300 text-xs">Megastructure Syndicate Loan</h4>
-                        <p class="text-[10px] text-gray-400">Borrow ₹75,000 at 3.0% interest every 10 seconds.</p>
-                    </div>
-                    <button onclick="takeLoan(75000, 0.030)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
-                        Take ₹75,000
-                    </button>
-                </div>
-            </div>
-
-        </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('loan-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL 6: STOCK MARKET -->
-<div id="stocks-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-base font-bold text-gray-100 flex items-center gap-2"><span>📈</span> Commercial REIT Stock Portfolio</h2>
-            <button onclick="toggleModal('stocks-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
-        </div>
-        <div class="p-4 overflow-y-auto space-y-3">
-            <p class="text-xs text-gray-400 mb-2">Invest treasury surplus into public commercial real estate stocks for periodic dividends.</p>
-            
-            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-teal-300 text-xs">Global REIT Index Fund (GRIT)</h3>
-                    <p class="text-[10px] text-gray-400">Shares Owned: <span id="grit-shares" class="font-bold text-white">0</span> | Dividend: ~₹80/s per share</p>
-                    <p class="text-xs font-bold text-gray-200 mt-0.5">Price per Share: ₹5,000</p>
-                </div>
-                <button onclick="buyStock('grit', 5000)" class="glow-btn bg-teal-600 hover:bg-teal-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
-                    Buy 1 Share
-                </button>
-            </div>
-
-        </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('stocks-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL 7: FLOOR INSPECTION MODAL -->
-<div id="inspect-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 450px;">
-        <div class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
-            <h2 id="inspect-title" class="text-base font-bold text-gray-100">Floor Details</h2>
-            <button onclick="toggleModal('inspect-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
-        </div>
-        <div class="p-4 space-y-3 text-xs">
-            <div class="bg-gray-800/80 p-3 rounded-xl border border-gray-700">
-                <p class="text-gray-400">Floor Type: <span id="inspect-type" class="font-bold text-indigo-300">Commercial</span></p>
-                <p class="text-gray-400">Est. Average Yield: <span id="inspect-yield" class="font-bold text-emerald-400">₹0/s</span></p>
-                <p class="text-gray-400">Floors Occupied: <span id="inspect-plots" class="font-bold text-yellow-400">1</span></p>
-            </div>
-            <p class="text-[10px] text-gray-400 italic text-center">Constructed & Managed under Skyscraper Tycoon Pro Division.</p>
-        </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('inspect-modal')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- SETTINGS MODAL -->
-<div id="settings-panel" class="modal-overlay">
-    <div class="modal-content" style="max-width: 450px;">
-        <div class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-base font-bold text-gray-100">⚙️ Game Settings</h2>
-            <button onclick="toggleModal('settings-panel')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
-        </div>
-        <div class="p-4 space-y-4">
-            <div>
-                <label for="font-size-range" class="block text-gray-300 font-medium text-xs mb-2">Interface Font Size</label>
-                <input type="range" id="font-size-range" min="13" max="20" value="15" step="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                <p class="text-[11px] text-gray-400 mt-2">Current Size: <span id="current-font-size-display">15</span>px</p>
-            </div>
-        </div>
-        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
-            <button onclick="toggleModal('settings-panel')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close</button>
-        </div>
-    </div>
-</div>
+<!-- SETTINGS -->
+<div id="settings-panel" class="modal-overlay"><div class="modal-content" style="max-width: 420px;"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">⚙️ Settings</h2><button onclick="toggleModal('settings-panel')" class="text-gray-400 text-lg px-2">&times;</button></div><div class="p-3 space-y-3"><div><label for="font-size-range" class="block text-gray-300 font-medium text-xs mb-1">Interface Font Size</label><input type="range" id="font-size-range" min="12" max="18" value="14" step="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><p class="text-[10px] text-gray-400 mt-1">Current Size: <span id="current-font-size-display">14</span>px</p></div></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('settings-panel')" class="bg-gray-700 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
 <script>
-    // --- GAME STATE ---
-    let state = {
-        money: 15000,
-        land: 2,
-        floors: [],
-        
-        landCost: 1000,
-        commercialCost: 600,
-        corporateCost: 2500,
-        penthouseCost: 8000,
-        techhubCost: 22000,
-        biodomeCost: 38000,
-        observatoryCost: 60000,
-        quantumCost: 110000,
-        helipadCost: 175000,
-        apofficeCost: 1000000000,
-        
-        amenityStacks: { elevators: 0, pool: 0, solar: 0, garden: 0, fiber: 0, security: 0, parking: 0, drone: 0, spa: 0, fusion: 0 },
-        executiveStacks: { cfo: 0, vp: 0, cmo: 0, eng: 0, cio: 0, chro: 0, cso: 0, ir: 0, eco: 0, strategy: 0 },
-        stocks: { grit: 0 },
-        
-        occupancyFactor: 1.0,
-        loanBalance: 0,
-        loanInterestRate: 0.015,
-        ticksSinceInterest: 0,
-        
-        currentEvent: {
-            id: 'NORMAL',
-            name: 'Normal Market Conditions',
-            desc: 'Standard real estate economic climate with steady tenant demand.',
-            duration: 0,
-            rentMult: 1.0,
-            occBoost: 0.0
-        },
-        eventTimer: 0,
-        
-        level: 1,
-        xp: 0,
-        xpToNextLevel: 10,
-        gameTickMs: 1000,
-        gameLoopInterval: null,
-        apUnlocked: false,
-        freeCosts: false
-    };
-
-    const LEVEL_TITLES = [
-        "Novice Developer", "Commercial Apprentice", "Urban Architect", 
-        "Skyline Constructor", "Metropolitan Tycoon", "Global Real Estate Mogul"
-    ];
-
-    const UNIT_TYPES = {
-        commercial: { name: 'Commercial Office', baseMin: 120, baseMax: 220, xp: 2, reqPlots: 1, color: 'linear-gradient(90deg, #064e3b, #047857)', borderColor: '#10b981' },
-        corporate: { name: 'Corporate Suite', baseMin: 450, baseMax: 850, xp: 5, reqPlots: 1, color: 'linear-gradient(90deg, #312e81, #4338ca)', borderColor: '#6366f1' },
-        penthouse: { name: 'Luxury Penthouse', baseMin: 1200, baseMax: 2000, xp: 12, reqPlots: 2, color: 'linear-gradient(90deg, #581c87, #7e22ce)', borderColor: '#a855f7' },
-        techhub: { name: 'Tech Innovation Hub', baseMin: 2800, baseMax: 4500, xp: 25, reqPlots: 2, color: 'linear-gradient(90deg, #1e3a8a, #1d4ed8)', borderColor: '#3b82f6' },
-        biodome: { name: 'Bio-Dome Greenhouse', baseMin: 4800, baseMax: 7500, xp: 38, reqPlots: 3, color: 'linear-gradient(90deg, #065f46, #0d9488)', borderColor: '#14b8a6' },
-        observatory: { name: 'Sky Observatory', baseMin: 6000, baseMax: 10000, xp: 50, reqPlots: 3, color: 'linear-gradient(90deg, #713f12, #a16207)', borderColor: '#eab308' },
-        quantum: { name: 'Quantum Data Center', baseMin: 10000, baseMax: 16000, xp: 75, reqPlots: 4, color: 'linear-gradient(90deg, #164e63, #0891b2)', borderColor: '#06b6d4' },
-        helipad: { name: 'Helipad Deck', baseMin: 15000, baseMax: 25000, xp: 100, reqPlots: 4, color: 'linear-gradient(90deg, #881337, #be123c)', borderColor: '#f43f5e' },
-        apoffice: { name: 'AP Office', baseMin: 50000000000, baseMax: 50000000000, xp: 1000, reqPlots: 1, color: 'linear-gradient(90deg, #78350f, #d97706, #7e22ce)', borderColor: '#f59e0b' }
-    };
-
-    const AMENITY_BASE_COSTS = { 
-        elevators: 10000, pool: 22000, solar: 50000, garden: 90000, fiber: 150000, 
-        security: 250000, parking: 400000, drone: 650000, spa: 1000000, fusion: 2500000 
-    };
+    // --- COMPREHENSIVE DATA ENGINE ---
     
-    const EXECUTIVE_BASE_COSTS = { 
-        cfo: 30000, vp: 50000, cmo: 90000, eng: 150000, cio: 250000, 
-        chro: 400000, cso: 600000, ir: 850000, eco: 1200000, strategy: 2000000 
+    // 20 BUILDING UNITS (INCLUDING 5 AP BUILDINGS)
+    const UNIT_TYPES = {
+        commercial: { name: 'Commercial Office', baseMin: 120, baseMax: 220, xp: 2, reqPlots: 1, baseCost: 600, color: 'linear-gradient(90deg, #064e3b, #047857)', borderColor: '#10b981' },
+        corporate: { name: 'Corporate Sky Suite', baseMin: 450, baseMax: 850, xp: 5, reqPlots: 1, baseCost: 2500, color: 'linear-gradient(90deg, #312e81, #4338ca)', borderColor: '#6366f1' },
+        penthouse: { name: 'Luxury Penthouse', baseMin: 1200, baseMax: 2000, xp: 12, reqPlots: 2, baseCost: 8000, color: 'linear-gradient(90deg, #581c87, #7e22ce)', borderColor: '#a855f7' },
+        techhub: { name: 'Tech Innovation Hub', baseMin: 2800, baseMax: 4500, xp: 25, reqPlots: 2, baseCost: 22000, color: 'linear-gradient(90deg, #1e3a8a, #1d4ed8)', borderColor: '#3b82f6' },
+        biodome: { name: 'Bio-Dome Greenhouse', baseMin: 4800, baseMax: 7500, xp: 38, reqPlots: 3, baseCost: 38000, color: 'linear-gradient(90deg, #065f46, #0d9488)', borderColor: '#14b8a6' },
+        observatory: { name: 'Sky Observatory Deck', baseMin: 6000, baseMax: 10000, xp: 50, reqPlots: 3, baseCost: 60000, color: 'linear-gradient(90deg, #713f12, #a16207)', borderColor: '#eab308' },
+        quantum: { name: 'Quantum Data Center', baseMin: 10000, baseMax: 16000, xp: 75, reqPlots: 4, baseCost: 110000, color: 'linear-gradient(90deg, #164e63, #0891b2)', borderColor: '#06b6d4' },
+        helipad: { name: 'Helipad Executive Deck', baseMin: 15000, baseMax: 25000, xp: 100, reqPlots: 4, baseCost: 175000, color: 'linear-gradient(90deg, #881337, #be123c)', borderColor: '#f43f5e' },
+        esports: { name: 'Esports Arena Complex', baseMin: 28000, baseMax: 42000, xp: 140, reqPlots: 3, baseCost: 320000, color: 'linear-gradient(90deg, #4c1d95, #6d28d9)', borderColor: '#8b5cf6' },
+        ai_lab: { name: 'AI Neural Matrix Lab', baseMin: 55000, baseMax: 85000, xp: 200, reqPlots: 4, baseCost: 600000, color: 'linear-gradient(90deg, #1e1b4b, #312e81)', borderColor: '#6366f1' },
+        cryo_vault: { name: 'Cryo Storage Vault', baseMin: 110000, baseMax: 170000, xp: 320, reqPlots: 4, baseCost: 1200000, color: 'linear-gradient(90deg, #0284c7, #0369a1)', borderColor: '#38bdf8' },
+        fusion_plant: { name: 'Micro-Fusion Power Station', baseMin: 250000, baseMax: 400000, xp: 500, reqPlots: 5, baseCost: 2800000, color: 'linear-gradient(90deg, #b45309, #d97706)', borderColor: '#f59e0b' },
+        orbital_relay: { name: 'Orbital Uplink Tower', baseMin: 600000, baseMax: 950000, xp: 800, reqPlots: 5, baseCost: 6500000, color: 'linear-gradient(90deg, #0f766e, #115e59)', borderColor: '#2dd4bf' },
+        metaverse_hub: { name: 'Metaverse Server Vault', baseMin: 1400000, baseMax: 2200000, xp: 1200, reqPlots: 6, baseCost: 15000000, color: 'linear-gradient(90deg, #be185d, #9d174d)', borderColor: '#f43f5e' },
+        hyperloop_depot: { name: 'Sky Hyperloop Depot', baseMin: 3200000, baseMax: 5000000, xp: 1800, reqPlots: 6, baseCost: 35000000, color: 'linear-gradient(90deg, #374151, #1f2937)', borderColor: '#9ca3af' },
+
+        // 5 SPECIAL AP BUILDINGS (UNLOCKED VIA AP PANEL)
+        apoffice: { ap: true, name: '⚡ AP Office', baseMin: 50000000000, baseMax: 50000000000, xp: 1000, reqPlots: 1, baseCost: 1000000000, color: 'linear-gradient(90deg, #78350f, #d97706, #7e22ce)', borderColor: '#f59e0b' },
+        apcyber: { ap: true, name: '⚡ AP Cyber Citadel', baseMin: 250000000000, baseMax: 250000000000, xp: 3000, reqPlots: 2, baseCost: 5000000000, color: 'linear-gradient(90deg, #1e1b4b, #4338ca, #9333ea)', borderColor: '#a855f7' },
+        apapex: { ap: true, name: '⚡ AP Apex Megagrid', baseMin: 1000000000000, baseMax: 1000000000000, xp: 8000, reqPlots: 3, baseCost: 25000000000, color: 'linear-gradient(90deg, #064e3b, #059669, #3b82f6)', borderColor: '#10b981' },
+        apquantum: { ap: true, name: '⚡ AP Quantum Spire', baseMin: 5000000000000, baseMax: 5000000000000, xp: 20000, reqPlots: 4, baseCost: 100000000000, color: 'linear-gradient(90deg, #164e63, #0891b2, #6366f1)', borderColor: '#06b6d4' },
+        apcelestial: { ap: true, name: '⚡ AP Celestial Starstation', baseMin: 25000000000000, baseMax: 25000000000000, xp: 50000, reqPlots: 5, baseCost: 500000000000, color: 'linear-gradient(90deg, #881337, #e11d48, #eab308)', borderColor: '#f43f5e' }
+    };
+
+    // 20 AMENITIES
+    const AMENITIES = {
+        elevators: { name: '1. High-Speed Express Elevators 🛗', desc: '+10% rent boost per stack.', baseCost: 10000 },
+        pool: { name: '2. Rooftop Infinity Pool & Gym 🏊‍♂️', desc: '+8% market occupancy boost per stack.', baseCost: 22000 },
+        solar: { name: '3. Solar Glass Façade ☀️', desc: '+15% rent boost per stack.', baseCost: 50000 },
+        garden: { name: '4. Biophilic Indoor Gardens 🌿', desc: '+12% rental yield per stack.', baseCost: 90000 },
+        fiber: { name: '5. Smart Fiber Infrastructure 📡', desc: '+25% bonus XP gain per stack.', baseCost: 150000 },
+        security: { name: '6. 24/7 Security & Concierge Desk 🛡️', desc: '+5% base occupancy floor per stack.', baseCost: 250000 },
+        parking: { name: '7. Luxury Valet & Underground Parking 🚘', desc: '+18% total rent boost per stack.', baseCost: 400000 },
+        drone: { name: '8. Automated Drone Delivery Hub 🚁', desc: '+20% rental yield per stack.', baseCost: 650000 },
+        spa: { name: '9. Cryo Hydro-Spa & Wellness Center 💆', desc: '+10% market occupancy per stack.', baseCost: 1000000 },
+        fusion: { name: '10. Fusion Core Clean Energy Reactor ⚛️', desc: '+30% rent boost per stack.', baseCost: 2500000 },
+        helipad_park: { name: '11. Rooftop Sky Helipad Lounge 🚁', desc: '+22% luxury rent boost per stack.', baseCost: 4500000 },
+        quantum_wifi: { name: '12. Quantum Wi-Fi Mesh Network ⚡', desc: '+25% total rent boost per stack.', baseCost: 8000000 },
+        ai_concierge: { name: '13. Holographic AI Concierge 🤖', desc: '+15% occupancy floor boost per stack.', baseCost: 15000000 },
+        botanical_sky: { name: '14. Multi-Tier Botanical Skywalk 🌴', desc: '+35% green rent boost per stack.', baseCost: 28000000 },
+        maglev_shuttle: { name: '15. Sky Maglev Transit Stop 🚄', desc: '+40% overall rent yield per stack.', baseCost: 50000000 },
+        zero_g_gym: { name: '16. Zero-Gravity Fitness Chamber 🏋️', desc: '+45% rent boost per stack.', baseCost: 90000000 },
+        laser_defense: { name: '17. Orbital Laser Security Grid 🛰️', desc: '+20% min occupancy floor per stack.', baseCost: 160000000 },
+        desal_plant: { name: '18. Autonomous Hydro-Pure Recycler 💧', desc: '+50% rent boost per stack.', baseCost: 300000000 },
+        plasma_shield: { name: '19. Atmospheric Weather Shield 🛡️', desc: '+60% rent yield boost per stack.', baseCost: 600000000 },
+        antigrav_lift: { name: '20. Anti-Gravity Vertical Elevators 🚀', desc: '+100% mega rent boost per stack.', baseCost: 1200000000 }
+    };
+
+    // 20 EXECUTIVES
+    const EXECUTIVES = {
+        cfo: { name: '1. Chief Financial Officer (CFO) 📈', desc: '-10% loan interest per stack.', baseCost: 30000 },
+        vp: { name: '2. VP of Operations 🏢', desc: '-6% construction cost per stack.', baseCost: 50000 },
+        cmo: { name: '3. Chief Marketing Officer (CMO) 📣', desc: '+8% base market occupancy per stack.', baseCost: 90000 },
+        eng: { name: '4. Head of Engineering 🛠️', desc: '-7% floor expansion cost per stack.', baseCost: 150000 },
+        cio: { name: '5. Chief Information Officer (CIO) 💻', desc: '+20% XP boost from construction per stack.', baseCost: 250000 },
+        chro: { name: '6. Chief Human Resources Officer (CHRO) 👥', desc: '-5% executive hire cost discount per stack.', baseCost: 400000 },
+        cso: { name: '7. Chief Security Officer (CSO) 🔒', desc: '+6% minimum occupancy floor guarantee.', baseCost: 600000 },
+        ir: { name: '8. Director of Investor Relations 📊', desc: '+25% REIT stock dividend payout per stack.', baseCost: 850000 },
+        eco: { name: '9. Chief Sustainability Officer (CSO-Eco) 🌱', desc: '+10% total rent yield across green units.', baseCost: 1200000 },
+        strategy: { name: '10. Chief Strategy Officer (CSO-Global) 🌍', desc: '+15% rent multiplier on all units.', baseCost: 2000000 },
+        cto: { name: '11. Chief Technology Officer (CTO) ⚡', desc: '+30% high-tech unit yields per stack.', baseCost: 3500000 },
+        cpo: { name: '12. Chief Procurement Officer (CPO) 📦', desc: '-8% unit construction cost per stack.', baseCost: 6000000 },
+        cdo: { name: '13. Chief Data Officer (CDO) 🧠', desc: '+25% total rent yield per stack.', baseCost: 10000000 },
+        cro: { name: '14. Chief Risk Officer (CRO) ⚖️', desc: '-15% market crash event impact per stack.', baseCost: 18000000 },
+        clo: { name: '15. Chief Legal Officer (CLO) 📜', desc: '-12% loan interest rate per stack.', baseCost: 32000000 },
+        cxo: { name: '16. Chief Experience Officer (CXO) ✨', desc: '+12% base market occupancy per stack.', baseCost: 55000000 },
+        cvo: { name: '17. Chief Visionary Officer (CVO) 🔮', desc: '+50% XP gain from all actions per stack.', baseCost: 100000000 },
+        cbo: { name: '18. Chief Brand Officer (CBO) 👑', desc: '+35% total rent multiplier per stack.', baseCost: 200000000 },
+        cag: { name: '19. Chief AI Governance Officer 🤖', desc: '+75% yield boost on tech units per stack.', baseCost: 400000000 },
+        cap: { name: '20. Chief AP Supreme Operator ⚡', desc: '+100% mega yield multiplier across all units per stack.', baseCost: 1000000000 }
     };
 
     const CITY_EVENTS = {
         BOOM: { name: '🌆 Economic Boom', desc: 'Tenant demand soars! +50% Rent Yields & +30% Occupancy.', rentMult: 1.5, occBoost: 0.3 },
         TECH: { name: '💻 Tech Surge', desc: 'Massive demand for servers! +100% Rent Yields.', rentMult: 2.0, occBoost: 0.15 },
         TOURISM: { name: '🔭 Tourism Explosion', desc: 'Record city visits! +100% Rent Yields.', rentMult: 2.0, occBoost: 0.2 },
+        HYPER: { name: '⚡ AP Golden Era', desc: 'Supreme AP power overload! +500% Rent Yields.', rentMult: 6.0, occBoost: 0.5 },
         CRASH: { name: '📉 Market Crash', desc: 'Economic downturn! Rent yields reduced by 30%.', rentMult: 0.7, occBoost: -0.2 },
         NORMAL: { name: '⚖️ Normal Market Conditions', desc: 'Standard real estate economic climate with steady tenant demand.', rentMult: 1.0, occBoost: 0.0 }
     };
 
-    function playSound(type) {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
+    // --- GAME STATE ---
+    let state = {
+        money: 15000, land: 2, floors: [],
+        landCost: 1000,
+        unitCosts: {},
+        amenityStacks: {},
+        executiveStacks: {},
+        stocks: { grit: 0 },
+        occupancyFactor: 1.0, loanBalance: 0, loanInterestRate: 0.015, ticksSinceInterest: 0,
+        currentEvent: { id: 'NORMAL', name: 'Normal Market Conditions', desc: 'Standard real estate economic climate with steady tenant demand.', duration: 0, rentMult: 1.0, occBoost: 0.0 },
+        eventTimer: 0, level: 1, xp: 0, xpToNextLevel: 10, gameTickMs: 1000, gameLoopInterval: null,
+        apUnlocked: false, freeCosts: false, autoBuildActive: false
+    };
 
-            if (type === 'click') {
-                osc.frequency.setValueAtTime(400, ctx.currentTime);
-                gain.gain.setValueAtTime(0.05, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-                osc.start(); osc.stop(ctx.currentTime + 0.08);
-            } else if (type === 'build') {
-                osc.frequency.setValueAtTime(200, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-                osc.start(); osc.stop(ctx.currentTime + 0.2);
-            }
-        } catch(e){}
-    }
+    const LEVEL_TITLES = ["Novice Developer", "Commercial Apprentice", "Urban Architect", "Skyline Constructor", "Metropolitan Tycoon", "Global Real Estate Mogul"];
+
+    // Initialize Costs & Stacks dynamically
+    Object.keys(UNIT_TYPES).forEach(k => state.unitCosts[k] = UNIT_TYPES[k].baseCost);
+    Object.keys(AMENITIES).forEach(k => state.amenityStacks[k] = 0);
+    Object.keys(EXECUTIVES).forEach(k => state.executiveStacks[k] = 0);
 
     function formatCurrency(amount) {
         if (amount >= 1e12) return '₹' + (amount / 1e12).toFixed(2) + ' Trillion';
         if (amount >= 1e9) return '₹' + (amount / 1e9).toFixed(2) + ' Billion';
         if (amount >= 1e6) return '₹' + (amount / 1e6).toFixed(2) + ' Million';
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency', currency: 'INR', maximumFractionDigits: 0
-        }).format(amount);
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
     }
 
-    function getUsedPlots() {
-        return state.floors.reduce((acc, f) => acc + (UNIT_TYPES[f.type]?.reqPlots || 1), 0);
-    }
+    function getUsedPlots() { return state.floors.reduce((acc, f) => acc + (UNIT_TYPES[f.type]?.reqPlots || 1), 0); }
 
     function showMessage(msg, type = 'success') {
         const box = document.getElementById('message-box');
         box.textContent = msg;
-        box.className = `p-2.5 rounded-xl text-xs font-medium border ${
-            type === 'error' ? 'bg-red-950/80 border-red-700 text-red-300' : 'bg-emerald-950/80 border-emerald-700 text-emerald-300'
-        }`;
+        box.className = `p-2 rounded-xl text-xs font-medium border ${type === 'error' ? 'bg-red-950/80 border-red-700 text-red-300' : 'bg-emerald-950/80 border-emerald-700 text-emerald-300'}`;
         box.style.display = 'block';
-        setTimeout(() => { box.style.display = 'none'; }, 3500);
+        setTimeout(() => { box.style.display = 'none'; }, 3000);
     }
 
     function toggleModal(id) {
-        playSound('click');
         const modal = document.getElementById(id);
-        if (modal) {
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        }
+        if (modal) modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
     }
 
-    // --- AP OPERATOR AUTHENTICATION ---
     function handleAPAuth() {
-        playSound('click');
-        if (state.apUnlocked) {
-            toggleModal('ap-panel');
-            return;
-        }
+        if (state.apUnlocked) { toggleModal('ap-panel'); return; }
         const pwd = prompt("Enter Operator Security Password:");
         if (pwd === "AP is OP") {
             state.apUnlocked = true;
-            document.getElementById('ap-building-option').classList.remove('hidden');
-            document.getElementById('build-options-count').textContent = '9 Options';
-            showMessage("⚡ AP Master Access Granted! Operator Controls Unlocked.", "success");
+            renderModals();
+            showMessage("⚡ AP Master Access Granted! Supreme Controls Unlocked.", "success");
             toggleModal('ap-panel');
         } else if (pwd !== null) {
             showMessage("Access Denied: Invalid Security Password!", "error");
         }
     }
 
-    // --- AP MASTER FUNCTIONS ---
+    // --- AP MASTER POWERS ---
     function apGiveCash() {
         const val = parseFloat(document.getElementById('ap-cash-input').value) || 0;
         state.money += val;
-        showMessage(`AP Grant: Added ${formatCurrency(val)} to Treasury!`, 'success');
+        showMessage(`AP Grant: Added ${formatCurrency(val)}!`, 'success');
         updateUI();
     }
 
     function apGiveLand() {
         const val = parseInt(document.getElementById('ap-land-input').value) || 0;
         state.land += val;
-        showMessage(`AP Grant: Unlocked +${val} Floor Capacity!`, 'success');
+        showMessage(`AP Grant: Unlocked +${val} Floors!`, 'success');
         updateUI();
-    }
-
-    function apBuildAPOffice() {
-        buildFloor('apoffice');
-    }
-
-    function apSetLevel(targetLvl) {
-        state.level = targetLvl;
-        state.xp = 0;
-        state.xpToNextLevel = 10 * state.level;
-        showMessage(`AP Boost: Promoted to Level ${state.level}!`, 'success');
-        updateUI();
-    }
-
-    function apClearLoans() {
-        state.loanBalance = 0;
-        state.ticksSinceInterest = 0;
-        showMessage("AP Override: Cleared all outstanding bank debt!", "success");
-        updateUI();
-    }
-
-    function apTriggerEvent() {
-        const key = document.getElementById('ap-event-select').value;
-        const dur = parseInt(document.getElementById('ap-event-duration').value) || 30;
-        triggerCityEvent(key, dur);
-        showMessage(`AP Override: Forced City Event "${CITY_EVENTS[key].name}" for ${dur}s!`, 'success');
-    }
-
-    function apInfiniteCash() {
-        state.money += 999000000000000;
-        showMessage("⚡ God Mode Activated: Granted Trillions in Treasury!", "success");
-        updateUI();
-    }
-
-    function apMaxAllStacks() {
-        Object.keys(state.amenityStacks).forEach(k => state.amenityStacks[k] = 10);
-        Object.keys(state.executiveStacks).forEach(k => state.executiveStacks[k] = 10);
-        showMessage("⚡ Max Stacks Override: All 20 Amenities & Executives set to 10x!", "success");
-        updateUI();
-    }
-
-    function apFreePrices() {
-        state.freeCosts = !state.freeCosts;
-        showMessage(`AP Toggle: Zero Cost Construction set to ${state.freeCosts ? 'ENABLED' : 'DISABLED'}!`, 'success');
     }
 
     function apSetSpeed(ms) {
         state.gameTickMs = ms;
         if (state.gameLoopInterval) clearInterval(state.gameLoopInterval);
         state.gameLoopInterval = setInterval(gameTick, state.gameTickMs);
-        showMessage(`AP Speed Engine: Game tick interval set to ${ms}ms!`, 'success');
+        showMessage(`AP Engine: Speed set to ${ms}ms per tick!`, 'success');
+    }
+
+    function apToggleAutoBuild() {
+        state.autoBuildActive = !state.autoBuildActive;
+        showMessage(`AP Auto-Build Bot: ${state.autoBuildActive ? 'ACTIVATED 🤖' : 'DEACTIVATED'}`, 'success');
+    }
+
+    function apInfiniteCash() { state.money += 999000000000000; showMessage("⚡ God Mode: Granted Trillions!", "success"); updateUI(); }
+    function apMaxAllStacks() { Object.keys(state.amenityStacks).forEach(k => state.amenityStacks[k] = 10); Object.keys(state.executiveStacks).forEach(k => state.executiveStacks[k] = 10); showMessage("⚡ Max Stacks Override Applied!", "success"); updateUI(); }
+    function apFreePrices() { state.freeCosts = !state.freeCosts; showMessage(`AP Zero-Cost: ${state.freeCosts ? 'ENABLED' : 'DISABLED'}`, 'success'); }
+    function apClearLoans() { state.loanBalance = 0; state.ticksSinceInterest = 0; showMessage("AP Override: Wiped bank loans!", "success"); updateUI(); }
+
+    function apTriggerEvent() {
+        const key = document.getElementById('ap-event-select').value;
+        const dur = parseInt(document.getElementById('ap-event-duration').value) || 60;
+        triggerCityEvent(key, dur);
+        showMessage(`AP Event Override: Forced "${CITY_EVENTS[key].name}" for ${dur}s!`, 'success');
     }
 
     function triggerCityEvent(eventKey, duration = 30) {
         const ev = CITY_EVENTS[eventKey] || CITY_EVENTS.NORMAL;
-        state.currentEvent = {
-            id: eventKey,
-            name: ev.name,
-            desc: ev.desc,
-            rentMult: ev.rentMult,
-            occBoost: ev.occBoost
-        };
+        state.currentEvent = { id: eventKey, name: ev.name, desc: ev.desc, rentMult: ev.rentMult, occBoost: ev.occBoost };
         state.eventTimer = duration;
         updateEventUI();
     }
@@ -1196,201 +642,140 @@
         document.getElementById('event-effect-indicator').textContent = state.eventTimer > 0 ? `Active Event: ${state.currentEvent.name}` : 'Fluctuates live with occupancy';
     }
 
-    function checkLevelUp() {
-        while (state.xp >= state.xpToNextLevel) {
-            state.xp -= state.xpToNextLevel;
-            state.level += 1;
-            state.xpToNextLevel = 10 * state.level;
-            const reward = state.level * 4000;
-            state.money += reward;
-            showMessage(`LEVEL UP! Reached Level ${state.level}! Bonus: ${formatCurrency(reward)}`, 'success');
-        }
-    }
-
     function buyLand() {
-        playSound('click');
-        let actualLandCost = state.freeCosts ? 0 : state.landCost;
-        if (!state.freeCosts) {
-            let engStacks = state.executiveStacks.eng;
-            let discount = engStacks * 0.07;
-            actualLandCost = Math.round(actualLandCost * Math.max(0.3, (1 - discount)));
-        }
+        let cost = state.freeCosts ? 0 : state.landCost;
+        if (!state.freeCosts) cost = Math.round(cost * Math.max(0.3, (1 - (state.executiveStacks.eng * 0.07))));
 
-        if (state.money >= actualLandCost) {
-            state.money -= actualLandCost;
+        if (state.money >= cost) {
+            state.money -= cost;
             state.land += 1;
             state.landCost = Math.ceil(state.landCost * 1.05 / 100) * 100;
-            showMessage(`Acquired +1 Floor Capacity! Total Capacity: ${state.land} floors`, 'success');
+            showMessage(`Acquired +1 Floor Capacity! Total: ${state.land}`, 'success');
             updateUI();
-        } else {
-            showMessage('Insufficient funds to purchase floor capacity!', 'error');
-        }
+        } else { showMessage('Insufficient funds for floor capacity!', 'error'); }
     }
 
     function buildFloor(type) {
-        playSound('build');
         const unit = UNIT_TYPES[type];
-        let costKey = `${type}Cost`;
-        let cost = state.freeCosts ? 0 : state[costKey];
+        let cost = state.freeCosts ? 0 : state.unitCosts[type];
 
         if (!state.freeCosts) {
-            let vpStacks = state.executiveStacks.vp;
-            let discount = vpStacks * 0.06;
-            cost = Math.round(cost * Math.max(0.4, (1 - discount)));
+            let vpDiscount = (state.executiveStacks.vp * 0.06) + (state.executiveStacks.cpo * 0.08);
+            cost = Math.round(cost * Math.max(0.2, (1 - vpDiscount)));
         }
 
         const usedPlots = getUsedPlots();
         if (usedPlots + unit.reqPlots > state.land) {
-            showMessage(`Insufficient floor capacity! Requires ${unit.reqPlots} floor(s). Expand capacity first.`, 'error');
+            showMessage(`Requires ${unit.reqPlots} floor(s). Expand capacity first!`, 'error');
             return;
         }
 
         if (state.money >= cost) {
             state.money -= cost;
             state.floors.push({ type: type });
-            state[costKey] = Math.ceil(state[costKey] * 1.05 / 100) * 100;
+            state.unitCosts[type] = Math.ceil(state.unitCosts[type] * 1.05 / 100) * 100;
             
-            let xpGained = unit.xp;
-            let fiberStacks = state.amenityStacks.fiber;
-            let cioStacks = state.executiveStacks.cio;
-            xpGained = Math.round(xpGained * (1 + (fiberStacks * 0.25) + (cioStacks * 0.20)));
-            state.xp += xpGained;
+            let xpGained = unit.xp * (1 + (state.amenityStacks.fiber * 0.25) + (state.executiveStacks.cio * 0.20) + (state.executiveStacks.cvo * 0.50));
+            state.xp += Math.round(xpGained);
             
             checkLevelUp();
-            showMessage(`Successfully constructed ${unit.name}!`, 'success');
-            if (document.getElementById('build-modal').style.display === 'flex') {
-                toggleModal('build-modal');
-            }
+            showMessage(`Constructed ${unit.name}!`, 'success');
             updateUI();
-        } else {
-            showMessage('Insufficient funds for construction!', 'error');
-        }
+            renderModals();
+        } else { showMessage('Insufficient funds for construction!', 'error'); }
     }
 
     function getStackCost(baseCost, currentStacks) {
         let cost = Math.round(baseCost * Math.pow(1.45, currentStacks));
-        let chroStacks = state.executiveStacks.chro;
-        cost = Math.round(cost * Math.max(0.5, (1 - (chroStacks * 0.05))));
+        cost = Math.round(cost * Math.max(0.4, (1 - (state.executiveStacks.chro * 0.05))));
         return state.freeCosts ? 0 : cost;
     }
 
-    function buyAmenity(key, baseCost) {
-        playSound('click');
-        let currentStacks = state.amenityStacks[key];
-        if (currentStacks >= 10) {
-            showMessage('This amenity is already maxed out at 10 stacks!', 'error');
-            return;
-        }
-        let cost = getStackCost(baseCost, currentStacks);
+    function buyAmenity(key) {
+        if (state.amenityStacks[key] >= 10) return;
+        let cost = getStackCost(AMENITIES[key].baseCost, state.amenityStacks[key]);
         if (state.money >= cost) {
             state.money -= cost;
             state.amenityStacks[key] += 1;
-            showMessage(`Upgraded amenity stack to Level ${state.amenityStacks[key]}/10!`, 'success');
-            updateUI();
-        } else {
-            showMessage('Insufficient funds for amenity stack upgrade!', 'error');
-        }
+            showMessage(`Upgraded amenity stack: ${state.amenityStacks[key]}/10`, 'success');
+            updateUI(); renderModals();
+        } else showMessage('Insufficient funds!', 'error');
     }
 
-    function hireExecutive(key, baseCost) {
-        playSound('click');
-        let currentStacks = state.executiveStacks[key];
-        if (currentStacks >= 10) {
-            showMessage('This executive manager is already maxed out at 10 stacks!', 'error');
-            return;
-        }
-        let cost = getStackCost(baseCost, currentStacks);
+    function hireExecutive(key) {
+        if (state.executiveStacks[key] >= 10) return;
+        let cost = getStackCost(EXECUTIVES[key].baseCost, state.executiveStacks[key]);
         if (state.money >= cost) {
             state.money -= cost;
             state.executiveStacks[key] += 1;
-            showMessage(`Upgraded executive stack to Level ${state.executiveStacks[key]}/10!`, 'success');
-            updateUI();
-        } else {
-            showMessage('Insufficient funds for executive stack upgrade!', 'error');
-        }
+            showMessage(`Hired/Upgraded executive stack: ${state.executiveStacks[key]}/10`, 'success');
+            updateUI(); renderModals();
+        } else showMessage('Insufficient funds!', 'error');
     }
 
     function buyStock(key, cost) {
-        playSound('click');
         if (state.money >= cost) {
             state.money -= cost;
             state.stocks[key] = (state.stocks[key] || 0) + 1;
             showMessage('Purchased 1 REIT Stock Share!', 'success');
             updateUI();
-        } else {
-            showMessage('Insufficient funds for stock purchase!', 'error');
-        }
+        } else showMessage('Insufficient funds!', 'error');
     }
 
     function takeLoan(amount, rate) {
-        playSound('click');
-        if (state.loanBalance > 0) {
-            showMessage('You already have an active loan balance.', 'error');
-            return;
-        }
-        state.loanBalance = amount;
-        state.loanInterestRate = rate;
-        state.ticksSinceInterest = 0;
-        state.money += amount;
-        showMessage(`Secured credit facility of ${formatCurrency(amount)}!`, 'success');
-        toggleModal('loan-modal');
-        updateUI();
+        if (state.loanBalance > 0) { showMessage('Active loan present!', 'error'); return; }
+        state.loanBalance = amount; state.loanInterestRate = rate; state.ticksSinceInterest = 0; state.money += amount;
+        showMessage(`Secured credit line of ${formatCurrency(amount)}!`, 'success');
+        toggleModal('loan-modal'); updateUI();
     }
 
     function repayTotalLoan() {
-        playSound('click');
-        if (state.loanBalance <= 0) {
-            showMessage('No active loan to repay.', 'error');
-            return;
-        }
-        const totalDue = state.loanBalance;
-        if (state.money >= totalDue) {
-            state.money -= totalDue;
-            state.loanBalance = 0;
-            state.ticksSinceInterest = 0;
-            showMessage(`Successfully repaid total loan of ${formatCurrency(totalDue)}!`, 'success');
-            toggleModal('loan-modal');
-            updateUI();
-        } else {
-            showMessage(`Insufficient funds! You need ${formatCurrency(totalDue)} to repay the total loan.`, 'error');
-        }
+        if (state.loanBalance <= 0) return;
+        if (state.money >= state.loanBalance) {
+            state.money -= state.loanBalance;
+            state.loanBalance = 0; state.ticksSinceInterest = 0;
+            showMessage(`Repaid total loan!`, 'success');
+            toggleModal('loan-modal'); updateUI();
+        } else showMessage('Insufficient funds!', 'error');
     }
 
-    function inspectFloor(index) {
-        const floor = state.floors[index];
-        if (!floor) return;
-        const u = UNIT_TYPES[floor.type];
-        
-        document.getElementById('inspect-title').textContent = `Floor #${index + 1} Inspection`;
-        document.getElementById('inspect-type').textContent = u.name;
-        document.getElementById('inspect-yield').textContent = `~${formatCurrency(Math.round(((u.baseMin + u.baseMax)/2) * state.occupancyFactor * state.currentEvent.rentMult))}/s`;
-        document.getElementById('inspect-plots').textContent = u.reqPlots;
-        
-        toggleModal('inspect-modal');
+    function checkLevelUp() {
+        while (state.xp >= state.xpToNextLevel) {
+            state.xp -= state.xpToNextLevel; state.level += 1;
+            state.xpToNextLevel = 10 * state.level;
+            state.money += state.level * 5000;
+            showMessage(`LEVEL UP! Reached Level ${state.level}!`, 'success');
+        }
     }
 
     function gameTick() {
-        // Handle City Event Timer
+        // Event Timer Logic
         if (state.eventTimer > 0) {
             state.eventTimer -= 1;
-            if (state.eventTimer <= 0) {
-                triggerCityEvent('NORMAL', 0);
-            }
+            if (state.eventTimer <= 0) triggerCityEvent('NORMAL', 0);
             updateEventUI();
-        } else if (Math.random() < 0.05) {
+        } else if (Math.random() < 0.04) {
             const keys = ['BOOM', 'TECH', 'TOURISM', 'CRASH'];
-            const randomKey = keys[Math.floor(Math.random() * keys.length)];
-            triggerCityEvent(randomKey, 25);
+            triggerCityEvent(keys[Math.floor(Math.random() * keys.length)], 25);
+        }
+
+        // Auto-Build Bot Power
+        if (state.autoBuildActive) {
+            if (getUsedPlots() < state.land) {
+                const keys = Object.keys(UNIT_TYPES).filter(k => !UNIT_TYPES[k].ap || state.apUnlocked);
+                const affordable = keys.filter(k => state.money >= state.unitCosts[k]);
+                if (affordable.length > 0) buildFloor(affordable[affordable.length - 1]);
+            } else {
+                buyLand();
+            }
         }
 
         let baseOcc = 0.70 + (Math.random() * 0.45) + state.currentEvent.occBoost;
-        baseOcc += state.amenityStacks.pool * 0.08;
-        baseOcc += state.amenityStacks.spa * 0.10;
-        baseOcc += state.executiveStacks.cmo * 0.08;
+        baseOcc += (state.amenityStacks.pool * 0.08) + (state.amenityStacks.spa * 0.10) + (state.executiveStacks.cmo * 0.08) + (state.executiveStacks.cxo * 0.12);
         
         let minSecurityOcc = 0.70 + (state.amenityStacks.security * 0.05) + (state.executiveStacks.cso * 0.06);
         if (baseOcc < minSecurityOcc) baseOcc = minSecurityOcc;
-        if (baseOcc > 1.35) baseOcc = 1.35;
+        if (baseOcc > 1.50) baseOcc = 1.50;
 
         state.occupancyFactor = baseOcc;
 
@@ -1401,33 +786,27 @@
             totalRent += Math.round(rawRent * state.occupancyFactor * state.currentEvent.rentMult);
         });
 
-        // Apply 10 Amenity Stack Multipliers
-        totalRent = Math.round(totalRent * (1 + (state.amenityStacks.elevators * 0.10)));
-        totalRent = Math.round(totalRent * (1 + (state.amenityStacks.solar * 0.15)));
-        totalRent = Math.round(totalRent * (1 + (state.amenityStacks.garden * 0.12)));
-        totalRent = Math.round(totalRent * (1 + (state.amenityStacks.parking * 0.18)));
-        totalRent = Math.round(totalRent * (1 + (state.amenityStacks.drone * 0.20)));
-        totalRent = Math.round(totalRent * (1 + (state.amenityStacks.fusion * 0.30)));
+        // Rent Multipliers
+        let totalMult = 1.0;
+        totalMult += (state.amenityStacks.elevators * 0.10) + (state.amenityStacks.solar * 0.15) + (state.amenityStacks.garden * 0.12) + 
+                  (state.amenityStacks.parking * 0.18) + (state.amenityStacks.drone * 0.20) + (state.amenityStacks.fusion * 0.30) + 
+                  (state.amenityStacks.quantum_wifi * 0.25) + (state.amenityStacks.maglev_shuttle * 0.40) + (state.amenityStacks.antigrav_lift * 1.0);
+                  
+        totalMult += (state.executiveStacks.eco * 0.10) + (state.executiveStacks.strategy * 0.15) + (state.executiveStacks.cbo * 0.35) + (state.executiveStacks.cap * 1.0);
 
-        // Apply Executive Multipliers
-        totalRent = Math.round(totalRent * (1 + (state.executiveStacks.eco * 0.10)));
-        totalRent = Math.round(totalRent * (1 + (state.executiveStacks.strategy * 0.15)));
+        totalRent = Math.round(totalRent * totalMult);
 
         if (state.stocks.grit > 0) {
-            let stockDiv = 80 * (1 + (state.executiveStacks.ir * 0.25));
-            totalRent += Math.round(state.stocks.grit * stockDiv);
+            totalRent += Math.round(state.stocks.grit * 80 * (1 + (state.executiveStacks.ir * 0.25)));
         }
 
-        // Loan interest accrues once every 10 seconds
+        // Loan Interest Every 10 Ticks
         if (state.loanBalance > 0) {
             state.ticksSinceInterest += 1;
             if (state.ticksSinceInterest >= 10) {
                 state.ticksSinceInterest = 0;
-                let effectiveRate = state.loanInterestRate;
-                let cfoReduction = state.executiveStacks.cfo * 0.10;
-                effectiveRate *= Math.max(0.1, (1 - cfoReduction));
-                const interest = Math.round(state.loanBalance * effectiveRate);
-                state.loanBalance += interest;
+                let effectiveRate = state.loanInterestRate * Math.max(0.1, (1 - (state.executiveStacks.cfo * 0.10) - (state.executiveStacks.clo * 0.12)));
+                state.loanBalance += Math.round(state.loanBalance * effectiveRate);
             }
         }
 
@@ -1436,11 +815,97 @@
         if (totalRent !== 0) {
             const pulse = document.getElementById('rent-pulse');
             pulse.textContent = `(${totalRent >= 0 ? '+' : ''}${formatCurrency(totalRent)})`;
-            pulse.className = totalRent >= 0 ? 'text-emerald-400 font-bold text-[10px]' : 'text-red-400 font-bold text-[10px]';
+            pulse.className = totalRent >= 0 ? 'text-emerald-400 font-bold text-[9px]' : 'text-red-400 font-bold text-[9px]';
             setTimeout(() => { pulse.textContent = ''; }, 700);
         }
 
         updateUI();
+    }
+
+    // --- DYNAMIC HTML MODAL RENDERER (CLEAN & SIMPLE HIGH HTML CODE) ---
+    function renderModals() {
+        // Render 20 Building Units Modal Options
+        let buildHTML = '';
+        let count = 0;
+        Object.keys(UNIT_TYPES).forEach(k => {
+            const u = UNIT_TYPES[k];
+            if (u.ap && !state.apUnlocked) return; // Hide AP buildings until AP unlocked
+            count++;
+            let vpDiscount = (state.executiveStacks.vp * 0.06) + (state.executiveStacks.cpo * 0.08);
+            let cost = state.freeCosts ? 0 : Math.round(state.unitCosts[k] * Math.max(0.2, (1 - vpDiscount)));
+
+            buildHTML += `
+                <div class="bg-gray-800/90 p-2.5 rounded-xl border ${u.ap ? 'border-amber-500/80 bg-amber-950/30' : 'border-gray-700'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                        <h3 class="font-bold ${u.ap ? 'text-amber-300' : 'text-indigo-300'} text-xs">${u.name}</h3>
+                        <p class="text-[10px] text-gray-400">Yield: ~${formatCurrency(Math.round((u.baseMin + u.baseMax)/2))}/s (+${u.xp} XP)</p>
+                        <p class="text-xs font-bold text-gray-200">Cost: <span class="text-emerald-400">${formatCurrency(cost)}</span> | Req Floors: ${u.reqPlots}</p>
+                    </div>
+                    <button onclick="buildFloor('${k}')" class="glow-btn ${u.ap ? 'bg-gradient-to-r from-amber-500 to-purple-600' : 'bg-emerald-600 hover:bg-emerald-500'} text-white font-bold py-1 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
+                        Build
+                    </button>
+                </div>
+            `;
+        });
+        document.getElementById('build-modal-body').innerHTML = buildHTML;
+        document.getElementById('build-options-count').textContent = `${count} Options`;
+
+        // Render 20 Amenities Modal
+        let amenHTML = '';
+        let totalAmenStacks = 0;
+        Object.keys(AMENITIES).forEach(k => {
+            const a = AMENITIES[k];
+            const stacks = state.amenityStacks[k];
+            totalAmenStacks += stacks;
+            let cost = getStackCost(a.baseCost, stacks);
+
+            amenHTML += `
+                <div class="bg-gray-800/90 p-2 rounded-xl border border-gray-700 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-purple-300 text-xs">${a.name}</h3>
+                        <p class="text-[10px] text-gray-400">${a.desc} Stacks: <span class="font-bold text-white">${stacks}</span>/10</p>
+                        <p class="text-xs font-bold text-gray-200">Next Cost: <span class="text-purple-400">${stacks >= 10 ? 'MAX' : formatCurrency(cost)}</span></p>
+                    </div>
+                    <button onclick="buyAmenity('${k}')" class="glow-btn bg-purple-600 hover:bg-purple-500 text-white font-bold py-1 px-3 rounded-xl text-xs whitespace-nowrap">Upgrade</button>
+                </div>
+            `;
+        });
+        document.getElementById('amenities-modal-body').innerHTML = amenHTML;
+        document.getElementById('amenities-count-badge').textContent = `${totalAmenStacks}/200 Stacks`;
+
+        // Render 20 Executives Modal
+        let execHTML = '';
+        let totalExecStacks = 0;
+        Object.keys(EXECUTIVES).forEach(k => {
+            const e = EXECUTIVES[k];
+            const stacks = state.executiveStacks[k];
+            totalExecStacks += stacks;
+            let cost = getStackCost(e.baseCost, stacks);
+
+            execHTML += `
+                <div class="bg-gray-800/90 p-2 rounded-xl border border-gray-700 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-amber-300 text-xs">${e.name}</h3>
+                        <p class="text-[10px] text-gray-400">${e.desc} Stacks: <span class="font-bold text-white">${stacks}</span>/10</p>
+                        <p class="text-xs font-bold text-gray-200">Next Cost: <span class="text-amber-400">${stacks >= 10 ? 'MAX' : formatCurrency(cost)}</span></p>
+                    </div>
+                    <button onclick="hireExecutive('${k}')" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold py-1 px-3 rounded-xl text-xs whitespace-nowrap">Hire/Upgrade</button>
+                </div>
+            `;
+        });
+        document.getElementById('executives-modal-body').innerHTML = execHTML;
+        document.getElementById('executives-count-badge').textContent = `${totalExecStacks}/200 Stacks`;
+    }
+
+    function inspectFloor(index) {
+        const floor = state.floors[index];
+        if (!floor) return;
+        const u = UNIT_TYPES[floor.type];
+        document.getElementById('inspect-title').textContent = `Floor #${index + 1} Inspection`;
+        document.getElementById('inspect-type').textContent = u.name;
+        document.getElementById('inspect-yield').textContent = `~${formatCurrency(Math.round(((u.baseMin + u.baseMax)/2) * state.occupancyFactor * state.currentEvent.rentMult))}/s`;
+        document.getElementById('inspect-plots').textContent = u.reqPlots;
+        toggleModal('inspect-modal');
     }
 
     function updateUI() {
@@ -1451,11 +916,9 @@
         document.getElementById('land-display').textContent = `${usedPlots} / ${state.land}`;
         const plotStatus = document.getElementById('plot-status');
         if (usedPlots >= state.land) {
-            plotStatus.textContent = 'Floor Capacity Full!';
-            plotStatus.className = 'text-[10px] text-red-400 font-semibold';
+            plotStatus.textContent = 'Floor Capacity Full!'; plotStatus.className = 'text-[9px] text-red-400 font-semibold';
         } else {
-            plotStatus.textContent = `${state.land - usedPlots} Floor(s) Open`;
-            plotStatus.className = 'text-[10px] text-emerald-400 font-semibold';
+            plotStatus.textContent = `${state.land - usedPlots} Floor(s) Open`; plotStatus.className = 'text-[9px] text-emerald-400 font-semibold';
         }
 
         document.getElementById('occupancy-rate-display').textContent = `Market Occupancy: ${Math.round(state.occupancyFactor * 100)}%`;
@@ -1465,17 +928,6 @@
             const u = UNIT_TYPES[f.type];
             estRent += Math.round(((u.baseMin + u.baseMax) / 2) * state.occupancyFactor * state.currentEvent.rentMult);
         });
-        estRent = Math.round(estRent * (1 + (state.amenityStacks.elevators * 0.10)));
-        estRent = Math.round(estRent * (1 + (state.amenityStacks.solar * 0.15)));
-        estRent = Math.round(estRent * (1 + (state.amenityStacks.garden * 0.12)));
-        estRent = Math.round(estRent * (1 + (state.amenityStacks.parking * 0.18)));
-        estRent = Math.round(estRent * (1 + (state.amenityStacks.drone * 0.20)));
-        estRent = Math.round(estRent * (1 + (state.amenityStacks.fusion * 0.30)));
-        estRent = Math.round(estRent * (1 + (state.executiveStacks.eco * 0.10)));
-        estRent = Math.round(estRent * (1 + (state.executiveStacks.strategy * 0.15)));
-
-        if (state.stocks.grit > 0) estRent += Math.round(state.stocks.grit * 80 * (1 + (state.executiveStacks.ir * 0.25)));
-
         document.getElementById('rent-rate-display').textContent = formatCurrency(estRent);
 
         document.getElementById('level-display').textContent = state.level;
@@ -1488,59 +940,23 @@
         document.getElementById('xp-next-display').textContent = state.xpToNextLevel;
         document.getElementById('xp-bar').style.width = `${Math.min(100, (state.xp / state.xpToNextLevel) * 100)}%`;
 
-        let currentLandCost = state.freeCosts ? 0 : state.landCost;
-        if (!state.freeCosts) {
-            let engDiscount = state.executiveStacks.eng * 0.07;
-            currentLandCost = Math.round(currentLandCost * Math.max(0.3, (1 - engDiscount)));
-        }
+        let currentLandCost = state.freeCosts ? 0 : Math.round(state.landCost * Math.max(0.3, (1 - (state.executiveStacks.eng * 0.07))));
         document.getElementById('land-cost-display').textContent = formatCurrency(currentLandCost);
 
-        let vpDiscount = state.executiveStacks.vp * 0.06;
-        let vpMult = state.freeCosts ? 0 : Math.max(0.4, (1 - vpDiscount));
-        document.getElementById('commercial-cost').textContent = formatCurrency(Math.round(state.commercialCost * vpMult));
-        document.getElementById('corporate-cost').textContent = formatCurrency(Math.round(state.corporateCost * vpMult));
-        document.getElementById('penthouse-cost').textContent = formatCurrency(Math.round(state.penthouseCost * vpMult));
-        document.getElementById('techhub-cost').textContent = formatCurrency(Math.round(state.techhubCost * vpMult));
-        document.getElementById('biodome-cost').textContent = formatCurrency(Math.round(state.biodomeCost * vpMult));
-        document.getElementById('observatory-cost').textContent = formatCurrency(Math.round(state.observatoryCost * vpMult));
-        document.getElementById('quantum-cost').textContent = formatCurrency(Math.round(state.quantumCost * vpMult));
-        document.getElementById('helipad-cost').textContent = formatCurrency(Math.round(state.helipadCost * vpMult));
-        document.getElementById('apoffice-cost').textContent = formatCurrency(Math.round(state.apofficeCost * vpMult));
-
-        // Update 10 Amenity Stacks & Costs
-        ['elevators', 'pool', 'solar', 'garden', 'fiber', 'security', 'parking', 'drone', 'spa', 'fusion'].forEach(key => {
-            document.getElementById(`stack-${key}`).textContent = state.amenityStacks[key];
-            let nextCost = getStackCost(AMENITY_BASE_COSTS[key], state.amenityStacks[key]);
-            document.getElementById(`cost-${key}`).textContent = state.amenityStacks[key] >= 10 ? 'MAX' : formatCurrency(nextCost);
-        });
-
-        // Update 10 Executive Stacks & Costs
-        ['cfo', 'vp', 'cmo', 'eng', 'cio', 'chro', 'cso', 'ir', 'eco', 'strategy'].forEach(key => {
-            document.getElementById(`stack-${key}`).textContent = state.executiveStacks[key];
-            let nextCost = getStackCost(EXECUTIVE_BASE_COSTS[key], state.executiveStacks[key]);
-            document.getElementById(`cost-${key}`).textContent = state.executiveStacks[key] >= 10 ? 'MAX' : formatCurrency(nextCost);
-        });
-
         document.getElementById('grit-shares').textContent = state.stocks.grit || 0;
-
-        const totalAmenities = Object.values(state.amenityStacks).reduce((a, b) => a + b, 0);
-        document.getElementById('amenities-count-badge').textContent = `${totalAmenities}/100 Stacks`;
-        
-        const totalExecutives = Object.values(state.executiveStacks).reduce((a, b) => a + b, 0);
-        document.getElementById('executives-count-badge').textContent = `${totalExecutives}/100 Stacks`;
 
         if (state.loanBalance > 0) {
             document.getElementById('active-loan-badge').classList.remove('hidden');
             document.getElementById('active-loan-card').classList.remove('hidden');
             document.getElementById('loan-balance-display').textContent = formatCurrency(state.loanBalance);
-            let rate = state.loanInterestRate;
-            rate *= Math.max(0.1, (1 - (state.executiveStacks.cfo * 0.10)));
+            let rate = state.loanInterestRate * Math.max(0.1, (1 - (state.executiveStacks.cfo * 0.10) - (state.executiveStacks.clo * 0.12)));
             document.getElementById('loan-rate-display').textContent = `${(rate * 100).toFixed(1)}%`;
         } else {
             document.getElementById('active-loan-badge').classList.add('hidden');
             document.getElementById('active-loan-card').classList.add('hidden');
         }
 
+        // Render Tower Viewport
         const viewport = document.getElementById('tower-viewport');
         const emptyMsg = document.getElementById('empty-tower-msg');
         viewport.querySelectorAll('.floor-item').forEach(el => el.remove());
@@ -1556,14 +972,9 @@
                 floorDiv.style = `background: ${u.color}; border-color: ${u.borderColor};`;
                 floorDiv.onclick = () => inspectFloor(index);
                 floorDiv.innerHTML = `
-                    <div class="floor-windows">
-                        <div class="window-pane"></div><div class="window-pane"></div>
-                        <div class="window-pane"></div><div class="window-pane"></div>
-                    </div>
-                    <span class="text-white text-xs font-bold z-10">Floor #${index + 1}: ${u.name} (${u.reqPlots} Floors)</span>
-                    <span class="text-xs font-extrabold z-10 text-emerald-300">
-                        ~${formatCurrency(Math.round(((u.baseMin + u.baseMax) / 2) * state.occupancyFactor * state.currentEvent.rentMult))}/s
-                    </span>
+                    <div class="floor-windows"><div class="window-pane"></div><div class="window-pane"></div><div class="window-pane"></div><div class="window-pane"></div></div>
+                    <span class="text-white text-xs font-bold z-10 truncate">${index + 1}. ${u.name} (${u.reqPlots} F)</span>
+                    <span class="text-xs font-extrabold z-10 text-emerald-300 ml-1">~${formatCurrency(Math.round(((u.baseMin + u.baseMax) / 2) * state.occupancyFactor * state.currentEvent.rentMult))}/s</span>
                 `;
                 viewport.appendChild(floorDiv);
             });
@@ -1571,6 +982,7 @@
     }
 
     window.onload = function() {
+        renderModals();
         updateUI();
         state.gameLoopInterval = setInterval(gameTick, state.gameTickMs);
 
