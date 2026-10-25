@@ -1,337 +1,347 @@
-import time
-import random
-import threading
-
-# --- GAME STATE ENGINE ---
-class SkyscraperTycoonGame:
-    def __init__(self):
-        self.money = 15000
-        self.land = 2
-        self.floors = []
-        self.land_cost = 1000
-        
-        # Stacks & Assets
-        self.amenity_stacks = {k: 0 for k in [
-            'elevators', 'pool', 'solar', 'garden', 'fiber', 'security', 
-            'parking', 'drone', 'spa', 'fusion', 'helipad_park', 'quantum_wifi', 
-            'ai_concierge', 'botanical_sky', 'maglev_shuttle', 'zero_g_gym', 
-            'laser_defense', 'desal_plant', 'plasma_shield', 'antigrav_lift'
-        ]}
-        
-        self.executive_stacks = {k: 0 for k in [
-            'cfo', 'vp', 'cmo', 'eng', 'cio', 'chro', 'cso', 'ir', 'eco', 
-            'strategy', 'cto', 'cpo', 'cdo', 'cro', 'clo', 'cxo', 'cvo', 'cbo', 'cag', 'cap'
-        ]}
-        
-        self.stocks = {'grit': 0}
-        self.occupancy_factor = 1.0
-        self.loan_balance = 0
-        self.loan_interest_rate = 0.015
-        self.ticks_since_interest = 0
-        
-        # Events & Progression
-        self.current_event = {
-            'id': 'NORMAL',
-            'name': 'Normal Market Conditions',
-            'desc': 'Standard real estate economic climate with steady tenant demand.',
-            'duration': 0,
-            'rent_mult': 1.0,
-            'occ_boost': 0.0
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyscraper Tycoon - GitHub Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --secondary-color: #6366f1;
+            --background-color: #0b0f19;
+            --card-color: #111827;
+            --font-color: #f3f4f6;
+            --base-font-size: 14px;
         }
-        self.event_timer = 0
-        self.level = 1
-        self.xp = 0
-        self.xp_to_next_level = 10
-        self.ap_unlocked = False
-        self.auto_build_active = False
-        self.running = True
-
-        # 20 Building Units Database (Including 5 AP Supreme Buildings)
-        self.unit_types = {
-            'commercial': {'name': 'Commercial Office', 'min': 120, 'max': 220, 'xp': 2, 'plots': 1, 'cost': 600},
-            'corporate': {'name': 'Corporate Sky Suite', 'min': 450, 'max': 850, 'xp': 5, 'plots': 1, 'cost': 2500},
-            'penthouse': {'name': 'Luxury Penthouse', 'min': 1200, 'max': 2000, 'xp': 12, 'plots': 2, 'cost': 8000},
-            'techhub': {'name': 'Tech Innovation Hub', 'min': 2800, 'max': 4500, 'xp': 25, 'plots': 2, 'cost': 22000},
-            'biodome': {'name': 'Bio-Dome Greenhouse', 'min': 4800, 'max': 7500, 'xp': 38, 'plots': 3, 'cost': 38000},
-            'observatory': {'name': 'Sky Observatory Deck', 'min': 6000, 'max': 10000, 'xp': 50, 'plots': 3, 'cost': 60000},
-            'quantum': {'name': 'Quantum Data Center', 'min': 10000, 'max': 16000, 'xp': 75, 'plots': 4, 'cost': 110000},
-            'helipad': {'name': 'Helipad Executive Deck', 'min': 15000, 'max': 25000, 'xp': 100, 'plots': 4, 'cost': 175000},
-            'esports': {'name': 'Esports Arena Complex', 'min': 28000, 'max': 42000, 'xp': 140, 'plots': 3, 'cost': 320000},
-            'ai_lab': {'name': 'AI Neural Matrix Lab', 'min': 55000, 'max': 85000, 'xp': 200, 'plots': 4, 'cost': 600000},
-            'cryo_vault': {'name': 'Cryo Storage Vault', 'min': 110000, 'max': 170000, 'xp': 320, 'plots': 4, 'cost': 1200000},
-            'fusion_plant': {'name': 'Micro-Fusion Power Station', 'min': 250000, 'max': 400000, 'xp': 500, 'plots': 5, 'cost': 2800000},
-            'orbital_relay': {'name': 'Orbital Uplink Tower', 'min': 600000, 'max': 950000, 'xp': 800, 'plots': 5, 'cost': 6500000},
-            'metaverse_hub': {'name': 'Metaverse Server Vault', 'min': 1400000, 'max': 2200000, 'xp': 1200, 'plots': 6, 'cost': 15000000},
-            'hyperloop_depot': {'name': 'Sky Hyperloop Depot', 'min': 3200000, 'max': 5000000, 'xp': 1800, 'plots': 6, 'cost': 35000000},
-            # AP Supreme Buildings
-            'apoffice': {'ap': True, 'name': '⚡ AP Office', 'min': 50000000000, 'max': 50000000000, 'xp': 1000, 'plots': 1, 'cost': 1000000000},
-            'apcyber': {'ap': True, 'name': '⚡ AP Cyber Citadel', 'min': 250000000000, 'max': 250000000000, 'xp': 3000, 'plots': 2, 'cost': 5000000000},
-            'apapex': {'ap': True, 'name': '⚡ AP Apex Megagrid', 'min': 1000000000000, 'max': 1000000000000, 'xp': 8000, 'plots': 3, 'cost': 25000000000},
-            'apquantum': {'ap': True, 'name': '⚡ AP Quantum Spire', 'min': 5000000000000, 'max': 5000000000000, 'xp': 20000, 'plots': 4, 'cost': 100000000000},
-            'apcelestial': {'ap': True, 'name': '⚡ AP Celestial Starstation', 'min': 25000000000000, 'max': 25000000000000, 'xp': 50000, 'plots': 5, 'cost': 500000000000}
+        html { font-size: var(--base-font-size); }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--font-color);
+            margin: 0; padding: 0.5rem; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; user-select: none;
         }
+        .game-container {
+            width: 100%; max-width: 1320px; height: calc(100vh - 1rem);
+            background: linear-gradient(145deg, #111827 0%, #0b0f19 100%);
+            border-radius: 1.25rem; box-shadow: 0 0 50px rgba(99, 102, 241, 0.15);
+            padding: 1rem; border: 1px solid #1f2937;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .stat-card {
+            background: rgba(31, 41, 55, 0.7); backdrop-filter: blur(8px);
+            padding: 0.6rem 0.8rem; border-radius: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-btn { transition: all 0.2s ease; position: relative; overflow: hidden; }
+        .glow-btn:hover:not(:disabled) { transform: translateY(-2px) scale(1.01); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35); }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(5, 8, 15, 0.88); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 1000; padding: 1rem;
+        }
+        .modal-content {
+            background: linear-gradient(160deg, #1f2937 0%, #111827 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 1.25rem;
+            max-width: 820px; width: 100%; max-height: 86vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+        #tower-viewport {
+            height: 100%; min-height: 300px;
+            background: radial-gradient(circle at 50% 20%, #0369a120 0%, #0f172a 70%, #020617 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.85rem;
+            position: relative; overflow-y: auto; display: flex; flex-direction: column-reverse;
+            align-items: center; padding: 1rem; gap: 5px;
+        }
+        .tower-base {
+            width: 92%; height: 18px; background: linear-gradient(90deg, #1e293b, #475569, #1e293b);
+            border-radius: 4px 4px 0 0; border: 1px solid #64748b; margin-top: 4px; flex-shrink: 0;
+        }
+        .floor-item {
+            width: 88%; min-height: 44px; border-radius: 8px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0.4rem 1rem; font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    </style>
+</head>
+<body>
 
-    def format_currency(self, amount):
-        if amount >= 1e12:
-            return f"₹{amount / 1e12:.2f} Trillion"
-        if amount >= 1e9:
-            return f"₹{amount / 1e9:.2f} Billion"
-        if amount >= 1e6:
-            return f"₹{amount / 1e6:.2f} Million"
-        return f"₹{amount:,.0f}"
+<div class="game-container">
+    <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+        <div>
+            <h1 class="text-xl font-black text-gray-100 flex items-center gap-2">
+                <span>🏗️ SKYSCRAPER TYCOON</span>
+                <span class="text-[9px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold">GitHub Edition</span>
+            </h1>
+            <p class="text-[11px] text-gray-400">Commercial Real Estate Management Platform</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="handleAPAuth()" class="glow-btn bg-gradient-to-r from-amber-500 via-red-600 to-purple-600 text-white font-black py-1.5 px-3 rounded-xl text-xs shadow-lg">⚡ AP OPERATOR</button>
+            <button onclick="toggleModal('loan-modal')" class="glow-btn bg-indigo-600 text-white font-bold py-1.5 px-2.5 rounded-xl text-xs">🏦 Bank Loans</button>
+            <button onclick="toggleModal('stocks-modal')" class="glow-btn bg-emerald-600 text-white font-bold py-1.5 px-2.5 rounded-xl text-xs">📈 Stocks</button>
+        </div>
+    </div>
 
-    def get_used_plots(self):
-        return sum(self.unit_types[f]['plots'] for f in self.floors)
+    <!-- HUD -->
+    <div onclick="toggleModal('levels-modal')" class="p-2 bg-indigo-950/80 border border-indigo-800 rounded-xl cursor-pointer my-1">
+        <div class="flex justify-between items-center text-xs font-semibold mb-0.5">
+            <span class="text-indigo-300">Level <span id="level-display" class="font-black text-white">1</span> - <span id="level-title">Novice Developer</span></span>
+            <span class="text-indigo-300 text-[10px]">XP: <span id="xp-current-display">0</span> / <span id="xp-next-display">10</span></span>
+        </div>
+        <div class="w-full bg-gray-900 rounded-full h-1.5 overflow-hidden">
+            <div id="xp-bar" class="bg-indigo-500 h-1.5 transition-all duration-500" style="width: 0%"></div>
+        </div>
+    </div>
 
-    def check_level_up(self):
-        while self.xp >= self.xp_to_next_level:
-            self.xp -= self.xp_to_next_level
-            self.level += 1
-            self.xp_to_next_level = 10 * self.level
-            bonus = self.level * 5000
-            self.money += bonus
-            print(f"\n🎉 LEVEL UP! Reached Level {self.level}! Bonus Awarded: {self.format_currency(bonus)}")
+    <!-- STATS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div class="stat-card"><p class="text-[9px] text-gray-400">Net Treasury</p><p id="money-display" class="text-xl font-black text-emerald-400">₹15,000</p></div>
+        <div class="stat-card"><p class="text-[9px] text-gray-400">Built Units</p><p id="apartment-display" class="text-xl font-black text-indigo-400">0</p></div>
+        <div class="stat-card"><p class="text-[9px] text-gray-400">Floor Capacity</p><p id="land-display" class="text-xl font-black text-yellow-400">0 / 2</p></div>
+        <div class="stat-card"><p class="text-[9px] text-gray-400">Rent Yield</p><p id="rent-rate-display" class="text-lg font-black text-emerald-400">₹0</p></div>
+    </div>
 
-    # --- GAME ACTIONS ---
-    def expand_land(self):
-        cost = int(self.land_cost * max(0.3, (1 - (self.executive_stacks['eng'] * 0.07))))
-        if self.money >= cost:
-            self.money -= cost
-            self.land += 1
-            self.land_cost = int(self.land_cost * 1.05 / 100) * 100
-            print(f"🏗️ Floor capacity expanded! Total capacity: {self.land} floors.")
-        else:
-            print("❌ Insufficient funds to expand floor capacity!")
-
-    def build_unit(self, unit_key):
-        if unit_key not in self.unit_types:
-            print("❌ Invalid building type.")
-            return
-        
-        unit = self.unit_types[unit_key]
-        if unit.get('ap') and not self.ap_unlocked:
-            print("🔒 AP Supreme Building locked! Enter operator password first.")
-            return
-
-        cost = int(unit['cost'] * max(0.2, (1 - (self.executive_stacks['vp'] * 0.06) - (self.executive_stacks['cpo'] * 0.08))))
-        
-        if self.get_used_plots() + unit['plots'] > self.land:
-            print(f"❌ Not enough floor capacity! Requires {unit['plots']} slots. Expand land first.")
-            return
-
-        if self.money >= cost:
-            self.money -= cost
-            self.floors.append(unit_key)
-            
-            xp_gain = unit['xp'] * (1 + (self.amenity_stacks['fiber'] * 0.25) + (self.executive_stacks['cio'] * 0.20) + (self.executive_stacks['cvo'] * 0.50))
-            self.xp += int(xp_gain)
-            self.check_level_up()
-            print(f"✅ Successfully constructed {unit['name']}!")
-        else:
-            print("❌ Insufficient funds for construction!")
-
-    def upgrade_amenity(self, key):
-        if self.amenity_stacks[key] >= 10:
-            print("⭐ Amenity already maxed out at Level 10!")
-            return
-        
-        base_cost = 15000 * (self.amenity_stacks[key] + 1)
-        cost = int(base_cost * max(0.4, (1 - (self.executive_stacks['chro'] * 0.05))))
-        
-        if self.money >= cost:
-            self.money -= cost
-            self.amenity_stacks[key] += 1
-            print(f"✨ Upgraded amenity '{key}' to Level {self.amenity_stacks[key]}/10!")
-        else:
-            print("❌ Insufficient funds for amenity upgrade!")
-
-    def hire_executive(self, key):
-        if self.executive_stacks[key] >= 10:
-            print("⭐ Executive already maxed out at Level 10!")
-            return
-        
-        base_cost = 30000 * (self.executive_stacks[key] + 1)
-        cost = int(base_cost * max(0.4, (1 - (self.executive_stacks['chro'] * 0.05))))
-        
-        if self.money >= cost:
-            self.money -= cost
-            self.executive_stacks[key] += 1
-            print(f"👔 Hired/Upgraded executive '{key}' to Level {self.executive_stacks[key]}/10!")
-        else:
-            print("❌ Insufficient funds to hire/upgrade executive!")
-
-    def take_loan(self, amount, rate):
-        if self.loan_balance > 0:
-            print("❌ You already have an active bank loan!")
-            return
-        self.loan_balance = amount
-        self.loan_interest_rate = rate
-        self.money += amount
-        print(f"🏦 Secured credit facility of {self.format_currency(amount)} at {rate*100}% interest rate.")
-
-    def repay_loan(self):
-        if self.loan_balance <= 0:
-            print("ℹ️ No active loan to repay.")
-            return
-        if self.money >= self.loan_balance:
-            self.money -= self.loan_balance
-            print(f"✅ Successfully repaid total loan of {self.format_currency(self.loan_balance)}!")
-            self.loan_balance = 0
-            self.ticks_since_interest = 0
-        else:
-            print(f"❌ Insufficient funds! You need {self.format_currency(self.loan_balance)} to clear the loan.")
-
-    def authenticate_ap(self, password):
-        if password == "AP is OP":
-            self.ap_unlocked = True
-            print("⚡ AP Master Access Granted! Supreme Operator Controls Unlocked.")
-            return True
-        print("❌ Access Denied: Invalid Security Password!")
-        return False
-
-    def trigger_ap_grant(self, cash=1000000000, floors=50):
-        if not self.ap_unlocked:
-            print("🔒 AP Panel is locked.")
-            return
-        self.money += cash
-        self.land += floors
-        print(f"⚡ AP God Grant: Added {self.format_currency(cash)} & +{floors} Floors!")
-
-    # --- BACKGROUND SIMULATION TICK ENGINE ---
-    def game_loop(self):
-        while self.running:
-            time.sleep(1.0)
-            
-            # Event Timer
-            if self.event_timer > 0:
-                self.event_timer -= 1
-                if self.event_timer <= 0:
-                    self.current_event = {'id': 'NORMAL', 'name': 'Normal Market Conditions', 'desc': 'Standard climate.', 'rent_mult': 1.0, 'occ_boost': 0.0}
-            elif random.random() < 0.04:
-                events = [
-                    {'id': 'BOOM', 'name': '🌆 Economic Boom', 'desc': 'Tenant demand soars!', 'rent_mult': 1.5, 'occ_boost': 0.3},
-                    {'id': 'TECH', 'name': '💻 Tech Surge', 'desc': 'Server demand spikes!', 'rent_mult': 2.0, 'occ_boost': 0.15},
-                    {'id': 'CRASH', 'name': '📉 Market Crash', 'desc': 'Economic downturn!', 'rent_mult': 0.7, 'occ_boost': -0.2}
-                ]
-                ev = random.choice(events)
-                self.current_event = ev
-                self.event_timer = 30
-
-            # Occupancy Calculation
-            base_occ = 0.70 + random.uniform(0.0, 0.45) + self.current_event['occ_boost']
-            base_occ += (self.amenity_stacks['pool'] * 0.08) + (self.amenity_stacks['spa'] * 0.10) + (self.executive_stacks['cmo'] * 0.08)
-            self.occupancy_factor = min(1.50, max(0.70, base_occ))
-
-            # Rent Calculation
-            total_rent = 0
-            for f in self.floors:
-                unit = self.unit_types[f]
-                raw_rent = random.randint(unit['min'], unit['max'])
-                total_rent += int(raw_rent * self.occupancy_factor * self.current_event['rent_mult'])
-
-            # Multipliers
-            total_mult = 1.0 + (self.amenity_stacks['elevators'] * 0.10) + (self.amenity_stacks['solar'] * 0.15) + (self.executive_stacks['strategy'] * 0.15)
-            total_rent = int(total_rent * total_mult)
-
-            if self.stocks['grit'] > 0:
-                total_rent += int(self.stocks['grit'] * 80 * (1 + (self.executive_stacks['ir'] * 0.25)))
-
-            # Loan Interest
-            if self.loan_balance > 0:
-                self.ticks_since_interest += 1
-                if self.ticks_since_interest >= 10:
-                    self.ticks_since_interest = 0
-                    rate = self.loan_interest_rate * max(0.1, (1 - (self.executive_stacks['cfo'] * 0.10)))
-                    self.loan_balance += int(self.loan_balance * rate)
-
-            self.money += total_rent
-
-    def start_engine(self):
-        t = threading.Thread(target=self.game_loop, daemon=True)
-        t.start()
-
-# --- CLI INTERFACE RUNNER ---
-def main():
-    game = SkyscraperTycoonGame()
-    game.start_engine()
+    <!-- VIEWPORT -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 flex-grow overflow-hidden my-1">
+        <div class="lg:col-span-2 flex flex-col h-full overflow-hidden">
+            <div id="tower-viewport" class="flex-grow">
+                <div class="tower-base"></div>
+                <div id="empty-tower-msg" class="text-center my-auto text-gray-400 text-xs">No floors constructed yet. Click Build Units!</div>
+            </div>
+        </div>
+        <div class="flex flex-col gap-2 bg-gray-900/60 p-2.5 rounded-xl border border-gray-800">
+            <button onclick="toggleModal('build-modal')" class="glow-btn w-full bg-emerald-600 text-white font-bold py-2 px-3 rounded-xl text-xs flex justify-between"><span>🏢 Build Units</span><span id="build-options-count">20 Options</span></button>
+            <button onclick="toggleModal('amenities-modal')" class="glow-btn w-full bg-purple-600 text-white font-bold py-2 px-3 rounded-xl text-xs flex justify-between"><span>✨ Amenities</span><span id="amenities-count-badge">0/200</span></button>
+            <button onclick="toggleModal('executives-modal')" class="glow-btn w-full bg-amber-600 text-white font-bold py-2 px-3 rounded-xl text-xs flex justify-between"><span>👔 Executives</span><span id="executives-count-badge">0/200</span></button>
+            <div class="bg-gray-800 p-2 rounded-xl mt-auto">
+                <div class="flex justify-between text-xs mb-1 font-bold"><span>Expand Land</span><span id="land-cost-display">₹1,000</span></div>
+                <button onclick="buyLand()" class="glow-btn w-full bg-blue-600 text-white py-1 rounded-lg text-xs">Acquire +1 Floor</button>
+            </div>
+        </div>
+    </div>
     
-    print("==================================================")
-    print("       🏗️ SKYSCRAPER TYCOON - PYTHON EDITION     ")
-    print("==================================================")
-    
-    while True:
-        print(f"\n[Treasury: {game.format_currency(game.money)}] | [Level: {game.level} (XP: {game.xp}/{game.xp_to_next_level})] | [Floors Built: {len(game.floors)}/{game.land}]")
-        print(f"Event: {game.current_event['name']} | Occupancy: {int(game.occupancy_factor * 100)}%")
-        print("\nCommands:")
-        print("1. View Buildings to Construct")
-        print("2. Expand Floor Capacity (+1 Land)")
-        print("3. View/Upgrade Amenities")
-        print("4. View/Hire Executives")
-        print("5. Bank Credit & Loans")
-        print("6. ⚡ AP Operator Panel Access")
-        print("7. Exit Game")
-        
-        choice = input("\nEnter choice (1-7): ").strip()
-        
-        if choice == '1':
-            print("\n--- AVAILABLE BUILDINGS ---")
-            keys = list(game.unit_types.keys())
-            for i, k in enumerate(keys):
-                u = game.unit_types[k]
-                if u.get('ap') and not game.ap_unlocked:
-                    continue
-                print(f"{i+1}. {u['name']} (Cost: {game.format_currency(u['cost'])} | Req Plots: {u['plots']})")
-            
-            b_choice = input("Enter building number to construct (or 'back'): ").strip()
-            if b_choice.isdigit():
-                idx = int(b_choice) - 1
-                if 0 <= idx < len(keys):
-                    game.build_unit(keys[idx])
-                    
-        elif choice == '2':
-            game.expand_land()
-            
-        elif choice == '3':
-            print("\n--- AMENITIES ---")
-            keys = list(game.amenity_stacks.keys())
-            for i, k in enumerate(keys):
-                print(f"{i+1}. {k} (Level: {game.amenity_stacks[k]}/10)")
-            a_choice = input("Enter amenity number to upgrade: ").strip()
-            if a_choice.isdigit():
-                idx = int(a_choice) - 1
-                if 0 <= idx < len(keys):
-                    game.upgrade_amenity(keys[idx])
-                    
-        elif choice == '4':
-            print("\n--- EXECUTIVES ---")
-            keys = list(game.executive_stacks.keys())
-            for i, k in enumerate(keys):
-                print(f"{i+1}. {k} (Level: {game.executive_stacks[k]}/10)")
-            e_choice = input("Enter executive number to hire/upgrade: ").strip()
-            if e_choice.isdigit():
-                idx = int(e_choice) - 1
-                if 0 <= idx < len(keys):
-                    game.hire_executive(keys[idx])
-                    
-        elif choice == '5':
-            print(f"\n--- BANK LOANS (Active Balance: {game.format_currency(game.loan_balance)}) ---")
-            print("1. Take Micro Loan (₹5,000)")
-            print("2. Take Corporate Credit (₹50,000)")
-            print("3. Repay Total Loan")
-            l_choice = input("Choice: ").strip()
-            if l_choice == '1': game.take_loan(5000, 0.015)
-            elif l_choice == '2': game.take_loan(50000, 0.02)
-            elif l_choice == '3': game.repay_loan()
-            
-        elif choice == '6':
-            pwd = input("Enter Operator Password: ").strip()
-            if game.authenticate_ap(pwd):
-                game.trigger_ap_grant()
-                
-        elif choice == '7':
-            game.running = False
-            print("Exiting Skyscraper Tycoon. Goodbye!")
-            break
+    <div id="message-box" class="p-2 bg-emerald-950 border border-emerald-700 text-emerald-300 rounded-xl hidden text-xs"></div>
+    <footer class="text-center text-[10px] text-gray-500 pt-1 border-t border-gray-800">Developed by Sukesh(G7A) &bull; Skyscraper Tycoon</footer>
+</div>
 
-if __name__ == '__main__':
-    main()
+<!-- AP PANEL MODAL -->
+<div id="ap-panel" class="modal-overlay">
+    <div class="modal-content" style="max-width: 750px;">
+        <div class="p-3 bg-amber-950 border-b border-amber-600 flex justify-between items-center"><h2 class="text-sm font-black text-amber-300">⚡ AP OPERATOR PANEL</h2><button onclick="toggleModal('ap-panel')" class="text-white">&times;</button></div>
+        <div class="p-3 space-y-3 text-xs overflow-y-auto">
+            <div class="bg-gray-800 p-2.5 rounded-xl space-y-2">
+                <h3 class="font-bold text-amber-400">💰 Quick Grants</h3>
+                <div class="flex gap-2">
+                    <input type="number" id="ap-cash-input" value="1000000000" class="w-full bg-gray-900 border border-gray-700 rounded p-1 text-white">
+                    <button onclick="apGiveCash()" class="bg-amber-600 text-white px-3 py-1 rounded font-bold">Add Cash</button>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-2.5 rounded-xl space-y-2">
+                <h3 class="font-bold text-purple-400">⚡ AP Supreme Buildings (Instant Spawner)</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="buildFloor('apoffice')" class="bg-purple-600 text-white p-1 rounded font-bold text-[11px]">1. AP Office (+₹50B/s)</button>
+                    <button onclick="buildFloor('apcyber')" class="bg-indigo-600 text-white p-1 rounded font-bold text-[11px]">2. AP Cyber Citadel (+₹250B/s)</button>
+                    <button onclick="buildFloor('apapex')" class="bg-emerald-600 text-white p-1 rounded font-bold text-[11px]">3. AP Apex Megagrid (+₹1T/s)</button>
+                    <button onclick="buildFloor('apquantum')" class="bg-cyan-600 text-white p-1 rounded font-bold text-[11px]">4. AP Quantum Spire (+₹5T/s)</button>
+                </div>
+            </div>
+        </div>
+        <div class="p-2.5 bg-gray-900 text-right"><button onclick="toggleModal('ap-panel')" class="bg-gray-700 text-white px-4 py-1 rounded text-xs">Close</button></div>
+    </div>
+</div>
+
+<!-- DYNAMIC MODALS -->
+<div id="build-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-white">Build Units (20 Options)</h2><button onclick="toggleModal('build-modal')" class="text-white">&times;</button></div><div id="build-modal-body" class="p-3 overflow-y-auto space-y-2"></div><div class="p-2 bg-gray-900 text-right"><button onclick="toggleModal('build-modal')" class="bg-gray-700 text-white px-3 py-1 rounded text-xs">Close</button></div></div></div>
+<div id="amenities-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-white">Tower Amenities (20 Stacks)</h2><button onclick="toggleModal('amenities-modal')" class="text-white">&times;</button></div><div id="amenities-modal-body" class="p-3 overflow-y-auto space-y-2"></div><div class="p-2 bg-gray-900 text-right"><button onclick="toggleModal('amenities-modal')" class="bg-gray-700 text-white px-3 py-1 rounded text-xs">Close</button></div></div></div>
+<div id="executives-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-white">Executive Staff (20 Stacks)</h2><button onclick="toggleModal('executives-modal')" class="text-white">&times;</button></div><div id="executives-modal-body" class="p-3 overflow-y-auto space-y-2"></div><div class="p-2 bg-gray-900 text-right"><button onclick="toggleModal('executives-modal')" class="bg-gray-700 text-white px-3 py-1 rounded text-xs">Close</button></div></div></div>
+<div id="loan-modal" class="modal-overlay"><div class="modal-content" style="max-width:400px"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-white">Bank Loans</h2><button onclick="toggleModal('loan-modal')" class="text-white">&times;</button></div><div class="p-3 space-y-2 text-xs"><button onclick="takeLoan(10000, 0.015)" class="w-full bg-blue-600 text-white p-2 rounded font-bold">Take ₹10,000 Loan</button><button onclick="repayTotalLoan()" class="w-full bg-emerald-600 text-white p-2 rounded font-bold">Repay Loan</button></div><div class="p-2 bg-gray-900 text-right"><button onclick="toggleModal('loan-modal')" class="bg-gray-700 text-white px-3 py-1 rounded text-xs">Close</button></div></div></div>
+<div id="stocks-modal" class="modal-overlay"><div class="modal-content" style="max-width:400px"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-white">Stocks</h2><button onclick="toggleModal('stocks-modal')" class="text-white">&times;</button></div><div class="p-3 space-y-2 text-xs"><button onclick="buyStock('grit', 5000)" class="w-full bg-teal-600 text-white p-2 rounded font-bold">Buy REIT Index (₹5,000)</button></div><div class="p-2 bg-gray-900 text-right"><button onclick="toggleModal('stocks-modal')" class="bg-gray-700 text-white px-3 py-1 rounded text-xs">Close</button></div></div></div>
+<div id="levels-modal" class="modal-overlay"><div class="modal-content" style="max-width:400px"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-white">Events</h2><button onclick="toggleModal('levels-modal')" class="text-white">&times;</button></div><div class="p-3 text-xs"><p id="event-name-display" class="font-bold text-blue-400">Normal Market</p></div><div class="p-2 bg-gray-900 text-right"><button onclick="toggleModal('levels-modal')" class="bg-gray-700 text-white px-3 py-1 rounded text-xs">Close</button></div></div></div>
+
+<script>
+    let state = {
+        money: 15000, land: 2, floors: [], landCost: 1000,
+        unitCosts: {}, amenityStacks: {}, executiveStacks: {}, stocks: { grit: 0 },
+        occupancyFactor: 1.0, loanBalance: 0, loanInterestRate: 0.015,
+        currentEvent: { name: 'Normal Market', rentMult: 1.0, occBoost: 0.0 },
+        level: 1, xp: 0, xpToNextLevel: 10, apUnlocked: false
+    };
+
+    const UNIT_TYPES = {
+        commercial: { name: 'Commercial Office', min: 120, max: 220, xp: 2, plots: 1, cost: 600 },
+        corporate: { name: 'Corporate Sky Suite', min: 450, max: 850, xp: 5, plots: 1, cost: 2500 },
+        penthouse: { name: 'Luxury Penthouse', min: 1200, max: 2000, xp: 12, plots: 2, cost: 8000 },
+        techhub: { name: 'Tech Innovation Hub', min: 2800, max: 4500, xp: 25, plots: 2, cost: 22000 },
+        biodome: { name: 'Bio-Dome Greenhouse', min: 4800, max: 7500, xp: 38, plots: 3, cost: 38000 },
+        observatory: { name: 'Sky Observatory Deck', min: 6000, max: 10000, xp: 50, plots: 3, cost: 60000 },
+        quantum: { name: 'Quantum Data Center', min: 10000, max: 16000, xp: 75, plots: 4, cost: 110000 },
+        helipad: { name: 'Helipad Executive Deck', min: 15000, max: 25000, xp: 100, plots: 4, cost: 175000 },
+        esports: { name: 'Esports Arena Complex', min: 28000, max: 42000, xp: 140, plots: 3, cost: 320000 },
+        ai_lab: { name: 'AI Neural Matrix Lab', min: 55000, max: 85000, xp: 200, plots: 4, cost: 600000 },
+        cryo_vault: { name: 'Cryo Storage Vault', min: 110000, max: 170000, xp: 320, plots: 4, cost: 1200000 },
+        fusion_plant: { name: 'Micro-Fusion Power Station', min: 250000, max: 400000, xp: 500, plots: 5, cost: 2800000 },
+        orbital_relay: { name: 'Orbital Uplink Tower', min: 600000, max: 950000, xp: 800, plots: 5, cost: 6500000 },
+        metaverse_hub: { name: 'Metaverse Server Vault', min: 1400000, max: 2200000, xp: 1200, plots: 6, cost: 15000000 },
+        hyperloop_depot: { name: 'Sky Hyperloop Depot', min: 3200000, max: 5000000, xp: 1800, plots: 6, cost: 35000000 },
+        apoffice: { ap: true, name: '⚡ AP Office', min: 50000000000, max: 50000000000, xp: 1000, plots: 1, cost: 1000000000 },
+        apcyber: { ap: true, name: '⚡ AP Cyber Citadel', min: 250000000000, max: 250000000000, xp: 3000, plots: 2, cost: 5000000000 },
+        apapex: { ap: true, name: '⚡ AP Apex Megagrid', min: 1000000000000, max: 1000000000000, xp: 8000, plots: 3, cost: 25000000000 },
+        apquantum: { ap: true, name: '⚡ AP Quantum Spire', min: 5000000000000, max: 5000000000000, xp: 20000, plots: 4, cost: 100000000000 },
+        apcelestial: { ap: true, name: '⚡ AP Celestial Starstation', min: 25000000000000, max: 25000000000000, xp: 50000, plots: 5, cost: 500000000000 }
+    };
+
+    const AMENITIES = {};
+    for(let i=1; i<=20; i++) AMENITIES[`amenity_${i}`] = { name: `Amenity Stack ${i}`, desc: `+${i*5}% rent boost`, baseCost: i * 15000 };
+
+    const EXECUTIVES = {};
+    for(let i=1; i<=20; i++) EXECUTIVES[`exec_${i}`] = { name: `Executive Manager ${i}`, desc: `Discount & Yield Bonus`, baseCost: i * 30000 };
+
+    Object.keys(UNIT_TYPES).forEach(k => state.unitCosts[k] = UNIT_TYPES[k].cost);
+    Object.keys(AMENITIES).forEach(k => state.amenityStacks[k] = 0);
+    Object.keys(EXECUTIVES).forEach(k => state.executiveStacks[k] = 0);
+
+    function formatCurrency(amount) {
+        if (amount >= 1e12) return '₹' + (amount / 1e12).toFixed(2) + ' Trillion';
+        if (amount >= 1e9) return '₹' + (amount / 1e9).toFixed(2) + ' Billion';
+        if (amount >= 1e6) return '₹' + (amount / 1e6).toFixed(2) + ' Million';
+        return '₹' + amount.toLocaleString('en-IN');
+    }
+
+    function getUsedPlots() { return state.floors.reduce((acc, f) => acc + (UNIT_TYPES[f]?.plots || 1), 0); }
+    function showMessage(msg) {
+        const box = document.getElementById('message-box');
+        box.textContent = msg; box.style.display = 'block';
+        setTimeout(() => box.style.display = 'none', 3000);
+    }
+    function toggleModal(id) {
+        const m = document.getElementById(id);
+        m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function handleAPAuth() {
+        if (state.apUnlocked) { toggleModal('ap-panel'); return; }
+        if (prompt("Enter Operator Password:") === "AP is OP") {
+            state.apUnlocked = true;
+            renderModals();
+            showMessage("⚡ AP Master Access Granted!");
+            toggleModal('ap-panel');
+        } else { showMessage("Access Denied!"); }
+    }
+
+    function apGiveCash() {
+        state.money += parseFloat(document.getElementById('ap-cash-input').value) || 0;
+        updateUI(); showMessage("AP Cash Granted!");
+    }
+
+    function buyLand() {
+        if (state.money >= state.landCost) {
+            state.money -= state.landCost; state.land += 1;
+            state.landCost = Math.ceil(state.landCost * 1.05);
+            updateUI(); showMessage("Land Expanded!");
+        } else { showMessage("Not enough funds!"); }
+    }
+
+    function buildFloor(key) {
+        const u = UNIT_TYPES[key];
+        if (u.ap && !state.apUnlocked) return;
+        if (getUsedPlots() + u.plots > state.land) { showMessage("Not enough floor capacity!"); return; }
+        if (state.money >= state.unitCosts[key]) {
+            state.money -= state.unitCosts[key];
+            state.floors.push(key);
+            state.xp += u.xp;
+            if(state.xp >= state.xpToNextLevel) { state.level++; state.xp = 0; state.xpToNextLevel *= 1.5; }
+            updateUI(); renderModals(); showMessage(`Built ${u.name}!`);
+        } else { showMessage("Insufficient funds!"); }
+    }
+
+    function buyAmenity(key) {
+        if(state.amenityStacks[key] >= 10) return;
+        let cost = AMENITIES[key].baseCost * (state.amenityStacks[key] + 1);
+        if(state.money >= cost) { state.money -= cost; state.amenityStacks[key]++; updateUI(); renderModals(); }
+    }
+
+    function hireExecutive(key) {
+        if(state.executiveStacks[key] >= 10) return;
+        let cost = EXECUTIVES[key].baseCost * (state.executiveStacks[key] + 1);
+        if(state.money >= cost) { state.money -= cost; state.executiveStacks[key]++; updateUI(); renderModals(); }
+    }
+
+    function takeLoan(amt, rate) {
+        if(state.loanBalance > 0) return;
+        state.loanBalance = amt; state.money += amt; updateUI(); toggleModal('loan-modal');
+    }
+
+    function repayTotalLoan() {
+        if(state.money >= state.loanBalance) { state.money -= state.loanBalance; state.loanBalance = 0; updateUI(); toggleModal('loan-modal'); }
+    }
+
+    function buyStock(k, cost) {
+        if(state.money >= cost) { state.money -= cost; state.stocks[k]++; updateUI(); }
+    }
+
+    function gameTick() {
+        let totalRent = 0;
+        state.floors.forEach(f => {
+            const u = UNIT_TYPES[f];
+            totalRent += Math.floor(Math.random() * (u.max - u.min + 1)) + u.min;
+        });
+        state.money += totalRent;
+        updateUI();
+    }
+
+    function renderModals() {
+        let buildHTML = '';
+        Object.keys(UNIT_TYPES).forEach(k => {
+            const u = UNIT_TYPES[k];
+            if(u.ap && !state.apUnlocked) return;
+            buildHTML += `<div class="bg-gray-800 p-2 rounded flex justify-between items-center"><div><p class="font-bold text-white text-xs">${u.name}</p><p class="text-[10px] text-gray-400">Cost: ${formatCurrency(state.unitCosts[k])}</p></div><button onclick="buildFloor('${k}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs font-bold">Build</button></div>`;
+        });
+        document.getElementById('build-modal-body').innerHTML = buildHTML;
+
+        let amenHTML = '';
+        Object.keys(AMENITIES).forEach(k => {
+            amenHTML += `<div class="bg-gray-800 p-2 rounded flex justify-between items-center"><div><p class="font-bold text-purple-300 text-xs">${AMENITIES[k].name}</p><p class="text-[10px] text-gray-400">Stack: ${state.amenityStacks[k]}/10</p></div><button onclick="buyAmenity('${k}')" class="bg-purple-600 text-white px-3 py-1 rounded text-xs font-bold">Upgrade</button></div>`;
+        });
+        document.getElementById('amenities-modal-body').innerHTML = amenHTML;
+
+        let execHTML = '';
+        Object.keys(EXECUTIVES).forEach(k => {
+            execHTML += `<div class="bg-gray-800 p-2 rounded flex justify-between items-center"><div><p class="font-bold text-amber-300 text-xs">${EXECUTIVES[k].name}</p><p class="text-[10px] text-gray-400">Stack: ${state.executiveStacks[k]}/10</p></div><button onclick="hireExecutive('${k}')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold">Hire</button></div>`;
+        });
+        document.getElementById('executives-modal-body').innerHTML = execHTML;
+    }
+
+    function updateUI() {
+        document.getElementById('money-display').textContent = formatCurrency(state.money);
+        document.getElementById('apartment-display').textContent = state.floors.length;
+        document.getElementById('land-display').textContent = `${getUsedPlots()} / ${state.land}`;
+        document.getElementById('level-display').textContent = state.level;
+        document.getElementById('xp-current-display').textContent = state.xp;
+        document.getElementById('xp-next-display').textContent = state.xpToNextLevel;
+        document.getElementById('xp-bar').style.width = `${Math.min(100, (state.xp / state.xpToNextLevel) * 100)}%`;
+        document.getElementById('land-cost-display').textContent = formatCurrency(state.landCost);
+
+        let viewport = document.getElementById('tower-viewport');
+        viewport.querySelectorAll('.floor-item').forEach(el => el.remove());
+        state.floors.forEach((f, idx) => {
+            let u = UNIT_TYPES[f];
+            let div = document.createElement('div');
+            div.className = 'floor-item bg-gray-800 text-white text-xs';
+            div.innerHTML = `<span>Floor #${idx+1}: ${u.name}</span><span class="text-emerald-400">+Yield/s</span>`;
+            viewport.appendChild(div);
+        });
+    }
+
+    window.onload = function() {
+        renderModals();
+        updateUI();
+        setInterval(gameTick, 1000);
+    };
+</script>
+
+</body>
+</html>
