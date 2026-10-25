@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skyscraper Tycoon</title>
+    <title>Skyscraper Tycoon </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -892,9 +892,8 @@
         if (state.money >= actualLandCost) {
             state.money -= actualLandCost;
             state.land += 1;
-            // Balanced floor price scaling so it doesn't spike too high too quickly
-            let scalingFactor = 1.18 + (state.land * 0.015);
-            state.landCost = Math.ceil(state.landCost * scalingFactor / 100) * 100;
+            // Floor expansion price increases by exactly 5% of its current value
+            state.landCost = Math.ceil(state.landCost * 1.05 / 100) * 100;
             showMessage(`Acquired +1 Floor Capacity! Total Capacity: ${state.land} floors`, 'success');
             updateUI();
         } else {
@@ -921,7 +920,8 @@
         if (state.money >= cost) {
             state.money -= cost;
             state.floors.push({ type: type });
-            state[costKey] = Math.ceil(state[costKey] * 1.15 / 100) * 100;
+            // Floor unit construction price increases by exactly 5% of its value
+            state[costKey] = Math.ceil(state[costKey] * 1.05 / 100) * 100;
             
             let xpGained = unit.xp;
             let fiberStacks = state.amenityStacks.fiber;
