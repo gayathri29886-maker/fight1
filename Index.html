@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skyscraper Tycoon - Ultra Edition</title>
+    <title>Skyscraper Tycoon</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -308,7 +308,7 @@
                 <!-- 3. Executives Button -->
                 <button onclick="toggleModal('executives-modal')" class="glow-btn w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-between text-xs">
                     <span class="flex items-center gap-2">👔 Executive Staff</span>
-                    <span id="executives-count-badge" class="text-[10px] bg-amber-950 text-amber-200 px-2 py-0.5 rounded-md border border-amber-700">0/30 Stacks</span>
+                    <span id="executives-count-badge" class="text-[10px] bg-amber-950 text-amber-200 px-2 py-0.5 rounded-md border border-amber-700">0/40 Stacks</span>
                 </button>
 
                 <!-- 4. Levels & Events Info Button -->
@@ -646,16 +646,16 @@
                 <h3 class="font-bold text-indigo-300 text-xs mb-1.5">Active Loan Summary</h3>
                 <div class="grid grid-cols-2 gap-3 text-xs mb-2">
                     <div>
-                        <p class="text-gray-400 text-[10px]">Remaining Balance:</p>
+                        <p class="text-gray-400 text-[10px]">Total Balance (Principal + Interest):</p>
                         <p id="loan-balance-display" class="font-black text-red-400 text-sm">₹0</p>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-[10px]">Interest Rate (Per Tick):</p>
+                        <p class="text-gray-400 text-[10px]">Interest Rate (Every 10s):</p>
                         <p id="loan-rate-display" class="font-bold text-yellow-400 text-sm">1.5%</p>
                     </div>
                 </div>
-                <button onclick="repayLoan(2000)" class="glow-btn w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-md">
-                    Repay ₹2,000 Principal
+                <button onclick="repayTotalLoan()" class="glow-btn w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs shadow-md">
+                    Repay Total Loan
                 </button>
             </div>
 
@@ -665,9 +665,9 @@
                 <div class="bg-gray-800/80 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
                     <div>
                         <h4 class="font-bold text-blue-300 text-xs">Micro Starter Loan</h4>
-                        <p class="text-[10px] text-gray-400">Borrow ₹5,000 at 1.2% interest per second.</p>
+                        <p class="text-[10px] text-gray-400">Borrow ₹5,000 at 1.5% interest every 10 seconds.</p>
                     </div>
-                    <button onclick="takeLoan(5000, 0.012)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
+                    <button onclick="takeLoan(5000, 0.015)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
                         Take ₹5,000
                     </button>
                 </div>
@@ -675,9 +675,9 @@
                 <div class="bg-gray-800/80 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
                     <div>
                         <h4 class="font-bold text-blue-300 text-xs">Commercial Credit Line</h4>
-                        <p class="text-[10px] text-gray-400">Borrow ₹20,000 at 1.8% interest per second.</p>
+                        <p class="text-[10px] text-gray-400">Borrow ₹20,000 at 2.0% interest every 10 seconds.</p>
                     </div>
-                    <button onclick="takeLoan(20000, 0.018)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
+                    <button onclick="takeLoan(20000, 0.020)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
                         Take ₹20,000
                     </button>
                 </div>
@@ -685,9 +685,9 @@
                 <div class="bg-gray-800/80 p-3 rounded-xl border border-gray-700 flex justify-between items-center">
                     <div>
                         <h4 class="font-bold text-blue-300 text-xs">Megastructure Syndicate Loan</h4>
-                        <p class="text-[10px] text-gray-400">Borrow ₹75,000 at 2.5% interest per second.</p>
+                        <p class="text-[10px] text-gray-400">Borrow ₹75,000 at 3.0% interest every 10 seconds.</p>
                     </div>
-                    <button onclick="takeLoan(75000, 0.025)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
+                    <button onclick="takeLoan(75000, 0.030)" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs shadow-md whitespace-nowrap">
                         Take ₹75,000
                     </button>
                 </div>
@@ -793,6 +793,7 @@
         occupancyFactor: 1.0,
         loanBalance: 0,
         loanInterestRate: 0.015,
+        ticksSinceInterest: 0,
         
         level: 1,
         xp: 0,
@@ -885,14 +886,14 @@
         playSound('click');
         let actualLandCost = state.landCost;
         let engStacks = state.executiveStacks.eng;
-        let discount = engStacks * 0.07; // 7% discount per stack
+        let discount = engStacks * 0.07;
         actualLandCost = Math.round(actualLandCost * Math.max(0.3, (1 - discount)));
 
         if (state.money >= actualLandCost) {
             state.money -= actualLandCost;
             state.land += 1;
-            // Floor expansion price scales reasonably faster based on how many buildings/floors exist
-            let scalingFactor = 1.45 + (state.floors.length * 0.04);
+            // Balanced floor price scaling so it doesn't spike too high too quickly
+            let scalingFactor = 1.18 + (state.land * 0.015);
             state.landCost = Math.ceil(state.landCost * scalingFactor / 100) * 100;
             showMessage(`Acquired +1 Floor Capacity! Total Capacity: ${state.land} floors`, 'success');
             updateUI();
@@ -908,7 +909,7 @@
         let cost = state[costKey];
 
         let vpStacks = state.executiveStacks.vp;
-        let discount = vpStacks * 0.06; // 6% discount per VP stack
+        let discount = vpStacks * 0.06;
         cost = Math.round(cost * Math.max(0.4, (1 - discount)));
 
         const usedPlots = getUsedPlots();
@@ -920,7 +921,7 @@
         if (state.money >= cost) {
             state.money -= cost;
             state.floors.push({ type: type });
-            state[costKey] = Math.ceil(state[costKey] * 1.28 / 100) * 100;
+            state[costKey] = Math.ceil(state[costKey] * 1.15 / 100) * 100;
             
             let xpGained = unit.xp;
             let fiberStacks = state.amenityStacks.fiber;
@@ -937,7 +938,7 @@
     }
 
     function getStackCost(baseCost, currentStacks) {
-        return Math.round(baseCost * Math.pow(1.65, currentStacks));
+        return Math.round(baseCost * Math.pow(1.45, currentStacks));
     }
 
     function buyAmenity(key, baseCost) {
@@ -996,23 +997,29 @@
         }
         state.loanBalance = amount;
         state.loanInterestRate = rate;
+        state.ticksSinceInterest = 0;
         state.money += amount;
         showMessage(`Secured credit facility of ${formatCurrency(amount)}!`, 'success');
         toggleModal('loan-modal');
         updateUI();
     }
 
-    function repayLoan(amount) {
+    function repayTotalLoan() {
         playSound('click');
-        if (state.loanBalance <= 0) return;
-        const payAmount = Math.min(amount, state.money, state.loanBalance);
-        if (payAmount > 0) {
-            state.money -= payAmount;
-            state.loanBalance -= payAmount;
-            showMessage(`Repaid ${formatCurrency(payAmount)} toward principal.`, 'success');
+        if (state.loanBalance <= 0) {
+            showMessage('No active loan to repay.', 'error');
+            return;
+        }
+        const totalDue = state.loanBalance;
+        if (state.money >= totalDue) {
+            state.money -= totalDue;
+            state.loanBalance = 0;
+            state.ticksSinceInterest = 0;
+            showMessage(`Successfully repaid total loan of ${formatCurrency(totalDue)}!`, 'success');
+            toggleModal('loan-modal');
             updateUI();
         } else {
-            showMessage('Insufficient funds for loan repayment!', 'error');
+            showMessage(`Insufficient funds! You need ${formatCurrency(totalDue)} to repay the total loan.`, 'error');
         }
     }
 
@@ -1055,13 +1062,17 @@
             totalRent += state.stocks.grit * 80;
         }
 
+        // Loan interest accrues once every 10 seconds
         if (state.loanBalance > 0) {
-            let effectiveRate = state.loanInterestRate;
-            let cfoReduction = state.executiveStacks.cfo * 0.10; // 10% interest reduction per CFO stack
-            effectiveRate *= Math.max(0.1, (1 - cfoReduction));
-            const interest = Math.round(state.loanBalance * effectiveRate);
-            state.loanBalance += interest;
-            totalRent -= interest;
+            state.ticksSinceInterest += 1;
+            if (state.ticksSinceInterest >= 10) {
+                state.ticksSinceInterest = 0;
+                let effectiveRate = state.loanInterestRate;
+                let cfoReduction = state.executiveStacks.cfo * 0.10;
+                effectiveRate *= Math.max(0.1, (1 - cfoReduction));
+                const interest = Math.round(state.loanBalance * effectiveRate);
+                state.loanBalance += interest;
+            }
         }
 
         state.money += totalRent;
@@ -1103,11 +1114,6 @@
         estRent = Math.round(estRent * (1 + (state.amenityStacks.garden * 0.12)));
         if (state.stocks.grit > 0) estRent += state.stocks.grit * 80;
 
-        if (state.loanBalance > 0) {
-            let effRate = state.loanInterestRate;
-            effRate *= Math.max(0.1, (1 - (state.executiveStacks.cfo * 0.10)));
-            estRent -= Math.round(state.loanBalance * effRate);
-        }
         document.getElementById('rent-rate-display').textContent = formatCurrency(estRent);
 
         document.getElementById('level-display').textContent = state.level;
