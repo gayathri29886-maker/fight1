@@ -740,8 +740,10 @@
                 <input type="range" id="font-size-range" min="13" max="20" value="15" step="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                 <p class="text-[11px] text-gray-400 mt-2">Current Size: <span id="current-font-size-display">15</span>px</p>
             </div>
-            <button onclick="resetGameSave()" class="w-full bg-red-600/80 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-md transition-all">
-                Reset Progress / Clear Save
+            
+            <!-- RESET PROGRESS BUTTON -->
+            <button onclick="resetGameSave()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                <span>⚠️ Clear Save & Reset Progress</span>
             </button>
         </div>
         <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
@@ -850,7 +852,8 @@
     }
 
     function loadGame() {
-        const saved = localStorage.getItem('skyscraper_tycoon_pro_save');
+        // Checked all potential legacy keys to ensure clean compatibility
+        const saved = localStorage.getItem('skyscraper_tycoon_pro_save') || localStorage.getItem('skyscraper_tycoon_save');
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
@@ -859,10 +862,17 @@
         }
     }
 
+    // --- WORKING CLEAR SAVE & RESET FUNCTION ---
     function resetGameSave() {
-        if (confirm("Are you sure you want to reset all progress?")) {
+        playSound('click');
+        if (confirm("Are you sure you want to permanently reset all progress, cash, and built floors?")) {
+            // Remove all possible saved keys
             localStorage.removeItem('skyscraper_tycoon_pro_save');
-            location.reload();
+            localStorage.removeItem('skyscraper_tycoon_save');
+            localStorage.removeItem('skyscraper_tycoon_ultra_save');
+            
+            // Reload page instantly
+            window.location.reload();
         }
     }
 
