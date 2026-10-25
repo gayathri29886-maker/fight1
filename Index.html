@@ -175,26 +175,31 @@
 
 <!-- START SCREEN OVERLAY -->
 <div id="start-screen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at center, #111827 0%, #030712 100%); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 1rem;">
-    <div style="background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 1.5rem; padding: 2.5rem; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(99, 102, 241, 0.2); backdrop-filter: blur(12px);">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🏗️</div>
-        <h1 style="font-size: 1.8rem; font-weight: 900; color: #f3f4f6; margin-bottom: 0.5rem; letter-spacing: -0.025em;">SKYSCRAPER TYCOON</h1>
-        <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 2rem;">AP Master Engine &bull; Commercial Real Estate Simulation</p>
+    <div style="background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 1.5rem; padding: 2rem; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(99, 102, 241, 0.2); backdrop-filter: blur(12px);">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏗️</div>
+        <h1 style="font-size: 1.6rem; font-weight: 900; color: #f3f4f6; margin-bottom: 0.25rem; letter-spacing: -0.025em;">SKYSCRAPER TYCOON</h1>
+        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 1.25rem;">AP Master Engine &bull; Reach Level 10,000 for SkyScraper Developer</p>
         
-        <div style="background: rgba(31, 41, 55, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 1.25rem; margin-bottom: 2rem; text-align: left;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                <label for="initial-money-slider" style="font-size: 0.85rem; font-weight: bold; color: #d1d5db;">Initial Money Starter</label>
-                <span id="slider-value-display" style="font-size: 1rem; font-weight: 900; color: #10b981;">₹15,000</span>
+        <div style="background: rgba(31, 41, 55, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 1rem; margin-bottom: 1.25rem; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label for="initial-money-slider" style="font-size: 0.8rem; font-weight: bold; color: #d1d5db;">Initial Money Starter</label>
+                <span id="slider-value-display" style="font-size: 0.95rem; font-weight: 900; color: #10b981;">₹15,000</span>
             </div>
             <input type="range" id="initial-money-slider" min="10000" max="25000" step="1000" value="15000" oninput="updateSliderValue(this.value)" style="width: 100%; height: 6px; background: #374151; border-radius: 3px; accent-color: #10b981; cursor: pointer;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #9ca3af; margin-top: 0.4rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #9ca3af; margin-top: 0.3rem;">
                 <span>₹10,000</span>
                 <span>₹25,000</span>
             </div>
         </div>
 
-        <button onclick="startGame()" class="glow-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 900; font-size: 1rem; padding: 0.85rem 2rem; border-radius: 1rem; border: none; cursor: pointer; width: 100%; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);">
-            🚀 START GAME
-        </button>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <button onclick="startGame()" class="glow-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 900; font-size: 0.95rem; padding: 0.75rem 2rem; border-radius: 0.85rem; border: none; cursor: pointer; width: 100%; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);">
+                🚀 START GAME
+            </button>
+            <button onclick="toggleModal('credit-scene-modal')" class="glow-btn" style="background: rgba(55, 65, 81, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); color: #d1d5db; font-weight: 700; font-size: 0.85rem; padding: 0.65rem 2rem; border-radius: 0.85rem; cursor: pointer; width: 100%;">
+                📜 Credit Scene
+            </button>
+        </div>
     </div>
 </div>
 
@@ -348,21 +353,25 @@
         <div class="p-3 overflow-y-auto space-y-3 text-xs">
             
             <div class="bg-gray-800/90 p-2.5 rounded-xl border border-gray-700 space-y-2">
-                <h3 class="font-bold text-amber-400 text-xs uppercase tracking-wider">💰 Instant Treasury & Floor Grants</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <h3 class="font-bold text-amber-400 text-xs uppercase tracking-wider">💰 Instant Treasury, Floor & Level Grants</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div>
-                        <label class="text-[9px] text-gray-400 block mb-0.5">Add Custom Treasury Cash (₹)</label>
+                        <label class="text-[9px] text-gray-400 block mb-0.5">Add Cash (₹)</label>
                         <div class="flex gap-1">
                             <input type="number" id="ap-cash-input" value="1000000000" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
-                            <button onclick="apGiveCash()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1 rounded-lg">Add Cash</button>
+                            <button onclick="apGiveCash()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-2 py-1 rounded-lg">Add</button>
                         </div>
                     </div>
                     <div>
-                        <label class="text-[9px] text-gray-400 block mb-0.5">Add Custom Floor Capacity</label>
+                        <label class="text-[9px] text-gray-400 block mb-0.5">Add Floor Capacity</label>
                         <div class="flex gap-1">
                             <input type="number" id="ap-land-input" value="50" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
-                            <button onclick="apGiveLand()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1 rounded-lg">Add Floors</button>
+                            <button onclick="apGiveLand()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-2 py-1 rounded-lg">Add</button>
                         </div>
+                    </div>
+                    <div>
+                        <label class="text-[9px] text-gray-400 block mb-0.5">Instant Level Boost</label>
+                        <button onclick="apAdd500Levels()" class="glow-btn bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white font-bold w-full py-1.5 px-2 rounded-lg shadow-md">Add +500 Level ⚡</button>
                     </div>
                 </div>
             </div>
@@ -443,6 +452,29 @@
 <div id="stocks-modal" class="modal-overlay"><div class="modal-content"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">📈 Commercial REIT Stock Portfolio</h2><button onclick="toggleModal('stocks-modal')" class="text-gray-400 text-lg px-2">&times;</button></div><div class="p-3 space-y-2"><div class="bg-gray-800/90 p-2.5 rounded-xl border border-gray-700 flex justify-between items-center"><div><h3 class="font-bold text-teal-300 text-xs">Global REIT Index Fund (GRIT)</h3><p class="text-[9px] text-gray-400">Shares Owned: <span id="grit-shares" class="font-bold text-white">0</span> | Dividend: ~₹80/s per share</p><p class="text-xs font-bold text-gray-200 mt-0.5">Price: ₹5,000</p></div><button onclick="buyStock('grit', 5000)" class="glow-btn bg-teal-600 text-white font-bold py-1 px-3 rounded-xl text-xs">Buy 1 Share</button></div></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('stocks-modal')" class="bg-gray-700 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
 <div id="inspect-modal" class="modal-overlay"><div class="modal-content" style="max-width: 420px;"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 id="inspect-title" class="text-sm font-bold text-gray-100">Floor Details</h2><button onclick="toggleModal('inspect-modal')" class="text-gray-400 text-lg px-2">&times;</button></div><div class="p-3 space-y-2 text-xs"><div class="bg-gray-800/80 p-2.5 rounded-xl border border-gray-700"><p class="text-gray-400">Floor Type: <span id="inspect-type" class="font-bold text-indigo-300">Commercial</span></p><p class="text-gray-400">Est. Average Yield: <span id="inspect-yield" class="font-bold text-emerald-400">₹0/s</span></p><p class="text-gray-400">Floors Occupied: <span id="inspect-plots" class="font-bold text-yellow-400">1</span></p></div></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('inspect-modal')" class="bg-gray-700 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
+
+<!-- CREDIT SCENE CERTIFICATE MODAL -->
+<div id="credit-scene-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 520px; background: linear-gradient(135deg, #111827 0%, #1f2937 100%); border: 2px solid #f59e0b;">
+        <div class="p-4 bg-gradient-to-r from-amber-950 to-gray-900 border-b border-amber-500/40 flex justify-between items-center">
+            <h2 class="text-sm font-black text-amber-300 flex items-center gap-2">🏆 OFFICIAL CERTIFICATE OF ACHIEVEMENT</h2>
+            <button onclick="toggleModal('credit-scene-modal')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
+        </div>
+        <div class="p-6 text-center space-y-4">
+            <div style="border: 2px dashed rgba(245, 158, 11, 0.4); border-radius: 1rem; padding: 1.5rem; background: rgba(15, 23, 42, 0.6);">
+                <p style="font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Certificate of Completion</p>
+                <h3 style="font-size: 1.25rem; font-weight: 900; color: #f59e0b; margin-bottom: 0.5rem;">SkyScraper Developer</h3>
+                <p style="font-size: 0.8rem; color: #d1d5db; margin-bottom: 1rem;">Awarded for successfully attaining Level 10,000 and mastering the Skyscraper Tycoon AP Master Engine.</p>
+                <div style="font-size: 0.7rem; color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">
+                    🎮 This only for completing the game not for real.
+                </div>
+            </div>
+        </div>
+        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
+            <button onclick="toggleModal('credit-scene-modal')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-1 px-5 rounded-xl text-xs">Close Certificate</button>
+        </div>
+    </div>
+</div>
 
 <div id="settings-panel" class="modal-overlay"><div class="modal-content" style="max-width: 420px;"><div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between items-center"><h2 class="text-sm font-bold text-gray-100">⚙️ Settings</h2><button onclick="toggleModal('settings-panel')" class="text-gray-400 text-lg px-2">&times;</button></div><div class="p-3 space-y-3"><div><label for="font-size-range" class="block text-gray-300 font-medium text-xs mb-1">Interface Font Size</label><input type="range" id="font-size-range" min="12" max="18" value="14" step="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"><p class="text-[10px] text-gray-400 mt-1">Current Size: <span id="current-font-size-display">14</span>px</p></div></div><div class="p-2.5 bg-gray-900 border-t border-gray-700 text-right"><button onclick="toggleModal('settings-panel')" class="bg-gray-700 text-white font-bold py-1 px-4 rounded-xl text-xs">Close</button></div></div></div>
 
@@ -608,6 +640,19 @@
         updateUI();
     }
 
+    function apAdd500Levels() {
+        state.level += 500;
+        if (state.level >= 10000) {
+            state.level = 10000;
+            toggleModal('ap-panel');
+            toggleModal('credit-scene-modal');
+            showMessage("🏆 CONGRATULATIONS! Reached Level 10,000 Game Complete!", "success");
+        } else {
+            showMessage(`⚡ AP Boost: Added +500 Levels! Current: Level ${state.level}`, "success");
+        }
+        updateUI();
+    }
+
     function apSetSpeed(ms) {
         state.gameTickMs = ms;
         if (state.gameLoopInterval) clearInterval(state.gameLoopInterval);
@@ -746,10 +791,18 @@
 
     function checkLevelUp() {
         while (state.xp >= state.xpToNextLevel) {
-            state.xp -= state.xpToNextLevel; state.level += 1;
+            if (state.level >= 10000) break;
+            state.xp -= state.xpToNextLevel; 
+            state.level += 1;
             state.xpToNextLevel = 10 * state.level;
             state.money += state.level * 5000;
-            showMessage(`LEVEL UP! Reached Level ${state.level}!`, 'success');
+            
+            if (state.level === 10000) {
+                toggleModal('credit-scene-modal');
+                showMessage("🏆 CONGRATULATIONS! Reached Level 10,000 SkyScraper Developer!", "success");
+            } else {
+                showMessage(`LEVEL UP! Reached Level ${state.level}!`, 'success');
+            }
         }
     }
 
@@ -931,9 +984,17 @@
 
         document.getElementById('level-display').textContent = state.level;
         document.getElementById('info-level-num').textContent = `Level ${state.level}`;
-        const titleIndex = Math.min(state.level - 1, LEVEL_TITLES.length - 1);
-        document.getElementById('level-title').textContent = LEVEL_TITLES[titleIndex];
-        document.getElementById('info-level-title').textContent = LEVEL_TITLES[titleIndex];
+        
+        let rankTitle = "Novice Developer";
+        if (state.level >= 10000) {
+            rankTitle = "SkyScraper Developer";
+        } else {
+            const titleIndex = Math.min(Math.floor(state.level / 2000), LEVEL_TITLES.length - 1);
+            rankTitle = LEVEL_TITLES[titleIndex];
+        }
+        
+        document.getElementById('level-title').textContent = rankTitle;
+        document.getElementById('info-level-title').textContent = rankTitle;
 
         document.getElementById('xp-current-display').textContent = state.xp;
         document.getElementById('xp-next-display').textContent = state.xpToNextLevel;
