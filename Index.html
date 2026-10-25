@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skyscraper Tycoon </title>
+    <title>Skyscraper Tycoon - Ultra Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -339,7 +339,7 @@
     <!-- FOOTER -->
     <footer class="text-center text-[11px] text-gray-500 pt-1 border-t border-gray-800/80 flex justify-between items-center px-2">
         <span>Developed by Sukesh(G7A) &bull; Skyscraper Tycoon Pro Edition</span>
-        <span id="game-status-clock" class="text-indigo-400 font-mono">Running</span>
+        <span id="game-status-clock" class="text-indigo-400 font-mono">Running (Fresh State)</span>
     </footer>
 
 </div>
@@ -581,7 +581,7 @@
                 <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">Current Executive Status</h3>
                 <div class="grid grid-cols-2 gap-3 text-xs">
                     <div>
-                        <p class="text-gray-400">Level Level:</p>
+                        <p class="text-gray-400">Level:</p>
                         <p id="info-level-num" class="font-bold text-white text-sm">Level 1</p>
                     </div>
                     <div>
@@ -740,11 +740,6 @@
                 <input type="range" id="font-size-range" min="13" max="20" value="15" step="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                 <p class="text-[11px] text-gray-400 mt-2">Current Size: <span id="current-font-size-display">15</span>px</p>
             </div>
-            
-            <!-- RESET PROGRESS BUTTON -->
-            <button onclick="resetGameSave()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
-                <span>⚠️ Clear Save & Reset Progress</span>
-            </button>
         </div>
         <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
             <button onclick="toggleModal('settings-panel')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close</button>
@@ -753,7 +748,7 @@
 </div>
 
 <script>
-    // --- GAME STATE ---
+    // --- GAME STATE (FRESH STATE ON EVERY PAGE REFRESH) ---
     let state = {
         money: 15000,
         land: 2,
@@ -847,35 +842,6 @@
         }
     }
 
-    function saveGame() {
-        localStorage.setItem('skyscraper_tycoon_pro_save', JSON.stringify(state));
-    }
-
-    function loadGame() {
-        // Checked all potential legacy keys to ensure clean compatibility
-        const saved = localStorage.getItem('skyscraper_tycoon_pro_save') || localStorage.getItem('skyscraper_tycoon_save');
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                state = { ...state, ...parsed };
-            } catch(e) { console.error(e); }
-        }
-    }
-
-    // --- WORKING CLEAR SAVE & RESET FUNCTION ---
-    function resetGameSave() {
-        playSound('click');
-        if (confirm("Are you sure you want to permanently reset all progress, cash, and built floors?")) {
-            // Remove all possible saved keys
-            localStorage.removeItem('skyscraper_tycoon_pro_save');
-            localStorage.removeItem('skyscraper_tycoon_save');
-            localStorage.removeItem('skyscraper_tycoon_ultra_save');
-            
-            // Reload page instantly
-            window.location.reload();
-        }
-    }
-
     function checkLevelUp() {
         while (state.xp >= state.xpToNextLevel) {
             state.xp -= state.xpToNextLevel;
@@ -898,7 +864,6 @@
             state.landCost = Math.ceil(state.landCost * 1.4 / 100) * 100;
             showMessage(`Acquired +1 Land Plot! Total Capacity: ${state.land} plots`, 'success');
             updateUI();
-            saveGame();
         } else {
             showMessage('Insufficient funds to purchase land plots!', 'error');
         }
@@ -931,7 +896,6 @@
             showMessage(`Successfully constructed ${unit.name}!`, 'success');
             toggleModal('build-modal');
             updateUI();
-            saveGame();
         } else {
             showMessage('Insufficient funds for construction!', 'error');
         }
@@ -945,7 +909,6 @@
             state.amenities[key] = true;
             showMessage('Tower Amenity unlocked successfully!', 'success');
             updateUI();
-            saveGame();
         } else {
             showMessage('Insufficient funds for amenity!', 'error');
         }
@@ -959,7 +922,6 @@
             state.executives[key] = true;
             showMessage('Executive staff hired successfully!', 'success');
             updateUI();
-            saveGame();
         } else {
             showMessage('Insufficient funds to hire executive!', 'error');
         }
@@ -972,7 +934,6 @@
             state.stocks[key] = (state.stocks[key] || 0) + 1;
             showMessage('Purchased 1 REIT Stock Share!', 'success');
             updateUI();
-            saveGame();
         } else {
             showMessage('Insufficient funds for stock purchase!', 'error');
         }
@@ -990,7 +951,6 @@
         showMessage(`Secured credit facility of ${formatCurrency(amount)}!`, 'success');
         toggleModal('loan-modal');
         updateUI();
-        saveGame();
     }
 
     function repayLoan(amount) {
@@ -1002,7 +962,6 @@
             state.loanBalance -= payAmount;
             showMessage(`Repaid ${formatCurrency(payAmount)} toward principal.`, 'success');
             updateUI();
-            saveGame();
         } else {
             showMessage('Insufficient funds for loan repayment!', 'error');
         }
@@ -1040,7 +999,6 @@
         if (state.amenities.solar) totalRent = Math.round(totalRent * 1.25);
         if (state.amenities.garden) totalRent = Math.round(totalRent * 1.20);
 
-        // Stock Dividends
         if (state.stocks.grit > 0) {
             totalRent += state.stocks.grit * 80;
         }
@@ -1063,7 +1021,6 @@
         }
 
         updateUI();
-        saveGame();
     }
 
     function updateUI() {
@@ -1100,7 +1057,6 @@
         }
         document.getElementById('rent-rate-display').textContent = formatCurrency(estRent);
 
-        // Level & Title
         document.getElementById('level-display').textContent = state.level;
         document.getElementById('info-level-num').textContent = `Level ${state.level}`;
         const titleIndex = Math.min(state.level - 1, LEVEL_TITLES.length - 1);
@@ -1122,17 +1078,14 @@
         document.getElementById('observatory-cost').textContent = formatCurrency(state.executives.vp ? Math.round(state.observatoryCost * 0.85) : state.observatoryCost);
         document.getElementById('helipad-cost').textContent = formatCurrency(state.executives.vp ? Math.round(state.helipadCost * 0.85) : state.helipadCost);
 
-        // Stocks
         document.getElementById('grit-shares').textContent = state.stocks.grit || 0;
 
-        // Badges
         const activeAmenityCount = Object.values(state.amenities).filter(Boolean).length;
         document.getElementById('amenities-count-badge').textContent = `${activeAmenityCount} Active`;
         
         const activeExecCount = Object.values(state.executives).filter(Boolean).length;
         document.getElementById('executives-count-badge').textContent = `${activeExecCount} Hired`;
 
-        // Amenity/Executive Button States
         if (state.amenities.elevators) document.getElementById('amenity-elevators-btn').disabled = true;
         if (state.amenities.pool) document.getElementById('amenity-pool-btn').disabled = true;
         if (state.amenities.solar) document.getElementById('amenity-solar-btn').disabled = true;
@@ -1145,7 +1098,6 @@
         if (state.executives.cmo) document.getElementById('exec-cmo-btn').disabled = true;
         if (state.executives.eng) document.getElementById('exec-eng-btn').disabled = true;
 
-        // Loan UI
         if (state.loanBalance > 0) {
             document.getElementById('active-loan-badge').classList.remove('hidden');
             document.getElementById('active-loan-card').classList.remove('hidden');
@@ -1158,7 +1110,6 @@
             document.getElementById('active-loan-card').classList.add('hidden');
         }
 
-        // Render Tower
         const viewport = document.getElementById('tower-viewport');
         const emptyMsg = document.getElementById('empty-tower-msg');
         viewport.querySelectorAll('.floor-item').forEach(el => el.remove());
@@ -1189,7 +1140,6 @@
     }
 
     window.onload = function() {
-        loadGame();
         updateUI();
         setInterval(gameTick, state.gameTickMs);
 
