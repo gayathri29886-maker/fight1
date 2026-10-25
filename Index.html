@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skyscraper Tycoon1</title>
+    <title>Skyscraper Tycoon - Ultra Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -217,6 +217,11 @@
         </div>
 
         <div class="flex items-center gap-2">
+            <!-- AP Button -->
+            <button onclick="handleAPAuth()" class="glow-btn bg-gradient-to-r from-amber-500 via-red-600 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-black py-1.5 px-3 rounded-xl text-xs flex items-center gap-1 shadow-lg border border-amber-400/50">
+                <span>⚡ AP</span>
+            </button>
+
             <button onclick="toggleModal('loan-modal')" class="glow-btn bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold py-1.5 px-3 rounded-xl text-xs flex items-center gap-1.5 shadow-md">
                 <span>🏦 Bank Loans</span>
                 <span id="active-loan-badge" class="bg-red-500 text-[10px] px-1.5 py-0.2 rounded-full hidden">Active</span>
@@ -296,7 +301,7 @@
                 <!-- 1. Build Units Button -->
                 <button onclick="toggleModal('build-modal')" class="glow-btn w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-between text-xs">
                     <span class="flex items-center gap-2">🏢 Build Units</span>
-                    <span class="text-[10px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded-md border border-emerald-700">8 Options</span>
+                    <span id="build-options-count" class="text-[10px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded-md border border-emerald-700">8 Options</span>
                 </button>
 
                 <!-- 2. Amenities Button -->
@@ -342,6 +347,98 @@
         <span id="game-status-clock" class="text-indigo-400 font-mono">Running (Fresh State)</span>
     </footer>
 
+</div>
+
+<!-- MODAL: AP PANEL (OPERATOR PANEL) -->
+<div id="ap-panel" class="modal-overlay">
+    <div class="modal-content" style="max-width: 650px;">
+        <div class="p-4 bg-gradient-to-r from-amber-900/90 via-purple-900/90 to-gray-900 border-b border-amber-500/40 flex justify-between items-center">
+            <h2 class="text-base font-black text-amber-300 flex items-center gap-2"><span>⚡</span> AP OPERATOR CONTROL PANEL</h2>
+            <button onclick="toggleModal('ap-panel')" class="text-gray-400 hover:text-white font-bold text-lg px-2">&times;</button>
+        </div>
+        <div class="p-4 overflow-y-auto space-y-4 text-xs">
+            
+            <!-- Quick Grant Controls -->
+            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 space-y-2">
+                <h3 class="font-bold text-amber-400 text-xs uppercase tracking-wider">💰 Treasury & Capacity Grants</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">Add Treasury Cash (₹)</label>
+                        <div class="flex gap-1">
+                            <input type="number" id="ap-cash-input" value="1000000" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                            <button onclick="apGiveCash()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1 rounded-lg">Add</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">Add Floor Capacity</label>
+                        <div class="flex gap-1">
+                            <input type="number" id="ap-land-input" value="10" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                            <button onclick="apGiveLand()" class="glow-btn bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1 rounded-lg">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AP Special Building & Level Control -->
+            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 space-y-2">
+                <h3 class="font-bold text-purple-400 text-xs uppercase tracking-wider">🏢 AP Supreme Infrastructure & Level Control</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="apBuildAPOffice()" class="glow-btn bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-md">
+                        Construct "AP Office" (+₹50B/s)
+                    </button>
+                    <button onclick="apMaxLevel()" class="glow-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-md">
+                        Max Level Boost (+10 Levels)
+                    </button>
+                    <button onclick="apClearLoans()" class="glow-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs shadow-md">
+                        Wipe All Active Loans
+                    </button>
+                </div>
+            </div>
+
+            <!-- City Economic Event Controller -->
+            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 space-y-2">
+                <h3 class="font-bold text-blue-400 text-xs uppercase tracking-wider">🌐 City Economic Event Override</h3>
+                <p class="text-[10px] text-gray-400">Force spawn economic events or set custom durations for current city conditions.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">Select Event To Trigger</label>
+                        <select id="ap-event-select" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white text-xs">
+                            <option value="BOOM">🌆 Economic Boom (+50% Rent, 100% Occ)</option>
+                            <option value="TECH">💻 Tech Surge (+100% Tech/Quantum Rent)</option>
+                            <option value="TOURISM">🔭 Tourism Explosion (+100% Observatory/Helipad)</option>
+                            <option value="CRASH">📉 Market Crash (-30% Rent Yields)</option>
+                            <option value="NORMAL">⚖️ Normal Stable Market</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">Duration (Seconds)</label>
+                        <div class="flex gap-1">
+                            <input type="number" id="ap-event-duration" value="30" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white font-mono text-xs">
+                            <button onclick="apTriggerEvent()" class="glow-btn bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded-lg">Trigger</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ultimate Overrides -->
+            <div class="bg-gray-800/90 p-3 rounded-xl border border-gray-700 space-y-2">
+                <h3 class="font-bold text-red-400 text-xs uppercase tracking-wider">🔥 Ultimate God Mode Toggles</h3>
+                <div class="flex gap-2">
+                    <button onclick="apInfiniteCash()" class="glow-btn bg-gradient-to-r from-red-600 to-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs">
+                        Grant ₹999 Trillion Cash
+                    </button>
+                    <button onclick="apMaxAllStacks()" class="glow-btn bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs">
+                        Max All Amenities & Executives (10x)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <div class="p-3 bg-gray-900 border-t border-gray-700 text-right">
+            <button onclick="toggleModal('ap-panel')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1.5 px-5 rounded-xl text-xs">Close AP Panel</button>
+        </div>
+    </div>
 </div>
 
 <!-- MODAL 1: BUILD UNITS -->
@@ -438,6 +535,18 @@
                 </div>
                 <button onclick="buildFloor('helipad')" class="glow-btn bg-rose-600 hover:bg-rose-500 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
                     Build Helipad
+                </button>
+            </div>
+
+            <!-- Special AP Building Option (Visible if unlocked via AP) -->
+            <div id="ap-building-option" class="bg-amber-950/40 p-3 rounded-xl border border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hidden">
+                <div>
+                    <h3 class="font-bold text-amber-300 text-sm flex items-center gap-1"><span>⚡</span> AP Office (Operator Headquarters)</h3>
+                    <p class="text-[11px] text-gray-300">Supreme operator headquarters (~₹50,000,000,000/s). (+1,000 XP)</p>
+                    <p class="text-xs font-bold text-gray-200 mt-0.5">Cost: <span id="apoffice-cost" class="text-amber-400">₹1,000,000,000</span> | <span class="text-yellow-400 font-bold">Req Floors: 1</span></p>
+                </div>
+                <button onclick="buildFloor('apoffice')" class="glow-btn bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-black py-1.5 px-3.5 rounded-xl text-xs shadow-md whitespace-nowrap">
+                    Build AP Office
                 </button>
             </div>
 
@@ -785,6 +894,7 @@
         observatoryCost: 60000,
         quantumCost: 110000,
         helipadCost: 175000,
+        apofficeCost: 1000000000,
         
         amenityStacks: { elevators: 0, pool: 0, solar: 0, garden: 0, fiber: 0, security: 0 },
         executiveStacks: { cfo: 0, vp: 0, cmo: 0, eng: 0 },
@@ -795,10 +905,22 @@
         loanInterestRate: 0.015,
         ticksSinceInterest: 0,
         
+        // Active City Events System
+        currentEvent: {
+            id: 'NORMAL',
+            name: 'Normal Market Conditions',
+            desc: 'Standard real estate economic climate with steady tenant demand.',
+            duration: 0,
+            rentMult: 1.0,
+            occBoost: 0.0
+        },
+        eventTimer: 0,
+        
         level: 1,
         xp: 0,
         xpToNextLevel: 10,
-        gameTickMs: 1000
+        gameTickMs: 1000,
+        apUnlocked: false
     };
 
     const LEVEL_TITLES = [
@@ -814,11 +936,20 @@
         biodome: { name: 'Bio-Dome Greenhouse', baseMin: 4800, baseMax: 7500, xp: 38, reqPlots: 3, color: 'linear-gradient(90deg, #065f46, #0d9488)', borderColor: '#14b8a6' },
         observatory: { name: 'Sky Observatory', baseMin: 6000, baseMax: 10000, xp: 50, reqPlots: 3, color: 'linear-gradient(90deg, #713f12, #a16207)', borderColor: '#eab308' },
         quantum: { name: 'Quantum Data Center', baseMin: 10000, baseMax: 16000, xp: 75, reqPlots: 4, color: 'linear-gradient(90deg, #164e63, #0891b2)', borderColor: '#06b6d4' },
-        helipad: { name: 'Helipad Deck', baseMin: 15000, baseMax: 25000, xp: 100, reqPlots: 4, color: 'linear-gradient(90deg, #881337, #be123c)', borderColor: '#f43f5e' }
+        helipad: { name: 'Helipad Deck', baseMin: 15000, baseMax: 25000, xp: 100, reqPlots: 4, color: 'linear-gradient(90deg, #881337, #be123c)', borderColor: '#f43f5e' },
+        apoffice: { name: 'AP Office', baseMin: 50000000000, baseMax: 50000000000, xp: 1000, reqPlots: 1, color: 'linear-gradient(90deg, #78350f, #d97706, #7e22ce)', borderColor: '#f59e0b' }
     };
 
     const AMENITY_BASE_COSTS = { elevators: 10000, pool: 22000, solar: 50000, garden: 90000, fiber: 150000, security: 250000 };
     const EXECUTIVE_BASE_COSTS = { cfo: 30000, vp: 50000, cmo: 90000, eng: 150000 };
+
+    const CITY_EVENTS = {
+        BOOM: { name: '🌆 Economic Boom', desc: 'Tenant demand soars! +50% Rent Yields & 100% Occupancy.', rentMult: 1.5, occBoost: 0.3 },
+        TECH: { name: '💻 Tech Surge', desc: 'Massive demand for servers! +100% Rent Yields.', rentMult: 2.0, occBoost: 0.15 },
+        TOURISM: { name: '🔭 Tourism Explosion', desc: 'Record city visits! +100% Rent Yields.', rentMult: 2.0, occBoost: 0.2 },
+        CRASH: { name: '📉 Market Crash', desc: 'Economic downturn! Rent yields reduced by 30%.', rentMult: 0.7, occBoost: -0.2 },
+        NORMAL: { name: '⚖️ Normal Market Conditions', desc: 'Standard real estate economic climate with steady tenant demand.', rentMult: 1.0, occBoost: 0.0 }
+    };
 
     function playSound(type) {
         try {
@@ -844,6 +975,9 @@
     }
 
     function formatCurrency(amount) {
+        if (amount >= 1e12) return '₹' + (amount / 1e12).toFixed(2) + ' Trillion';
+        if (amount >= 1e9) return '₹' + (amount / 1e9).toFixed(2) + ' Billion';
+        if (amount >= 1e6) return '₹' + (amount / 1e6).toFixed(2) + ' Million';
         return new Intl.NumberFormat('en-IN', {
             style: 'currency', currency: 'INR', maximumFractionDigits: 0
         }).format(amount);
@@ -871,6 +1005,100 @@
         }
     }
 
+    // --- AP OPERATOR PASSWORD AUTHENTICATION ---
+    function handleAPAuth() {
+        playSound('click');
+        if (state.apUnlocked) {
+            toggleModal('ap-panel');
+            return;
+        }
+        const pwd = prompt("Enter Operator Security Password:");
+        if (pwd === "AP is OP") {
+            state.apUnlocked = true;
+            document.getElementById('ap-building-option').classList.remove('hidden');
+            document.getElementById('build-options-count').textContent = '9 Options';
+            showMessage("⚡ AP Access Granted! Operator Panel Unlocked.", "success");
+            toggleModal('ap-panel');
+        } else if (pwd !== null) {
+            showMessage("Access Denied: Invalid Security Password!", "error");
+        }
+    }
+
+    // --- AP CONTROL PANEL FUNCTIONS ---
+    function apGiveCash() {
+        const val = parseFloat(document.getElementById('ap-cash-input').value) || 0;
+        state.money += val;
+        showMessage(`AP Grant: Added ${formatCurrency(val)} to Treasury!`, 'success');
+        updateUI();
+    }
+
+    function apGiveLand() {
+        const val = parseInt(document.getElementById('ap-land-input').value) || 0;
+        state.land += val;
+        showMessage(`AP Grant: Unlocked +${val} Floor Capacity!`, 'success');
+        updateUI();
+    }
+
+    function apBuildAPOffice() {
+        buildFloor('apoffice');
+    }
+
+    function apMaxLevel() {
+        state.level += 10;
+        state.xp = 0;
+        state.xpToNextLevel = 10 * state.level;
+        showMessage(`AP Boost: Promoted to Level ${state.level}!`, 'success');
+        updateUI();
+    }
+
+    function apClearLoans() {
+        state.loanBalance = 0;
+        state.ticksSinceInterest = 0;
+        showMessage("AP Override: Cleared all outstanding bank debt!", "success");
+        updateUI();
+    }
+
+    function apTriggerEvent() {
+        const key = document.getElementById('ap-event-select').value;
+        const dur = parseInt(document.getElementById('ap-event-duration').value) || 30;
+        triggerCityEvent(key, dur);
+        showMessage(`AP Override: Forced City Event "${CITY_EVENTS[key].name}" for ${dur}s!`, 'success');
+    }
+
+    function apInfiniteCash() {
+        state.money += 999000000000000;
+        showMessage("⚡ God Mode Activated: Granted Trillions in Treasury!", "success");
+        updateUI();
+    }
+
+    function apMaxAllStacks() {
+        Object.keys(state.amenityStacks).forEach(k => state.amenityStacks[k] = 10);
+        Object.keys(state.executiveStacks).forEach(k => state.executiveStacks[k] = 10);
+        showMessage("⚡ Max Stacks Override: All Amenities & Executives set to 10x!", "success");
+        updateUI();
+    }
+
+    function triggerCityEvent(eventKey, duration = 30) {
+        const ev = CITY_EVENTS[eventKey] || CITY_EVENTS.NORMAL;
+        state.currentEvent = {
+            id: eventKey,
+            name: ev.name,
+            desc: ev.desc,
+            rentMult: ev.rentMult,
+            occBoost: ev.occBoost
+        };
+        state.eventTimer = duration;
+        updateEventUI();
+    }
+
+    function updateEventUI() {
+        document.getElementById('event-name-display').textContent = state.currentEvent.name;
+        document.getElementById('event-desc-display').textContent = state.currentEvent.desc;
+        document.getElementById('event-badge').textContent = state.eventTimer > 0 ? `${state.currentEvent.name} (${state.eventTimer}s)` : 'Normal Market';
+        document.getElementById('event-timer-display').textContent = state.eventTimer > 0 ? `${state.eventTimer}s Active` : 'Stable';
+        document.getElementById('event-effect-indicator').textContent = state.eventTimer > 0 ? `Active Event: ${state.currentEvent.name}` : 'Fluctuates live with occupancy';
+    }
+
     function checkLevelUp() {
         while (state.xp >= state.xpToNextLevel) {
             state.xp -= state.xpToNextLevel;
@@ -892,7 +1120,6 @@
         if (state.money >= actualLandCost) {
             state.money -= actualLandCost;
             state.land += 1;
-            // Floor expansion price increases by exactly 5% of its current value
             state.landCost = Math.ceil(state.landCost * 1.05 / 100) * 100;
             showMessage(`Acquired +1 Floor Capacity! Total Capacity: ${state.land} floors`, 'success');
             updateUI();
@@ -920,7 +1147,6 @@
         if (state.money >= cost) {
             state.money -= cost;
             state.floors.push({ type: type });
-            // Floor unit construction price increases by exactly 5% of its value
             state[costKey] = Math.ceil(state[costKey] * 1.05 / 100) * 100;
             
             let xpGained = unit.xp;
@@ -930,7 +1156,9 @@
             
             checkLevelUp();
             showMessage(`Successfully constructed ${unit.name}!`, 'success');
-            toggleModal('build-modal');
+            if (document.getElementById('build-modal').style.display === 'flex') {
+                toggleModal('build-modal');
+            }
             updateUI();
         } else {
             showMessage('Insufficient funds for construction!', 'error');
@@ -1030,14 +1258,27 @@
         
         document.getElementById('inspect-title').textContent = `Floor #${index + 1} Inspection`;
         document.getElementById('inspect-type').textContent = u.name;
-        document.getElementById('inspect-yield').textContent = `~${formatCurrency(Math.round(((u.baseMin + u.baseMax)/2) * state.occupancyFactor))}/s`;
+        document.getElementById('inspect-yield').textContent = `~${formatCurrency(Math.round(((u.baseMin + u.baseMax)/2) * state.occupancyFactor * state.currentEvent.rentMult))}/s`;
         document.getElementById('inspect-plots').textContent = u.reqPlots;
         
         toggleModal('inspect-modal');
     }
 
     function gameTick() {
-        let baseOcc = 0.70 + (Math.random() * 0.45);
+        // Handle City Event Timer
+        if (state.eventTimer > 0) {
+            state.eventTimer -= 1;
+            if (state.eventTimer <= 0) {
+                triggerCityEvent('NORMAL', 0);
+            }
+            updateEventUI();
+        } else if (Math.random() < 0.05) { // 5% chance per second to spawn random city event
+            const keys = ['BOOM', 'TECH', 'TOURISM', 'CRASH'];
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            triggerCityEvent(randomKey, 25);
+        }
+
+        let baseOcc = 0.70 + (Math.random() * 0.45) + state.currentEvent.occBoost;
         baseOcc += state.amenityStacks.pool * 0.08;
         baseOcc += state.executiveStacks.cmo * 0.08;
         
@@ -1050,8 +1291,8 @@
         let totalRent = 0;
         state.floors.forEach(floor => {
             const unit = UNIT_TYPES[floor.type];
-            const rawRent = Math.floor(Math.random() * (unit.baseMax - unit.baseMin + 1)) + unit.baseMin;
-            totalRent += Math.round(rawRent * state.occupancyFactor);
+            let rawRent = Math.floor(Math.random() * (unit.baseMax - unit.baseMin + 1)) + unit.baseMin;
+            totalRent += Math.round(rawRent * state.occupancyFactor * state.currentEvent.rentMult);
         });
 
         totalRent = Math.round(totalRent * (1 + (state.amenityStacks.elevators * 0.10)));
@@ -1107,7 +1348,7 @@
         let estRent = 0;
         state.floors.forEach(f => {
             const u = UNIT_TYPES[f.type];
-            estRent += Math.round(((u.baseMin + u.baseMax) / 2) * state.occupancyFactor);
+            estRent += Math.round(((u.baseMin + u.baseMax) / 2) * state.occupancyFactor * state.currentEvent.rentMult);
         });
         estRent = Math.round(estRent * (1 + (state.amenityStacks.elevators * 0.10)));
         estRent = Math.round(estRent * (1 + (state.amenityStacks.solar * 0.15)));
@@ -1141,6 +1382,7 @@
         document.getElementById('observatory-cost').textContent = formatCurrency(Math.round(state.observatoryCost * vpMult));
         document.getElementById('quantum-cost').textContent = formatCurrency(Math.round(state.quantumCost * vpMult));
         document.getElementById('helipad-cost').textContent = formatCurrency(Math.round(state.helipadCost * vpMult));
+        document.getElementById('apoffice-cost').textContent = formatCurrency(Math.round(state.apofficeCost * vpMult));
 
         // Update Amenity Stacks & Costs
         ['elevators', 'pool', 'solar', 'garden', 'fiber', 'security'].forEach(key => {
@@ -1197,7 +1439,7 @@
                     </div>
                     <span class="text-white text-xs font-bold z-10">Floor #${index + 1}: ${u.name} (${u.reqPlots} Floors)</span>
                     <span class="text-xs font-extrabold z-10 text-emerald-300">
-                        ~${formatCurrency(Math.round(((u.baseMin + u.baseMax) / 2) * state.occupancyFactor))}/s
+                        ~${formatCurrency(Math.round(((u.baseMin + u.baseMax) / 2) * state.occupancyFactor * state.currentEvent.rentMult))}/s
                     </span>
                 `;
                 viewport.appendChild(floorDiv);
